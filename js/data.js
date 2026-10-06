@@ -1,55 +1,123 @@
-/* Datos ficticios del prototipo.
-   Para agregar áreas, universidades o vínculos, edita solo este archivo. */
-/* ===================== Datos ficticios ===================== */
-const ETAPAS = ["Contacto inicial","En curso","Cerrado"];
-const USER = { nombre:"Eduardo", area:"inn" };
-const TIPOS = [
-  { id:"pm",  nombre:"Prácticas y memorias", desc:"Estudiantes en etapa formativa dentro de AMSA." },
-  { id:"cap", nombre:"Capstone", desc:"Desafíos de AMSA desarrollados por estudiantes en un curso." },
-  { id:"id",  nombre:"Investigación y docentes", desc:"Proyectos de I+D o consultorías con académicos." },
-  { id:"ini", nombre:"Iniciativas y programas", desc:"Becas, charlas, visitas guiadas o ferias laborales." }
-];
-const tipo = id => TIPOS.find(t=>t.id===id);
+/* Datos de partida, tomados del "Mapeo instituciones formativas ANF - COQ".
+   La subárea de cada actividad de VP Personas es una asignación propuesta
+   (el mapeo solo indica la VP). Calificaciones, financiamiento y avances
+   son DATOS DE EJEMPLO para la demo. */
 
-const AREAS = [
-  { id:"inn", nombre:"Innovación", correo:"innovacion@ejemplo.cl" },
-  { id:"iye", nombre:"Inclusión y Empleo", correo:"inclusion.empleo@ejemplo.cl" },
-  { id:"aco", nombre:"Asuntos Corporativos", correo:"asuntos.corporativos@ejemplo.cl" },
-  { id:"aba", nombre:"Abastecimiento", correo:"abastecimiento@ejemplo.cl" }
-];
-const UNIS = [
-  { id:"ucn", nombre:"Universidad Católica del Norte", corto:"U. Católica del Norte", contacto:"Dirección de vinculación", correo:"vinculacion@ucn.ejemplo.cl" },
-  { id:"ua",  nombre:"Universidad de Antofagasta", corto:"U. de Antofagasta", contacto:"Coordinación de prácticas", correo:"practicas@ua.ejemplo.cl" },
-  { id:"uch", nombre:"Universidad de Chile", corto:"U. de Chile", contacto:"Escuela de Ingeniería", correo:"ingenieria@uch.ejemplo.cl" },
-  { id:"puc", nombre:"Pontificia Universidad Católica", corto:"Pontificia U. Católica", contacto:"Centro de innovación", correo:"innovacion@puc.ejemplo.cl" }
-];
-const PASANTES = { total:6, porUni:{ua:2,ucn:2,uch:1,puc:1}, porArea:{inn:3,iye:2,aba:1,aco:0} };
+const SEED = {
+  contrapartes: [
+    { id: "ucn",    nombre: "Universidad Católica del Norte", corto: "UCN", tipoOrg: "Universidad", locacion: "Antofagasta y Coquimbo" },
+    { id: "ceduc",  nombre: "CEDUC UCN", corto: "CEDUC UCN", tipoOrg: "Centro de formación técnica", locacion: "Antofagasta y Los Vilos" },
+    { id: "ua",     nombre: "Universidad de Antofagasta", corto: "U. de Antofagasta", tipoOrg: "Universidad", locacion: "Antofagasta" },
+    { id: "ust",    nombre: "Universidad Santo Tomás", corto: "U. Santo Tomás", tipoOrg: "Universidad", locacion: "Antofagasta" },
+    { id: "ceim",   nombre: "Centro de Entrenamiento Industrial y Minero (CEIM)", corto: "CEIM", tipoOrg: "OTEC", locacion: "Antofagasta" },
+    { id: "inacap", nombre: "INACAP", corto: "INACAP", tipoOrg: "Instituto profesional", locacion: "Nacional" },
+    { id: "duoc",   nombre: "Duoc UC", corto: "Duoc UC", tipoOrg: "Instituto profesional", locacion: "Nacional" },
+    { id: "uch",    nombre: "Universidad de Chile", corto: "U. de Chile", tipoOrg: "Universidad", locacion: "Santiago" },
+    { id: "puc",    nombre: "Pontificia Universidad Católica de Chile", corto: "PUC", tipoOrg: "Universidad", locacion: "Santiago" },
+    { id: "usach",  nombre: "Universidad de Santiago de Chile", corto: "USACH", tipoOrg: "Universidad", locacion: "Santiago" },
+    { id: "utfsm",  nombre: "Universidad Técnica Federico Santa María", corto: "UTFSM", tipoOrg: "Universidad", locacion: "Santiago y Valparaíso" },
+    { id: "pucv",   nombre: "Pontificia Universidad Católica de Valparaíso", corto: "PUCV", tipoOrg: "Universidad", locacion: "Valparaíso" },
+    { id: "uai",    nombre: "Universidad Adolfo Ibáñez", corto: "UAI", tipoOrg: "Universidad", locacion: "Santiago" },
+    { id: "udd",    nombre: "Universidad del Desarrollo", corto: "UDD", tipoOrg: "Universidad", locacion: "Santiago" },
+    { id: "udec",   nombre: "Universidad de Concepción", corto: "UdeC", tipoOrg: "Universidad", locacion: "Biobío" },
+    { id: "uls",    nombre: "Universidad de La Serena", corto: "U. de La Serena", tipoOrg: "Universidad", locacion: "Coquimbo" }
+  ],
 
-const vacio = () => ({ objetivo:"", alcance:"", plazo:"", resultado:"" });
-let nextId = 8;
-let vinculos = [
-  { id:1, nombre:"Convenio de investigación aplicada", tipo:"id", area:"inn", uni:"ucn", etapa:1, calif:null,
-    contacto:"Dirección de vinculación", objetivos:{ objetivo:"Desarrollar un proyecto conjunto de investigación.", alcance:"Un equipo académico y un equipo interno de Innovación.", plazo:"", resultado:"" },
-    readme:null, reportes:["Reporte de avance 1"],
-    feedback:[{t:"Buena disposición del equipo académico. Los plazos internos de la universidad son lentos.", q:"Eduardo"}],
-    saben:["Eduardo (responsable)","Jefatura de Innovación"] },
-  { id:2, nombre:"Desafío de innovación abierta con estudiantes", tipo:"cap", area:"inn", uni:"uch", etapa:2, calif:4,
-    contacto:"Escuela de Ingeniería", objetivos:{ objetivo:"Resolver un desafío operacional con equipos de estudiantes.", alcance:"Tres equipos de estudiantes de ingeniería.", plazo:"Un semestre.", resultado:"Prototipos evaluados por Innovación." },
-    readme:"readme_desafio.pdf", reportes:["Informe final"], feedback:[{t:"Buen nivel de los equipos. Repetiríamos el formato.", q:"Eduardo"}], saben:["Eduardo (responsable)"] },
-  { id:3, nombre:"Exploración de laboratorio conjunto", tipo:"id", area:"inn", uni:"puc", etapa:0, calif:null,
-    contacto:"Centro de innovación", objetivos:vacio(), readme:null, reportes:[], feedback:[], saben:["Eduardo (responsable)"] },
-  { id:4, nombre:"Charlas y ferias de carrera", tipo:"ini", area:"iye", uni:"ucn", etapa:2, calif:3,
-    contacto:"Dirección de vinculación", objetivos:{ objetivo:"Presentar AMSA a estudiantes de último año.", alcance:"Dos ferias al año.", plazo:"Anual.", resultado:"Postulantes a prácticas." },
-    readme:null, reportes:["Resumen feria 2026"], feedback:[], saben:["Jefatura de Inclusión y Empleo"] },
-  { id:5, nombre:"Programa de prácticas y memorias", tipo:"pm", area:"iye", uni:"ua", etapa:1, calif:null,
-    contacto:"Coordinación de prácticas", objetivos:vacio(), readme:null, reportes:[], feedback:[], saben:["Jefatura de Inclusión y Empleo"] },
-  { id:6, nombre:"Relacionamiento institucional", tipo:"ini", area:"aco", uni:"uch", etapa:0, calif:null,
-    contacto:"Escuela de Ingeniería", objetivos:vacio(), readme:null, reportes:[], feedback:[], saben:["Asuntos Corporativos"] },
-  { id:7, nombre:"Desarrollo de proveedores locales", tipo:"ini", area:"aba", uni:"ua", etapa:1, calif:null,
-    contacto:"Coordinación de prácticas", objetivos:vacio(), readme:null, reportes:[], feedback:[], saben:["Abastecimiento"] }
-];
-let avisos = [
-  { id:1, titulo:"Contacto existente", texto:"Inclusión y Empleo también tiene un vínculo con la U. Católica del Norte.", ir:"#/uni/ucn", leido:false },
-  { id:2, titulo:"Calificación pendiente", texto:"El convenio de investigación aplicada todavía no tiene calificación.", ir:"#/ficha/1", leido:false },
-  { id:3, titulo:"Vínculo nuevo en otra área", texto:"Asuntos Corporativos registró un contacto inicial con la Universidad de Chile.", ir:"#/ficha/6", leido:false }
-];
+  // Objetivo y meta sugeridos según la temática del mapeo.
+  temas: {
+    "Atracción de talento": ["Presentar el programa Jóvenes Profesionales, prácticas y memorias a estudiantes de la universidad.", "Aumentar las postulaciones de calidad a prácticas, memorias y JP."],
+    "Marca empleadora": ["Recibir a estudiantes en las oficinas de AMSA para mostrar cómo trabajan sus equipos.", "Posicionar a AMSA como un empleador atractivo entre estudiantes de último año."],
+    "Vinculación sectorial": ["Invitar a académicos y estudiantes a la sesión sobre relaves.", "Compartir los desafíos de relaves y abrir posibles colaboraciones con la academia."],
+    "Formación": ["Desarrollar un proyecto o programa formativo junto a la institución.", "Formar talento con conocimiento real de la operación minera."],
+    "Desarrollo de talento": ["Ofrecer un diplomado a jóvenes profesionales de AMSA.", "Acelerar el desarrollo de los jóvenes profesionales."],
+    "Diversidad e inclusión": ["Acompañar a estudiantes de ingeniería con mentoras de AMSA.", "Aumentar la participación de mujeres en ingeniería y en AMSA."],
+    "Empleo y proveedores": ["Desarrollar empleo y proveedores locales junto a la institución.", "Fortalecer el empleo local y la cadena de proveedores de la región."],
+    "Por definir": ["", ""]
+  },
+
+  /* Filas: [contraparte, sede, área, tipo, nombre, temática, etapa (0-3), extras]
+     extras: c = calificación, a = ¿aportó a la meta? (si | parcial | no),
+             h = hitos completados, f = financiamiento, k = contacto, n = necesidades */
+  filas: [
+    // VP Asuntos Corporativos · Asuntos Públicos Norte
+    ["ucn", "Antofagasta", "rin", "conv", "Convenio marco 2026-2027", "Por definir", 2, { k: { cargo: "Vinculación con el medio" }, f: "Sin aporte monetario" }],
+    ["ucn", "Antofagasta", "rin", "conv", "Convenio de colaboración Antofagasta Minerals", "Por definir", 2, { k: { cargo: "Vinculación con el medio" } }],
+    ["ucn", "Antofagasta", "iln", "emp", "Plataforma Empleo Región", "Empleo y proveedores", 2, { k: { cargo: "IDEAR" }, c: 4, a: "si" }],
+    ["ucn", "Antofagasta", "iln", "prog", "Programa Proveedores para un futuro mejor", "Empleo y proveedores", 2, { k: { cargo: "Escuela de Negocios Mineros" }, f: "Mixto", c: 4, a: "parcial" }],
+    ["ucn", "Antofagasta", "rin", "cons", "Directorio Escuela de Negocios Mineros", "Empleo y proveedores", 0, { k: { nombre: "Ivo Fadic", cargo: "Escuela de Negocios Mineros" }, n: "Confirmar la participación de AMSA en el directorio." }],
+    ["ceduc", "Antofagasta", "rin", "cons", "Consejo consultivo", "Por definir", 0, { n: "Confirmar vigencia de la participación." }],
+    ["ceduc", "Antofagasta", "iln", "emp", "Pre contratos oficios mineros (aprendices)", "Empleo y proveedores", 0, {}],
+    ["ua", "Antofagasta", "rin", "cons", "Consejo consultivo", "Por definir", 0, {}],
+    ["ua", "Antofagasta", "rin", "conv", "Convenio marco de vinculación con el medio", "Por definir", 0, {}],
+    ["ust", "Antofagasta", "rin", "char", "Participación en seminario y actividades de vinculación", "Por definir", 0, { n: "Responder la solicitud de la universidad." }],
+    ["ceim", "Antofagasta", "iln", "emp", "Pre contratos oficios mineros (aprendices)", "Empleo y proveedores", 0, {}],
+    ["inacap", "Antofagasta", "rin", "cons", "Consejo Regional Productivo", "Formación", 2, { k: { cargo: "Vicerrectoría INACAP" } }],
+    ["inacap", "Antofagasta", "iln", "emp", "Pre contratos oficios mineros (aprendices)", "Empleo y proveedores", 1, { k: { cargo: "Vicerrectoría INACAP" } }],
+    // VP Asuntos Corporativos · Asuntos Públicos MLP
+    ["ceduc", "Los Vilos", "rimlp", "conv", "Acuerdo de colaboración CEDUC UCN Los Vilos", "Formación", 2, { n: "En evaluación la continuidad del acuerdo.", c: 3, a: "parcial" }],
+
+    // VP Personas y Organización · Reclutamiento y selección
+    ["uch", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 4, a: "si", f: "Sin aporte monetario" }],
+    ["puc", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 5, a: "si", f: "Sin aporte monetario", k: { nombre: "", cargo: "Coordinación de prácticas, Ingeniería", correo: "practicas@ing.ejemplo.cl" } }],
+    ["usach", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 3, a: "parcial" }],
+    ["utfsm", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 4, a: "si" }],
+    ["utfsm", "Valparaíso", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 2, {}],
+    ["pucv", "Valparaíso", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 2, a: "no" }],
+    ["ucn", "Antofagasta", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 4, a: "si" }],
+    ["ucn", "Coquimbo", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 2, {}],
+    ["uai", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 1, {}],
+    ["udec", "Biobío", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 3, a: "parcial" }],
+    ["uch", "Santiago", "rys", "char", "Meet the Office", "Marca empleadora", 3, { c: 4, a: "parcial" }],
+    ["usach", "Santiago", "rys", "char", "Meet the Office", "Marca empleadora", 2, {}],
+    ["udd", "Santiago", "rys", "char", "Meet the Office", "Marca empleadora", 3, { c: 2, a: "no" }],
+    ["ucn", "Antofagasta", "rys", "tal", "Búsqueda y difusión de memoristas", "Atracción de talento", 2, { n: "Definir temas de memoria con las gerencias de operación." }],
+
+    // VP Personas · Desarrollo Organizacional (sin subárea asignada)
+    ["uch", "Santiago", "doc", "char", "Invitación sesión de Relaves", "Vinculación sectorial", 3, { c: 3, a: "parcial" }],
+    ["usach", "Santiago", "doc", "char", "Invitación sesión de Relaves", "Vinculación sectorial", 3, {}],
+    ["ucn", "Antofagasta", "doc", "char", "Invitación sesión de Relaves", "Vinculación sectorial", 3, {}],
+    ["ucn", "Coquimbo", "doc", "char", "Invitación sesión de Relaves", "Vinculación sectorial", 3, {}],
+    ["uls", "Coquimbo", "doc", "char", "Invitación sesión de Relaves", "Vinculación sectorial", 3, {}],
+    ["ua", "Antofagasta", "doc", "char", "Invitación sesión de Relaves", "Vinculación sectorial", 3, {}],
+
+    // VP Personas · Aprendizaje y academia
+    ["puc", "Santiago", "aya", "acad", "Capstone Ingeniería – GIO MLP", "Formación", 3, { c: 5, a: "si", f: "Sin aporte monetario" }],
+    ["puc", "Santiago", "aya", "acad", "Capstone Ingeniería – VPPO", "Formación", 2, { f: "Sin aporte monetario" }],
+    ["ucn", "Coquimbo", "aya", "acad", "Capstone Ingeniería – MLP", "Formación", 2, {}],
+    ["uai", "Santiago", "aya", "prog", "Diplomado Jóvenes Profesionales", "Desarrollo de talento", 2, { f: "Financiado por AMSA" }],
+    ["inacap", "Nacional", "aya", "prog", "Pasantía docente", "Formación", 3, { c: 4, a: "si" }],
+    ["duoc", "Nacional", "aya", "prog", "Pasantía docente", "Formación", 2, {}],
+    ["inacap", "Nacional", "aya", "cons", "Participación en el consejo sectorial", "Formación", 2, {}],
+
+    // VP Personas · Inclusión y empleo
+    ["puc", "Santiago", "iye", "prog", "Mentoring a ingenieras", "Diversidad e inclusión", 2, { f: "Sin aporte monetario" }]
+  ]
+};
+
+// Pasantes y memoristas hoy (solo cantidades, como en la versión anterior).
+SEED.pasantes = { total: 6, porContraparte: { ua: 2, ucn: 2, uch: 1, puc: 1 } };
+
+function construirVinculosSemilla(areas, tipos) {
+  const nombreArea = id => (areas.find(a => a.id === id) || {}).nombre || "";
+  return SEED.filas.map((f, i) => {
+    const [contraparte, sede, area, tipo, nombre, tema, etapa, x] = f;
+    const t = tipos.find(t => t.id === tipo);
+    const total = t ? t.hitos.length : 0;
+    const hechos = x.h != null ? x.h : etapa === 3 ? total : etapa === 2 ? Math.ceil(total / 2) : etapa === 1 ? 1 : 0;
+    const [objetivo, meta] = SEED.temas[tema] || ["", ""];
+    return {
+      id: i + 1,
+      nombre, contraparte, sede, area, tipo, etapa, tema,
+      contacto: Object.assign({ nombre: "", cargo: "", correo: "" }, x.k || {}),
+      responsable: area === "rys" ? "Eduardo" : "Equipo " + nombreArea(area),
+      objetivo, meta, alcance: "",
+      financiamiento: { tipo: x.f || "Por definir", monto: "", fuente: "" },
+      inicio: etapa >= 2 ? "2026-03-01" : "", termino: etapa === 3 ? "2026-08-31" : "",
+      hitos: (t ? t.hitos : []).map((h, j) => ({ t: h, ok: j < hechos })),
+      necesidades: x.n || "", proximos: "",
+      calif: x.c || null, aporta: x.a || null,
+      versiones: [{ v: 1, fecha: "2026-09-15", autor: "Mapeo ANF-COQ", resumen: "Registro inicial importado desde el mapeo de instituciones formativas." }],
+      reuniones: [], cuestionarios: []
+    };
+  });
+}
