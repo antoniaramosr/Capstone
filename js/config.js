@@ -41,6 +41,25 @@ const CONFIG = {
 
   etapas: ["Exploración", "Formalización", "En ejecución", "Cerrado"],
 
+  // AMSA: el corporativo y sus cuatro compañías mineras. El color siempre va con el nombre.
+  companias: [
+    { id: "corp", nombre: "Corporativo", color: "#6B5E5A" },
+    { id: "mlp", nombre: "Los Pelambres", color: "#2E6B4A" },
+    { id: "cen", nombre: "Centinela", color: "#3E6A9A" },
+    { id: "ant", nombre: "Antucoya", color: "#A86A12" },
+    { id: "zal", nombre: "Zaldívar", color: "#7C3F99" }
+  ],
+
+  // Metas a las que puede aportar un vínculo. La jefatura y administración las editan.
+  metas: ["Atracción de talento", "Marca empleadora", "Empleo local", "Mujeres en minería", "Formación de talento", "Proveedores locales", "Innovación con la academia"],
+
+  // Perfiles de uso. El estudiante no inicia sesión: usa la página pública de convocatorias.
+  roles: {
+    gestor: { nombre: "Gestor/a de vinculación", desc: "Registra y actualiza los vínculos de su área y crea convocatorias para estudiantes." },
+    jefatura: { nombre: "Jefatura", desc: "Revisa los resultados de su gerencia y define las metas. No registra vínculos." },
+    admin: { nombre: "Administración", desc: "Configura compañías, áreas, tipos de vínculo y metas. Ve todo." }
+  },
+
   financiamientos: [
     "Por definir", "Sin aporte monetario", "Financiado por AMSA",
     "Fondos externos (CORFO, ANID, etc.)", "Mixto"
@@ -48,8 +67,10 @@ const CONFIG = {
 
   // Usuarios de prueba del prototipo.
   usuarios: {
-    eduardo: { id: "eduardo", nombre: "Eduardo", inicial: "E", area: "rys", admin: false },
-    admin:   { id: "admin", nombre: "Administración", inicial: "A", area: null, admin: true }
+    eduardo:  { id: "eduardo", nombre: "Eduardo", inicial: "E", rol: "gestor", area: "rys", compania: "corp", admin: false },
+    daniela:  { id: "daniela", nombre: "Daniela", inicial: "D", rol: "gestor", area: "acds", compania: "cen", admin: false, nota: "Recién llega: aún no tiene vínculos" },
+    carolina: { id: "carolina", nombre: "Carolina", inicial: "C", rol: "jefatura", area: "doc", compania: "corp", admin: false },
+    admin:    { id: "admin", nombre: "Administración", inicial: "A", rol: "admin", area: null, compania: null, admin: true }
   },
 
   // Si en el futuro hay un servidor propio (por ejemplo en Flask) que llame a la IA,

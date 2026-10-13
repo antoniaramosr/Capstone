@@ -94,8 +94,25 @@ const SEED = {
   ]
 };
 
-// Pasantes y memoristas hoy (solo cantidades, como en la versión anterior).
-SEED.pasantes = { total: 6, porContraparte: { ua: 2, ucn: 2, uch: 1, puc: 1 } };
+// Estudiantes en práctica o memoria hoy (DATOS DE EJEMPLO). La nota la pone la o el tutor al terminar.
+SEED.estudiantes = [
+  { nombre: "Ignacia Soto", tipo: "Memoria", contraparte: "ucn", area: "rys", compania: "cen", nota: 6.5 },
+  { nombre: "Martín Araya", tipo: "Práctica profesional", contraparte: "ua", area: "iln", compania: "cen", nota: 5.8 },
+  { nombre: "Fernanda Díaz", tipo: "Práctica profesional", contraparte: "uch", area: "aya", compania: "corp", nota: 6.2 },
+  { nombre: "Benjamín Rojas", tipo: "Memoria", contraparte: "puc", area: "aya", compania: "corp", nota: 6.8 },
+  { nombre: "Antonia Vega", tipo: "Práctica de verano", contraparte: "ucn", area: "rimlp", compania: "mlp", nota: null },
+  { nombre: "Joaquín Torres", tipo: "Memoria", contraparte: "usach", area: "doc", compania: "corp", nota: 5.5 }
+];
+
+// Meta sugerida según la temática del mapeo.
+const META_DE_TEMA = { "Atracción de talento": "Atracción de talento", "Marca empleadora": "Marca empleadora", "Vinculación sectorial": "Innovación con la academia", "Formación": "Formación de talento", "Desarrollo de talento": "Formación de talento", "Diversidad e inclusión": "Mujeres en minería", "Empleo y proveedores": "Empleo local" };
+
+// Compañía de cada vínculo: asignación propuesta para la demo (el mapeo no la trae).
+function companiaDe(area, sede, i) {
+  if (["apmlp", "ilmlp", "rimlp"].includes(area) || ["Los Vilos", "Coquimbo"].includes(sede)) return "mlp";
+  if (["apn", "iln", "rin"].includes(area)) return ["cen", "ant", "zal"][i % 3];
+  return "corp";
+}
 
 function construirVinculosSemilla(areas, tipos) {
   const nombreArea = id => (areas.find(a => a.id === id) || {}).nombre || "";
@@ -104,10 +121,11 @@ function construirVinculosSemilla(areas, tipos) {
     const t = tipos.find(t => t.id === tipo);
     const total = t ? t.hitos.length : 0;
     const hechos = x.h != null ? x.h : etapa === 3 ? total : etapa === 2 ? Math.ceil(total / 2) : etapa === 1 ? 1 : 0;
-    const [objetivo, meta] = SEED.temas[tema] || ["", ""];
+    const [objetivo] = SEED.temas[tema] || [""];
+    const meta = META_DE_TEMA[tema] || "";
     return {
       id: i + 1,
-      nombre, contraparte, sede, area, tipo, etapa, tema,
+      nombre, contraparte, sede, area, tipo, etapa, tema, compania: companiaDe(area, sede, i),
       contacto: Object.assign({ nombre: "", cargo: "", correo: "" }, x.k || {}),
       responsable: area === "rys" ? "Eduardo" : "Equipo " + nombreArea(area),
       objetivo, meta, alcance: "",

@@ -2,7 +2,7 @@
    persona ve sus propios cambios. Para que el equipo comparta datos de verdad,
    el siguiente paso sería un servidor o base de datos. */
 
-const STORE_KEY = "vinculos-amsa-v2";
+const STORE_KEY = "vinculos-amsa-v3";
 const SESSION_KEY = "vinculos-amsa-sesion";
 
 function estadoInicial() {
@@ -26,7 +26,9 @@ function estadoInicial() {
     tiposOrg: [...CONFIG.tiposOrg],
     contrapartes: JSON.parse(JSON.stringify(SEED.contrapartes)),
     vinculos,
-    pasantes: JSON.parse(JSON.stringify(SEED.pasantes)),
+    companias: JSON.parse(JSON.stringify(CONFIG.companias)),
+    metas: [...CONFIG.metas],
+    estudiantes: JSON.parse(JSON.stringify(SEED.estudiantes)),
     leidos: [],
     nextId: vinculos.length + 1
   };
@@ -80,17 +82,19 @@ const vpDe = id => rutaArea(id)[0];
 const nombreArea = id => (area(id) || {}).nombre || "Área eliminada";
 
 const misVinculos = () => ME.admin ? S.vinculos : S.vinculos.filter(v => descendientes(ME.area).includes(v.area));
-const puedeEditar = v => ME && (ME.admin || descendientes(ME.area).includes(v.area));
+const puedeEditar = v => ME && (ME.admin || (ME.rol === "gestor" && descendientes(ME.area).includes(v.area)));
+const puedeCrear = () => ME && (ME.admin || ME.rol === "gestor");
+const compania = id => S.companias.find(c => c.id === id) || { id: "", nombre: "Sin compañía", color: "#999" };
 const areasPermitidas = () => ME.admin ? S.areas : S.areas.filter(a => descendientes(ME.area).includes(a.id));
 
 function progreso(v) { if (!v.hitos.length) return 0; return Math.round(v.hitos.filter(h => h.ok).length / v.hitos.length * 100); }
 
-// Qué tan completo está el README.
+// Qué tan completa está la ficha del vínculo.
 const CAMPOS_README = [
   ["objetivo", "Objetivo", v => v.objetivo],
-  ["meta", "Meta o para qué sirve", v => v.meta],
+  ["meta", "Meta", v => v.meta],
   ["alcance", "Alcance", v => v.alcance],
-  ["contacto", "Contacto en la contraparte", v => v.contacto.nombre || v.contacto.correo],
+  ["contacto", "Contacto en la institución", v => v.contacto.nombre || v.contacto.correo],
   ["responsable", "Responsable en AMSA", v => v.responsable],
   ["financiamiento", "Financiamiento", v => v.financiamiento.tipo && v.financiamiento.tipo !== "Por definir"],
   ["fechas", "Fechas", v => v.inicio],
@@ -110,25 +114,26 @@ function nuevaVersion(v, autor, resumen) {
   v.versiones.push({ v: n, fecha: hoy(), autor, resumen });
 }
 
-// Genera el README en Markdown para descargar o compartir.
+// Genera la ficha en Markdown para descargar o compartir.
 function readmeMarkdown(v) {
   const c = contraparte(v.contraparte);
   const l = [];
   l.push(`# ${v.nombre}`, "");
-  l.push(`**Contraparte:** ${c.nombre}${v.sede ? " (" + v.sede + ")" : ""}  `);
+  l.push(`**Institución:** ${c.nombre}${v.sede ? " (" + v.sede + ")" : ""}  `);
+  l.push(`**Compañía:** ${compania(v.compania).nombre}  `);
   l.push(`**Área AMSA:** ${rutaArea(v.area).map(a => a.nombre).join(" › ")}  `);
   l.push(`**Tipo de vínculo:** ${tipo(v.tipo).nombre}  `);
   l.push(`**Etapa:** ${CONFIG.etapas[v.etapa]} · Progreso ${progreso(v)} %`, "");
   l.push("## Objetivo", v.objetivo || "_Por completar_", "");
-  l.push("## Meta: para qué sirve a AMSA", v.meta || "_Por completar_", "");
+  l.push("## Meta", v.meta || "_Por completar_", "");
   l.push("## Alcance", v.alcance || "_Por completar_", "");
-  l.push("## Personas", `- Contacto contraparte: ${[v.contacto.nombre, v.contacto.cargo, v.contacto.correo].filter(Boolean).join(", ") || "_Por completar_"}`, `- Responsable en AMSA: ${v.responsable || "_Por completar_"}`, "");
+  l.push("## Personas", `- Contacto en la institución: ${[v.contacto.nombre, v.contacto.cargo, v.contacto.correo].filter(Boolean).join(", ") || "_Por completar_"}`, `- Responsable en AMSA: ${v.responsable || "_Por completar_"}`, "");
   l.push("## Financiamiento", `${v.financiamiento.tipo}${v.financiamiento.monto ? " · " + v.financiamiento.monto : ""}${v.financiamiento.fuente ? " · Fuente: " + v.financiamiento.fuente : ""}`, "");
   l.push("## Fechas", `Inicio: ${v.inicio ? fechaTxt(v.inicio) : "por definir"} · Término: ${v.termino ? fechaTxt(v.termino) : "por definir"}`, "");
   l.push("## Plan de trabajo", ...v.hitos.map(h => `- [${h.ok ? "x" : " "}] ${h.t}`), "");
   l.push("## Necesidades", v.necesidades || "_Sin registrar_", "");
   l.push("## Próximos pasos", v.proximos || "_Sin registrar_", "");
   l.push("## Evaluación", `Calificación: ${v.calif ? v.calif + " de 5" : "sin calificar"} · ¿Aportó a la meta?: ${{ si: "Sí", parcial: "Parcialmente", no: "No" }[v.aporta] || "sin evaluar"}`, "");
-  l.push("## Historial de versiones", ...v.versiones.slice().reverse().map(x => `- v${x.v} (${fechaTxt(x.fecha)}, ${x.autor}): ${x.resumen}`), "");
+  l.push("## Historial de cambios", ...v.versiones.slice().reverse().map(x => `- v${x.v} (${fechaTxt(x.fecha)}, ${x.autor}): ${x.resumen}`), "");
   return l.join("\n");
 }

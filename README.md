@@ -8,9 +8,21 @@ Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Gru
 - **Plantilla README** para cada vínculo: objetivo, meta (para qué sirve), alcance, contacto de la contraparte, responsable en AMSA, financiamiento, fechas, plan de trabajo, necesidades y próximos pasos. Muestra qué tan completo está.
 - **Asistente**: completa la plantilla a partir de un correo o notas, actualiza el README con la transcripción de una reunión (pegada, en archivo .txt/.vtt o dictada) proponiendo cambios que la persona aprueba, y arma un cuestionario de feedback para la contraparte.
 - **Historial de versiones** del README, reuniones registradas y respuestas de la contraparte.
+- **Convocatorias para estudiantes**: desde un vínculo de prácticas y memorias o de empleo se crea una convocatoria, se publica en LinkedIn (abre LinkedIn con el texto listo), los estudiantes postulan en una página pública (`#/postular/<id>`, sin iniciar sesión) y se marca quién quedó.
 - **Aviso de contacto existente** cuando otra área ya trabaja con la misma institución.
 - **Dashboard**: cantidad de vínculos, calificación promedio, qué tipos de vínculo y qué contrapartes sirven más, instituciones compartidas entre áreas.
 - **Administración** (solo administradores): agregar áreas, tipos de vínculo, tipos de institución y contrapartes.
+
+## Perfiles
+
+| Perfil | Ejemplo en el prototipo | Qué hace | Qué ve al entrar |
+| --- | --- | --- | --- |
+| Gestor/a de vinculación | Eduardo; Daniela (sin vínculos aún) | Registra y actualiza los vínculos de su área, crea convocatorias | Mis vínculos |
+| Jefatura | Carolina | Revisa resultados de su gerencia y define metas; no registra | Estadísticas de su gerencia |
+| Administración | Administración | Configura compañías, áreas, tipos, metas e instituciones; ve todo | Estadísticas de toda la empresa |
+| Estudiante (externo) | Página pública | Ve convocatorias abiertas y postula sin cuenta | Convocatorias (`#/convocatorias`) |
+
+La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya, Zaldívar) es una asignación propuesta para la demo.
 
 ## Cómo verlo
 
@@ -34,6 +46,7 @@ js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usua
 js/data.js        Vínculos de partida (mapeo ANF-COQ) e instituciones
 js/store.js       Estado, guardado en el navegador, cálculos (progreso, completitud, README en Markdown)
 js/ai.js          Asistente: prompts, conexión con IA y modo demo
+js/convocatorias.js Convocatorias, publicación en LinkedIn y página pública para postular
 js/app.js         Pantallas, navegación y eventos
 ```
 
