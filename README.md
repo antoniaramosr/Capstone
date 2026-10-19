@@ -11,6 +11,8 @@ Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Gru
 - **Asistente**: completa la plantilla a partir de un correo o notas, actualiza el README con la transcripción de una reunión (pegada, en archivo .txt/.vtt o dictada) proponiendo cambios que la persona aprueba, y arma un cuestionario de feedback para la contraparte.
 - **Historial de versiones** del README, reuniones registradas y respuestas de la contraparte.
 - **Convocatorias para estudiantes**: desde un vínculo de prácticas y memorias o de empleo se crea una convocatoria, se publica en LinkedIn (abre LinkedIn con el texto listo), los estudiantes postulan en una página pública (`#/postular/<id>`, sin iniciar sesión) y se marca quién quedó.
+- **Estado de la postulación** para estudiantes (`#/mi-postulacion`): con su correo ven en qué etapa va (recibida, en revisión, resultado, inducción). La página de cada convocatoria explica cómo sigue el proceso.
+- **Instituciones por tipo de vínculo**: en Instituciones se filtra, por ejemplo, con qué universidades se han hecho Capstone y qué áreas los llevan.
 - **Aviso de contacto existente** cuando otra área ya trabaja con la misma institución.
 - **Dashboard**: cantidad de vínculos, calificación promedio, qué tipos de vínculo y qué contrapartes sirven más, instituciones compartidas entre áreas.
 - **Administración** (solo administradores): agregar áreas, tipos de vínculo, tipos de institución y contrapartes.
@@ -31,6 +33,12 @@ La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya,
 Abre `index.html` en el navegador (o publícalo con GitHub Pages: Settings → Pages → rama `main`, carpeta raíz).
 Puedes entrar como **Eduardo** (usuario de Reclutamiento y selección) o como **Administración**.
 Los cambios se guardan en el navegador de cada persona; Administración → Datos permite restablecer los datos de ejemplo.
+
+### Para las sesiones de testeo
+
+- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar` (o el link "Restablecer datos de ejemplo" en el ingreso): borra lo que registró la persona anterior.
+- Testeo AMSA: entrar como **Eduardo**. Testeo estudiantes: abrir `#/convocatorias` (sin iniciar sesión).
+- Funciona en celular: las tablas pasan a tarjetas.
 
 ### Sobre el asistente
 

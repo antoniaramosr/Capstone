@@ -160,6 +160,7 @@ function vLogin() {
       <h1>Ingresa con tu cuenta AMSA</h1><p class="sub">Cada perfil ve una página distinta.</p>
       ${us.map(u => `<button class="login-opt" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)} · ${esc(CONFIG.roles[u.rol].nombre)}</b>${u.area ? esc(nombreArea(u.area)) + (u.compania ? " · " + esc(compania(u.compania).nombre) : "") : "Toda la empresa"}<small class="role-desc">${esc(CONFIG.roles[u.rol].desc)}${u.nota ? " " + esc(u.nota) + "." : ""}</small></span></button>`).join("")}
       <a class="login-stu" href="#/convocatorias">¿Eres estudiante? Ver convocatorias abiertas</a>
+      <p class="help" style="margin-top:10px"><a class="lnk" href="#/reiniciar">Restablecer datos de ejemplo</a> (antes de cada sesión de testeo).</p>
       <p class="help" style="margin-top:14px">Prototipo IDI2025. En la versión real se ingresa con la cuenta AMSA y el perfil viene asignado. Los datos son de ejemplo.</p>
     </div></div>
   </div>`;
@@ -171,7 +172,7 @@ function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
   return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Etapa</th><th>Progreso</th><th>Ficha</th><th>Calificación</th></tr></thead><tbody>${list.map(v => {
     const c = contraparte(v.contraparte), comp = completitud(v).pct, pr = progreso(v);
-    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(v.compania)}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa)}</td><td><span class="pcell">${barra(pr)}<b>${pr}%</b></span></td><td><span class="pcell">${barra(comp, comp < 50 ? "low" : "ok")}<b>${comp}%</b></span></td><td>${dots(v.calif)}</td></tr>`;
+    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(v.compania)}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa)}</td><td data-l="Progreso"><span class="pcell">${barra(pr)}<b>${pr}%</b></span></td><td data-l="Ficha"><span class="pcell">${barra(comp, comp < 50 ? "low" : "ok")}<b>${comp}%</b></span></td><td data-l="Calificación">${dots(v.calif)}</td></tr>`;
   }).join("")}</tbody></table></div>`;
 }
 function listaFiltrada() {
@@ -378,19 +379,21 @@ function vArea(id) {
 }
 
 /* ============================ Contrapartes ============================ */
-let cpq = "";
+let cpq = "", cpTipoV = "";
 function vContrapartes(tipoSel) {
   tipoSel = tipoSel ? decodeURIComponent(tipoSel) : "";
   const tipos = S.tiposOrg.filter(t => S.contrapartes.some(c => c.tipoOrg === t));
   return `<h1>Instituciones</h1><p class="sub">Cada institución, las áreas de AMSA que trabajan con ella y cómo han resultado esos vínculos.</p>
   <div class="filters"><div class="chips"><a class="chip-btn ${tipoSel ? "" : "on"}" href="#/contrapartes">Todas (${S.contrapartes.length})</a>${tipos.map(t => `<a class="chip-btn ${tipoSel === t ? "on" : ""}" href="#/contrapartes/${encodeURIComponent(t)}">${esc(t)} (${S.contrapartes.filter(c => c.tipoOrg === t).length})</a>`).join("")}</div>
-  <div class="frow"><input class="input sm" id="cpq" placeholder="Buscar institución" value="${esc(cpq)}"></div></div>
+  <div class="frow"><input class="input sm" id="cpq" placeholder="Buscar institución" value="${esc(cpq)}" aria-label="Buscar institución"><select class="input sm" id="cpTipoV" aria-label="Filtrar por tipo de vínculo"><option value="">Todos los tipos de vínculo</option>${S.tipos.map(t => `<option value="${t.id}" ${cpTipoV === t.id ? "selected" : ""}>${esc(t.nombre)}</option>`).join("")}</select></div></div>
+  <p class="small muted" id="cpRes"></p>
   <div class="cards2" id="cpGrid" data-tipo="${esc(tipoSel)}">${cpCards(tipoSel)}</div>`;
 }
 function cpCards(tipoSel) {
   const q = cpq.toLowerCase();
   const cs = S.contrapartes.filter(c => (!tipoSel || c.tipoOrg === tipoSel) && (!q || (c.nombre + " " + c.corto).toLowerCase().includes(q)))
-    .map(c => ({ c, vs: S.vinculos.filter(v => v.contraparte === c.id) })).sort((a, b) => b.vs.length - a.vs.length);
+    .map(c => ({ c, vs: S.vinculos.filter(v => v.contraparte === c.id && (!cpTipoV || v.tipo === cpTipoV)) })).filter(x => !cpTipoV || x.vs.length).sort((a, b) => b.vs.length - a.vs.length);
+  setTimeout(() => { const r = $("#cpRes"); if (r) r.textContent = cpTipoV ? `${cs.length} ${cs.length === 1 ? "institución tiene" : "instituciones tienen"} vínculos de tipo "${tipo(cpTipoV).nombre}". Se muestran solo las áreas que los llevan.` : ""; }, 0);
   if (!cs.length) return `<div class="empty">No hay instituciones con ese filtro.</div>`;
   return cs.map(({ c, vs }) => { const as = [...new Set(vs.map(v => v.area))]; return `<a class="ecard" href="#/contraparte/${c.id}"><div class="h"><h3>${esc(c.nombre)}</h3>${as.length > 1 ? `<span class="cnt">${as.length} áreas</span>` : ""}</div>
     <div class="who">${esc(c.tipoOrg)}${c.locacion ? ", " + esc(c.locacion) : ""}</div><hr><div class="lbl">Áreas de AMSA</div>${as.map(a => `<span class="tag">${esc(nombreArea(a))}</span>`).join("") || '<span class="muted small">Ninguna aún</span>'}
@@ -631,6 +634,8 @@ function render() {
   const app = $("#app");
   if (ruta === "convocatorias") { app.innerHTML = vConvPub(); wireConvPub(); window.scrollTo(0, 0); return; }
   if (ruta === "postular") { app.innerHTML = vPostular(p); wirePostular(p); window.scrollTo(0, 0); return; }
+  if (ruta === "mi-postulacion") { app.innerHTML = vMiPostulacion(); wireMiPostulacion(); window.scrollTo(0, 0); return; }
+  if (ruta === "reiniciar") { restablecer(); cerrarSesion(); location.hash = "#/login"; setTimeout(() => toast("Datos de ejemplo restablecidos"), 50); return; }
   if (!ME && ruta !== "login") { location.hash = "#/login"; return; }
   if (ruta === "login" || !ruta) {
     if (ME) { location.hash = inicioDe(ME); return; }
@@ -641,11 +646,11 @@ function render() {
   const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", metas: ME.admin ? "admin" : "metas" }[ruta];
   const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, metas: vMetas };
   const body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
-  app.innerHTML = shell(activo) + `<main>${body}</main>
+  app.innerHTML = shell(activo) + `<main>${body}<p class="proto">Prototipo IDI2025 · datos de ejemplo</p></main>
     <button class="fab" id="fab" aria-label="Abrir asistente"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente</span></button>
     <div class="drawer-bg" id="drawerBg"></div>
     <aside class="drawer" id="drawer" aria-label="Asistente"><div class="drawer-h"><div><b>Asistente</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>
-    <div class="proto">Prototipo IDI2025 · datos de ejemplo</div>`;
+`;
   wireShell(); wireVista(ruta, p);
   $("#fab").onclick = () => abrirAsistente(ruta === "ficha" ? +p : null);
   $("#drawerX").onclick = cerrarAsistente; $("#drawerBg").onclick = cerrarAsistente;
@@ -764,6 +769,7 @@ function wireVista(ruta, p) {
   if (ruta === "nueva-convocatoria") wireNuevaConv(p);
   if (ruta === "contrapartes") {
     $("#cpq").oninput = e => { cpq = e.target.value; $("#cpGrid").innerHTML = cpCards($("#cpGrid").dataset.tipo); };
+    $("#cpTipoV").onchange = e => { cpTipoV = e.target.value; $("#cpGrid").innerHTML = cpCards($("#cpGrid").dataset.tipo); };
   }
   if (ruta === "contraparte") {
     if ($("#nuevoCon")) $("#nuevoCon").onclick = e => { preCp = e.currentTarget.dataset.cp; location.hash = "#/nuevo"; };

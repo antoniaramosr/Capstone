@@ -231,7 +231,7 @@ function vPostular(id) {
   const unis = S.contrapartes.filter(x => x.tipoOrg === "Universidad" || x.tipoOrg === "Instituto profesional" || x.tipoOrg === "Centro de formación técnica").map(x => x.nombre).sort();
   const det = (k, val) => val ? `<dt>${k}</dt><dd>${esc(val)}</dd>` : "";
   const cuerpo = postEnviado === c.id
-    ? `<div class="card ok-box"><h2>¡Recibimos tu postulación!</h2><p>Te escribiremos al correo que dejaste cuando revisemos las postulaciones. La convocatoria cierra el ${fechaTxt(c.cierre)}.</p><button class="btn-outline" id="otra">Enviar otra postulación</button></div>`
+    ? `<div class="card ok-box"><h2>¡Recibimos tu postulación!</h2><p>Te escribiremos al correo que dejaste cuando revisemos las postulaciones. La convocatoria cierra el ${fechaTxt(c.cierre)}.</p><p>Puedes ver en qué va tu postulación cuando quieras con tu correo.</p><div class="form-actions"><a class="btn-accent" href="#/mi-postulacion">Ver el estado de mi postulación</a><button class="btn-outline" id="otra">Enviar otra postulación</button></div></div>`
     : c.estado !== "Abierta"
       ? `<div class="card empty">Esta convocatoria ya cerró y no está recibiendo postulaciones.</div>`
       : `<div class="card"><p class="card-title">Postula</p><div class="g2">
@@ -247,8 +247,10 @@ function vPostular(id) {
     <p class="sub">${esc(c.tipo)}${cp.tipoOrg === "Universidad" ? " · en alianza con " + esc(cp.nombre) : ""}</p>
     <h1>${esc(c.titulo)}</h1>
     <div class="card"><dl class="kv">${det("Carreras", c.carreras)}${det("Lugar", c.lugar)}${det("Condiciones", c.condiciones)}${det("Qué harás", c.descripcion)}${det("Requisitos", c.requisitos)}<dt>Cupos</dt><dd>${c.cupos}</dd><dt>Postulaciones hasta</dt><dd>${fechaTxt(c.cierre)}</dd></dl></div>
+    <div class="card"><p class="card-title">Cómo sigue el proceso</p>${pasosProceso(null)}</div>
     ${cuerpo}
-    <p class="help" style="text-align:center;margin-top:18px">Prototipo IDI2025 · datos de ejemplo</p></main>`;
+    <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>
+    <p class="help" style="text-align:center">Prototipo IDI2025 · datos de ejemplo</p></main>`;
 }
 
 function wirePostular(id) {
@@ -278,7 +280,8 @@ function vConvPub() {
     <div class="filters"><div class="chips"><button class="chip-btn ${pubTipo ? "" : "on"}" data-pubtipo="">Todas (${abiertas.length})</button>${CONV_TIPOS.map(t => `<button class="chip-btn ${pubTipo === t ? "on" : ""}" data-pubtipo="${t}">${t} (${abiertas.filter(c => c.tipo === t).length})</button>`).join("")}</div>
     <div class="frow"><input class="input sm" id="pubQ" placeholder="Buscar por carrera o palabra" value="${esc(pubQ)}" aria-label="Buscar convocatoria"></div></div>
     <div class="stack" id="pubLista">${pubLista()}</div>
-    ${ME ? "" : `<p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/login">Soy de AMSA: ingresar</a></p>`}
+    <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>
+    ${ME ? "" : `<p class="help" style="text-align:center"><a class="lnk" href="#/login">Soy de AMSA: ingresar</a></p>`}
     <p class="help" style="text-align:center">Prototipo IDI2025 · datos de ejemplo</p>
   </main>`;
 }
@@ -294,4 +297,48 @@ function pubLista() {
 function wireConvPub() {
   $$("[data-pubtipo]").forEach(b => b.onclick = () => { pubTipo = b.dataset.pubtipo; render(); });
   $("#pubQ").oninput = e => { pubQ = e.target.value; $("#pubLista").innerHTML = pubLista(); };
+}
+
+
+/* ---------- Estudiante: estado de su postulación ----------
+   El estudiante no tiene cuenta: revisa con su correo. En la versión real
+   se le mandaría un link personal por correo (Outlook). */
+const PASOS_POST = [
+  ["Postulación recibida", "AMSA recibió tus datos."],
+  ["En revisión", "El área revisa las postulaciones. Puede que te contacten para una entrevista."],
+  ["Resultado", "Te avisamos por correo si quedaste o no."],
+  ["Inducción", "Si quedaste, recibes por correo tu fecha de ingreso, tu tutor o tutora y qué llevar el primer día."]
+];
+function pasosProceso(estado) {
+  const idx = estado == null ? -1 : { "Postuló": 0, "En revisión": 1, "Quedó": 3, "No quedó": 2 }[estado];
+  return `<ol class="pasos">${PASOS_POST.map(([t, d], i) => {
+    let cls = "";
+    if (estado === "No quedó") cls = i < 2 ? "hecho" : i === 2 ? "actual" : "no";
+    else if (idx >= 0) cls = i < idx ? "hecho" : i === idx ? "actual" : "";
+    const det = estado === "Quedó" && i === 2 ? "¡Quedaste!" : estado === "No quedó" && i === 2 ? "Esta vez no quedaste. Te avisamos por correo y puedes postular a otras convocatorias." : d;
+    return `<li class="${cls}"><div><b>${t}</b><span>${det}</span></div></li>`;
+  }).join("")}</ol>`;
+}
+let miCorreo = "";
+function vMiPostulacion() {
+  return `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias"><b>Antofagasta Minerals</b><span>Convocatorias para estudiantes</span></a></div></header>
+  <main class="pub">
+    <a class="lnk small" href="#/convocatorias">← Todas las convocatorias</a>
+    <h1>Estado de mi postulación</h1>
+    <p class="sub">Escribe el correo con que postulaste. En la versión real te llegaría un link personal por correo.</p>
+    <div class="card"><label class="f" for="mpCor">Correo</label><div class="frow"><input class="input" id="mpCor" type="email" autocomplete="email" value="${esc(miCorreo)}" placeholder="nombre@uc.cl"><button class="btn-accent" id="mpVer">Ver estado</button></div>
+    <p class="help">Para probar: camila.rojas@ejemplo.cl o diego.fuentes@ejemplo.cl</p></div>
+    <div class="post-res" id="mpRes">${miPostRes()}</div>
+    <p class="help" style="text-align:center">Prototipo IDI2025 · datos de ejemplo</p>
+  </main>`;
+}
+function miPostRes() {
+  const q = miCorreo.trim().toLowerCase(); if (!q) return "";
+  const r = []; S.convocatorias.forEach(c => c.postulantes.forEach(p => { if ((p.correo || "").toLowerCase() === q) r.push({ c, p }); }));
+  if (!r.length) return `<div class="card empty">No encontramos postulaciones con ese correo. Revisa que esté bien escrito.</div>`;
+  return r.map(({ c, p }) => `<div class="card"><div class="head-row"><div><h3 class="h3" style="margin:0">${esc(c.titulo)}</h3><p class="small muted" style="margin:4px 0 12px">Postulaste el ${fechaTxt(p.fecha)} · ${esc(c.tipo)}${c.lugar ? " · " + esc(c.lugar) : ""}</p></div></div>${pasosProceso(p.estado)}</div>`).join("");
+}
+function wireMiPostulacion() {
+  const ver = () => { miCorreo = $("#mpCor").value; $("#mpRes").innerHTML = miPostRes(); };
+  $("#mpVer").onclick = ver; $("#mpCor").onkeydown = e => { if (e.key === "Enter") ver(); };
 }
