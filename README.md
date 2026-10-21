@@ -32,6 +32,7 @@ La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya,
 
 Abre `index.html` en el navegador (o publícalo con GitHub Pages: Settings → Pages → rama `main`, carpeta raíz).
 Puedes entrar como **Eduardo** (usuario de Reclutamiento y selección) o como **Administración**.
+Si después de un push la página se ve igual, es el caché del navegador: sube el número `?v=` de los archivos en `index.html` (por ejemplo de `?v=2` a `?v=3`) y vuelve a hacer push.
 Los cambios se guardan en el navegador de cada persona; Administración → Datos permite restablecer los datos de ejemplo.
 
 ### Para las sesiones de testeo
