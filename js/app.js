@@ -72,6 +72,9 @@ function megaHTML(k) {
 const compTag = id => { const c = compania(id); return id ? `<span class="comp"><i style="background:${c.color}"></i>${esc(c.nombre)}</span>` : ""; };
 const inicioDe = u => u && u.rol === "gestor" ? "#/mis" : "#/dashboard";
 const perfilTxt = u => u.admin ? "Administración" : (u.rol === "jefatura" ? "Jefatura · " : "") + nombreArea(u.area) + (u.compania ? " · " + compania(u.compania).nombre : "");
+// Logo de AMSA; si la imagen no carga, se muestra el nombre en texto.
+const logoAmsa = (blanco = false) => `<img class="${blanco ? "brand-logo" : ""}" src="${blanco ? CONFIG.logos.blanco : CONFIG.logos.color}" alt="Antofagasta Minerals" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'logo-txt '+this.className,textContent:'Antofagasta Minerals'}))">`;
+const pie = () => `<footer class="foot"><div class="foot-inner">${logoAmsa(true).replace('class="brand-logo"', "")}<span>Prototipo IDI2025 · Grupo 2 · datos de ejemplo</span></div></footer>`;
 function shell(active) {
   const av = calcAvisos(), unread = av.filter(a => !S.leidos.includes(a.id)).length;
   const navs = ME.rol === "jefatura"
@@ -82,7 +85,7 @@ function shell(active) {
   return `
   <header class="top">
     <div class="top-inner">
-      <a class="logo" href="${inicioDe(ME)}"><b>Vínculos</b><span>AMSA y universidades</span></a>
+      <a class="logo" href="${inicioDe(ME)}" aria-label="Vínculos AMSA, inicio">${logoAmsa()}<span class="prod"><b>Vínculos</b><span>AMSA e instituciones</span></span></a>
       <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><button class="nav-btn ${active === n.k ? "active" : ""}" ${n.mega ? 'aria-haspopup="true" aria-expanded="false"' : ""}>${n.t}${n.mega ? '<i class="caret"></i>' : ""}</button></div>`).join("")}</nav>
       <div class="top-right">
         <button class="btn-ghost-dark" id="btnAvisos" aria-haspopup="true">Avisos <span class="badge ${unread ? "" : "zero"}">${unread}</span></button>
@@ -152,13 +155,13 @@ function vLogin() {
   return `<div class="login">
     <div class="login-art">
       <svg viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => { const r = 40 + i * 30; return `<path d="M${300 - r} 300 C ${300 - r} ${300 - r * 0.9}, ${300 + r * 0.7} ${300 - r * 1.05}, ${300 + r} ${300 - r * 0.2} S ${300 + r * 0.6} ${300 + r * 1.1}, ${300 - r * 0.3} ${300 + r * 0.85} S ${300 - r} ${300 + r * 0.3}, ${300 - r} 300Z" fill="none" stroke="#fff" stroke-width="1"/>`; }).join("")}</svg>
-      <div class="txt"><b style="font-size:18px">Vínculos</b><br><span style="font-size:12px;opacity:.7">AMSA y universidades</span></div>
+      <div class="txt">${logoAmsa(true)}<b style="font-size:18px">Vínculos</b><br><span style="font-size:12px;opacity:.8">AMSA e instituciones</span></div>
       <div class="txt"><h2>Página de relaciones AMSA</h2>
         <p>Registra tus vínculos con una ficha simple, publica convocatorias para estudiantes y mide qué colaboraciones realmente ayudan.</p></div>
     </div>
     <div class="login-form"><div class="login-box">
       <h1>Ingresa con tu cuenta AMSA</h1><p class="sub">Cada perfil ve una página distinta.</p>
-      ${us.map(u => `<button class="login-opt" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)} · ${esc(CONFIG.roles[u.rol].nombre)}</b>${u.area ? esc(nombreArea(u.area)) + (u.compania ? " · " + esc(compania(u.compania).nombre) : "") : "Toda la empresa"}<small class="role-desc">${esc(CONFIG.roles[u.rol].desc)}${u.nota ? " " + esc(u.nota) + "." : ""}</small></span></button>`).join("")}
+      ${us.map(u => `<button class="login-opt" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)}${u.nombre === CONFIG.roles[u.rol].nombre ? "" : " · " + esc(CONFIG.roles[u.rol].nombre)}</b>${u.area ? esc(nombreArea(u.area)) + (u.compania ? " · " + esc(compania(u.compania).nombre) : "") : "Toda la empresa"}<small class="role-desc">${esc(CONFIG.roles[u.rol].desc)}${u.nota ? " " + esc(u.nota) + "." : ""}</small></span></button>`).join("")}
       <a class="login-stu" href="#/convocatorias">¿Eres estudiante? Ver convocatorias abiertas</a>
       <p class="help" style="margin-top:10px"><a class="lnk" href="#/reiniciar">Restablecer datos de ejemplo</a> (antes de cada sesión de testeo).</p>
       <p class="help" style="margin-top:14px">Prototipo IDI2025. En la versión real se ingresa con la cuenta AMSA y el perfil viene asignado. Los datos son de ejemplo.</p>
@@ -646,7 +649,7 @@ function render() {
   const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", metas: ME.admin ? "admin" : "metas" }[ruta];
   const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, metas: vMetas };
   const body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
-  app.innerHTML = shell(activo) + `<main>${body}<p class="proto">Prototipo IDI2025 · datos de ejemplo</p></main>
+  app.innerHTML = shell(activo) + `<main>${body}</main>${pie()}
     <button class="fab" id="fab" aria-label="Abrir asistente"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente</span></button>
     <div class="drawer-bg" id="drawerBg"></div>
     <aside class="drawer" id="drawer" aria-label="Asistente"><div class="drawer-h"><div><b>Asistente</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>

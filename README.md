@@ -51,7 +51,7 @@ Los cambios se guardan en el navegador de cada persona; Administración → Dato
 
 ```
 index.html        Página base
-css/styles.css    Estilos; colores en variables de :root
+css/styles.css    Estilos; colores y tipografía de AMSA en variables de :root (siempre fondo blanco)
 js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usuarios de prueba
 js/data.js        Vínculos de partida (mapeo ANF-COQ) e instituciones
 js/store.js       Estado, guardado en el navegador, cálculos (progreso, completitud, README en Markdown)

@@ -75,5 +75,12 @@ const CONFIG = {
 
   // Si en el futuro hay un servidor propio (por ejemplo en Flask) que llame a la IA,
   // pon aquí su URL. Debe recibir POST {prompt} y responder JSON.
-  aiEndpoint: ""
+  aiEndpoint: "",
+
+  // Logos oficiales (se cargan desde aminerals.cl). Si se guardan en assets/,
+  // basta cambiar estas rutas, por ejemplo "assets/logo-amsa.png".
+  logos: {
+    color: "https://www.aminerals.cl/images/default-source/logos-amsa/logo-amsa.svg",
+    blanco: "https://www.aminerals.cl/images/default-source/logos-amsa/antofagasta-mineralswt.png"
+  }
 };

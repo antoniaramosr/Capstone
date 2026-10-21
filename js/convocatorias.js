@@ -225,7 +225,7 @@ function wireConv(id) {
 let postEnviado = null;
 function vPostular(id) {
   const c = convocatoria(+id);
-  const head = `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias"><b>Antofagasta Minerals</b><span>Convocatorias para estudiantes</span></a></div></header>`;
+  const head = `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></a></div></header>`;
   if (!c) return head + `<main class="pub"><div class="card empty">Esta convocatoria no existe o fue eliminada.</div></main>`;
   const cp = convInst(c) ? contraparte(convInst(c)) : { tipoOrg: "" };
   const unis = S.contrapartes.filter(x => x.tipoOrg === "Universidad" || x.tipoOrg === "Instituto profesional" || x.tipoOrg === "Centro de formación técnica").map(x => x.nombre).sort();
@@ -249,8 +249,7 @@ function vPostular(id) {
     <div class="card"><dl class="kv">${det("Carreras", c.carreras)}${det("Lugar", c.lugar)}${det("Condiciones", c.condiciones)}${det("Qué harás", c.descripcion)}${det("Requisitos", c.requisitos)}<dt>Cupos</dt><dd>${c.cupos}</dd><dt>Postulaciones hasta</dt><dd>${fechaTxt(c.cierre)}</dd></dl></div>
     <div class="card"><p class="card-title">Cómo sigue el proceso</p>${pasosProceso(null)}</div>
     ${cuerpo}
-    <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>
-    <p class="help" style="text-align:center">Prototipo IDI2025 · datos de ejemplo</p></main>`;
+    <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p></main>${pie()}`;
 }
 
 function wirePostular(id) {
@@ -273,7 +272,7 @@ function wirePostular(id) {
 let pubTipo = "", pubQ = "";
 function vConvPub() {
   const abiertas = S.convocatorias.filter(c => c.estado === "Abierta");
-  return `<header class="pub-top"><div class="pub-inner"><b>Antofagasta Minerals</b><span>Convocatorias para estudiantes</span></div></header>
+  return `<header class="pub-top"><div class="pub-inner">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></div></header>
   <main class="pub">
     <h1>Prácticas y memorias en AMSA</h1>
     <p class="sub">Revisa las convocatorias abiertas, con sus condiciones y fechas, y postula sin crear una cuenta. Te avisaremos por correo cómo terminó tu postulación.</p>
@@ -282,8 +281,7 @@ function vConvPub() {
     <div class="stack" id="pubLista">${pubLista()}</div>
     <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>
     ${ME ? "" : `<p class="help" style="text-align:center"><a class="lnk" href="#/login">Soy de AMSA: ingresar</a></p>`}
-    <p class="help" style="text-align:center">Prototipo IDI2025 · datos de ejemplo</p>
-  </main>`;
+  </main>${pie()}`;
 }
 function pubLista() {
   const q = pubQ.toLowerCase();
@@ -321,7 +319,7 @@ function pasosProceso(estado) {
 }
 let miCorreo = "";
 function vMiPostulacion() {
-  return `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias"><b>Antofagasta Minerals</b><span>Convocatorias para estudiantes</span></a></div></header>
+  return `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></a></div></header>
   <main class="pub">
     <a class="lnk small" href="#/convocatorias">← Todas las convocatorias</a>
     <h1>Estado de mi postulación</h1>
@@ -329,8 +327,7 @@ function vMiPostulacion() {
     <div class="card"><label class="f" for="mpCor">Correo</label><div class="frow"><input class="input" id="mpCor" type="email" autocomplete="email" value="${esc(miCorreo)}" placeholder="nombre@uc.cl"><button class="btn-accent" id="mpVer">Ver estado</button></div>
     <p class="help">Para probar: camila.rojas@ejemplo.cl o diego.fuentes@ejemplo.cl</p></div>
     <div class="post-res" id="mpRes">${miPostRes()}</div>
-    <p class="help" style="text-align:center">Prototipo IDI2025 · datos de ejemplo</p>
-  </main>`;
+  </main>${pie()}`;
 }
 function miPostRes() {
   const q = miCorreo.trim().toLowerCase(); if (!q) return "";
