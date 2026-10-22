@@ -44,11 +44,11 @@ const AI = {
   async procesarReunion(v, texto) {
     const actual = {
       nombre: v.nombre, contraparte: contraparte(v.contraparte).nombre, tipo: tipo(v.tipo).nombre,
-      etapa: CONFIG.etapas[v.etapa], objetivo: v.objetivo, meta: v.meta, alcance: v.alcance,
+      etapa: CONFIG.etapas[v.etapa], objetivo: v.objetivo, metas: metasDe(v), alcance: v.alcance,
       contacto: v.contacto, responsable: v.responsable, financiamiento: v.financiamiento,
-      inicio: v.inicio, termino: v.termino, hitos: v.hitos, necesidades: v.necesidades, proximos: v.proximos
+      inicio: v.inicio, termino: v.termino, hitos: v.hitos, comentarios: v.comentarios
     };
-    const prompt = `Eres el asistente de una plataforma interna de la minera AMSA que registra sus vínculos con universidades e instituciones. Debes actualizar el README de un vínculo a partir de una reunión con la contraparte.
+    const prompt = `Eres el asistente de una plataforma interna de Antofagasta Minerals (AMSA) que registra sus vínculos con universidades e instituciones. Debes actualizar el README de un vínculo a partir de una reunión con la contraparte.
 
 README actual (JSON):
 ${JSON.stringify(actual, null, 1)}
@@ -61,19 +61,19 @@ ${texto.slice(0, 12000)}
 Responde SOLO con un objeto JSON, sin texto adicional, con esta forma:
 {
  "resumen": "resumen de la reunión en 3 a 5 oraciones, en español",
- "cambios": { "objetivo": "", "meta": "", "alcance": "", "necesidades": "", "proximos": "", "contacto_nombre": "", "contacto_cargo": "", "contacto_correo": "", "financiamiento_tipo": "", "financiamiento_monto": "", "inicio": "AAAA-MM-DD", "termino": "AAAA-MM-DD" },
+ "cambios": { "objetivo": "", "alcance": "", "comentarios": "", "contacto_nombre": "", "contacto_cargo": "", "contacto_correo": "", "financiamiento_tipo": "", "financiamiento_monto": "", "inicio": "AAAA-MM-DD", "termino": "AAAA-MM-DD" },
  "hitos_completados": ["texto exacto de hitos existentes que la reunión da por cumplidos"],
  "hitos_nuevos": ["nuevos hitos acordados"],
  "etapa": "una de: ${CONFIG.etapas.join(", ")}; o null si no cambia"
 }
-Reglas: en "cambios" incluye solo los campos que la reunión realmente agrega o modifica; omite el resto. "financiamiento_tipo" debe ser uno de: ${CONFIG.financiamientos.join(", ")}. Para necesidades y próximos pasos, escribe el texto completo actualizado (no solo lo nuevo). No inventes datos que no estén en la reunión.`;
+Reglas: en "cambios" incluye solo los campos que la reunión realmente agrega o modifica; omite el resto. "financiamiento_tipo" debe ser uno de: ${CONFIG.financiamientos.join(", ")}. Para comentarios, escribe el texto completo actualizado (no solo lo nuevo). Lo que haya que hacer después va como hito nuevo del plan de trabajo. No inventes datos que no estén en la reunión.`;
     const r = await this.json(prompt, () => demoReunion(v, texto));
     return normalizarPropuesta(v, r);
   },
 
   /* ---------- Completar la plantilla al crear un vínculo ---------- */
   async completarPlantilla(texto) {
-    const prompt = `Eres el asistente de una plataforma interna de la minera AMSA. A partir de un correo, notas o descripción, completa la plantilla de un vínculo con una institución.
+    const prompt = `Eres el asistente de una plataforma interna de Antofagasta Minerals (AMSA). A partir de un correo, notas o descripción, completa la plantilla de un vínculo con una institución.
 
 Texto:
 """
@@ -85,22 +85,22 @@ Tipos de vínculo: ${S.tipos.map(t => t.id + " = " + t.nombre).join("; ")}
 Financiamiento posible: ${CONFIG.financiamientos.join("; ")}
 
 Responde SOLO con un objeto JSON, sin texto adicional:
-{"nombre":"","tipo":"id del tipo","contraparte":"nombre de la institución","sede":"","contacto_nombre":"","contacto_cargo":"","contacto_correo":"","objetivo":"","meta":"para qué le sirve a AMSA","alcance":"","financiamiento_tipo":"","financiamiento_monto":"","inicio":"AAAA-MM-DD","termino":"AAAA-MM-DD","necesidades":"","proximos":""}
+{"nombre":"","tipo":"id del tipo","contraparte":"nombre de la institución","sede":"","contacto_nombre":"","contacto_cargo":"","contacto_correo":"","objetivo":"","meta":"para qué le sirve a la compañía","alcance":"","financiamiento_tipo":"","financiamiento_monto":"","inicio":"AAAA-MM-DD","termino":"AAAA-MM-DD","comentarios":""}
 Deja como "" lo que el texto no diga. No inventes datos.`;
     return await this.json(prompt, () => demoPlantilla(texto));
   },
 
   /* ---------- Preguntas específicas para el cuestionario ---------- */
   async preguntasCuestionario(v) {
-    const prompt = `Eres el asistente de una plataforma interna de la minera AMSA. Propón de 2 a 4 preguntas específicas y breves para un cuestionario de feedback que se enviará a la contraparte de este vínculo. Ya se incluyen preguntas generales sobre satisfacción, cumplimiento de objetivos, comunicación, necesidades, datos de contacto e interés en continuar: no las repitas.
+    const prompt = `Eres el asistente de una plataforma interna de Antofagasta Minerals (AMSA). Propón de 2 a 4 preguntas específicas y breves para un cuestionario de feedback que se enviará a la contraparte de este vínculo. Ya se incluyen preguntas generales sobre satisfacción, cumplimiento de objetivos, comunicación, necesidades, datos de contacto e interés en continuar: no las repitas.
 
 Vínculo: ${v.nombre}
 Contraparte: ${contraparte(v.contraparte).nombre}
 Tipo: ${tipo(v.tipo).nombre} · Etapa: ${CONFIG.etapas[v.etapa]}
 Objetivo: ${v.objetivo || "sin definir"}
-Meta: ${v.meta || "sin definir"}
+Metas: ${metasDe(v).join(", ") || "sin definir"}
 Plan de trabajo: ${v.hitos.map(h => (h.ok ? "[hecho] " : "[pendiente] ") + h.t).join("; ")}
-Necesidades: ${v.necesidades || "sin registrar"}
+Comentarios: ${v.comentarios || "sin registrar"}
 
 Responde SOLO con JSON: {"preguntas":["...","..."]}`;
     const r = await this.json(prompt, () => demoPreguntas(v));
@@ -116,10 +116,8 @@ function normalizarPropuesta(v, r) {
     if (despues && String(despues).trim() && String(despues).trim() !== String(antes || "").trim()) cambios.push({ campo, etiqueta, antes: antes || "", despues: String(despues).trim() });
   };
   add("objetivo", "Objetivo", v.objetivo, c.objetivo);
-  add("meta", "Meta o para qué sirve", v.meta, c.meta);
   add("alcance", "Alcance", v.alcance, c.alcance);
-  add("necesidades", "Necesidades", v.necesidades, c.necesidades);
-  add("proximos", "Próximos pasos", v.proximos, c.proximos);
+  add("comentarios", "Comentarios adicionales", v.comentarios, c.comentarios || [c.necesidades, c.proximos].filter(Boolean).join(" "));
   add("contacto.nombre", "Contacto: nombre", v.contacto.nombre, c.contacto_nombre);
   add("contacto.cargo", "Contacto: cargo o unidad", v.contacto.cargo, c.contacto_cargo);
   add("contacto.correo", "Contacto: correo", v.contacto.correo, c.contacto_correo);
@@ -152,11 +150,10 @@ function demoReunion(v, texto) {
   return {
     resumen: os.slice(0, 3).join(" ") || "Reunión registrada.",
     cambios: {
-      necesidades: nec.length ? [v.necesidades, ...nec].filter(Boolean).join(" ") : "",
-      proximos: prox.length ? prox.join(" ") : "",
+      comentarios: nec.length ? [v.comentarios, ...nec].filter(Boolean).join(" ") : "",
       contacto_correo: v.contacto.correo ? "" : correo
     },
-    hitos_completados: completados, hitos_nuevos: [], etapa
+    hitos_completados: completados, hitos_nuevos: prox.slice(0, 2).map(t => t.replace(/[.!?]$/, "").slice(0, 90)), etapa
   };
 }
 
@@ -172,8 +169,7 @@ function demoPlantilla(texto) {
     contacto_correo: (texto.match(/[\w.+-]+@[\w-]+\.[\w.]+/) || [])[0] || "",
     objetivo: os.slice(0, 2).join(" "),
     meta: buscar(texto, ["para ", "busca", "objetivo", "meta"]).slice(0, 1).join(" "),
-    necesidades: buscar(texto, ["necesit", "piden", "solicit"]).join(" "),
-    proximos: buscar(texto, ["próxim", "proxim", "quedamos", "agendar"]).join(" ")
+    comentarios: buscar(texto, ["necesit", "piden", "solicit", "próxim", "proxim", "quedamos", "agendar"]).join(" ")
   };
 }
 
@@ -181,8 +177,8 @@ function demoPreguntas(v) {
   const p = [];
   const pend = v.hitos.find(h => !h.ok);
   if (pend) p.push(`¿Cómo ve el avance en "${pend.t}"? ¿Hay algo que lo esté frenando?`);
-  if (v.tipo === "char") p.push("¿Qué temas le gustaría que AMSA aborde en la próxima actividad?");
-  if (v.tipo === "acad" || v.tipo === "tal") p.push("¿Cómo evalúa el acompañamiento de AMSA a los estudiantes?");
-  p.push("¿Qué otra área o unidad de su institución podría beneficiarse de trabajar con AMSA?");
+  if (v.tipo === "char") p.push("¿Qué temas le gustaría que Antofagasta Minerals aborde en la próxima actividad?");
+  if (v.tipo === "acad" || v.tipo === "tal") p.push("¿Cómo evalúa el acompañamiento de Antofagasta Minerals a los estudiantes?");
+  p.push("¿Qué otra área o unidad de su institución podría beneficiarse de trabajar con Antofagasta Minerals?");
   return { preguntas: p.slice(0, 3) };
 }

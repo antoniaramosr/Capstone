@@ -10,11 +10,11 @@ function convSemilla(s) {
   const v = s.vinculos.find(x => x.nombre === "Búsqueda y difusión de memoristas");
   if (!v) return [];
   return [{
-    id: 1, vinculo: v.id, area: v.area, compania: v.compania || "cen", institucion: v.contraparte, titulo: "Memorias 2027: Ingeniería Civil de Minas",
+    id: 1, vinculo: v.id, area: v.area, companias: ["cen"], institucion: v.contraparte, titulo: "Memorias 2027: Ingeniería Civil de Minas",
     tipo: "Memoria", carreras: "Ingeniería Civil de Minas, Ingeniería Civil Industrial",
     cupos: 3, cierre: "2026-11-15", lugar: "Antofagasta, con visitas a faena",
     condiciones: "Seis meses desde marzo, jornada completa, con apoyo económico mensual.",
-    descripcion: "Memorias en temas definidos con las gerencias de operación, con un tutor o tutora de AMSA.",
+    descripcion: "Memorias en temas definidos con las gerencias de operación, con un tutor o tutora de la compañía.",
     requisitos: "Haber terminado los cursos del último año y tener tema de memoria aprobado por la universidad.",
     estado: "Abierta", creada: "2026-10-01",
     linkedin: { publicada: true, fecha: "2026-10-02" },
@@ -30,12 +30,12 @@ function convSemilla(s) {
 // Los datos guardados antes de esta versión no traen convocatorias: se agregan.
 const _estadoInicialBase = estadoInicial;
 estadoInicial = function () { const s = _estadoInicialBase(); s.convocatorias = convSemilla(s); return s; };
-if (!S.convocatorias) { S.convocatorias = convSemilla(S); guardar(); }
+if (!S.convocatorias) { S.convocatorias = ESPACIO === "vacio" ? [] : convSemilla(S); guardar(); }
 
 const convocatoria = id => S.convocatorias.find(c => c.id === id);
 const convArea = c => c.area || (vinculo(c.vinculo) || {}).area;
 const convInst = c => c.institucion != null ? c.institucion : (vinculo(c.vinculo) || {}).contraparte || "";
-const convComp = c => c.compania || (vinculo(c.vinculo) || {}).compania || "";
+const convComps = c => c.companias || (c.compania ? [c.compania] : compsDe(vinculo(c.vinculo) || {}));
 const puedeEditarConv = c => ME && (ME.admin || (ME.rol === "gestor" && descendientes(ME.area).includes(convArea(c))));
 const instTxt = c => convInst(c) ? contraparte(convInst(c)).nombre : "Abierta a todas las universidades";
 const convDe = vid => S.convocatorias.filter(c => c.vinculo === vid);
@@ -87,15 +87,17 @@ function vNuevaConv(vid) {
     <div class="g2">
       ${v ? "" : `<div><label class="f" for="cInst">Universidad o institución</label><select class="input" id="cInst"><option value="">Abierta a todas las universidades</option>${S.contrapartes.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(x => `<option value="${x.id}">${esc(x.nombre)}</option>`).join("")}</select></div>
       <div><label class="f" for="cArea">Área responsable</label><select class="input" id="cArea">${opcionesArea(ME.area)}</select></div>
-      <div><label class="f" for="cComp">Compañía</label><select class="input" id="cComp">${S.companias.map(x => `<option value="${x.id}" ${ME.compania === x.id ? "selected" : ""}>${esc(x.nombre)}</option>`).join("")}</select></div><div></div>`}
+      `}
+      <div class="full"><span class="f">Compañía</span><div class="checks" id="cComps" role="group" aria-label="Compañías">${S.companias.map(x => `<label class="chk-pill"><input type="checkbox" value="${x.id}" ${(v ? compsDe(v) : [ME.compania]).includes(x.id) ? "checked" : ""}><i style="background:${x.color}"></i>${esc(x.nombre)}</label>`).join("")}</div><p class="help">Puedes marcar varias, por ejemplo si los cupos se reparten entre faenas.</p></div>
       <div class="full"><label class="f" for="cTit">Título de la convocatoria *</label><input class="input" id="cTit" placeholder="Ej.: Prácticas profesionales verano 2027"><div class="err" id="eTit">Escribe un título.</div></div>
-      <div><label class="f" for="cTipo">Tipo</label><select class="input" id="cTipo">${CONV_TIPOS.map(t => `<option>${t}</option>`).join("")}</select></div>
+      <div><label class="f" for="cTipo">Tipo de proyecto</label><select class="input" id="cTipo">${CONV_TIPOS.map(t => `<option>${t}</option>`).join("")}</select></div>
       <div><label class="f" for="cCupos">Cupos</label><input class="input" id="cCupos" type="number" min="1" value="1"></div>
-      <div class="full"><label class="f" for="cCar">Carreras</label><input class="input" id="cCar" placeholder="Ej.: Ingeniería Civil de Minas, Geología"></div>
+      <div class="full"><span class="f">Carreras</span><div class="checks" id="cCars" role="group" aria-label="Carreras">${CONFIG.carreras.map(x => `<label class="chk-pill"><input type="checkbox" value="${esc(x)}">${esc(x)}</label>`).join("")}</div>
+        <input class="input" id="cCarOtra" placeholder="Otras carreras, separadas por coma" aria-label="Otras carreras" style="margin-top:8px"><p class="help">Marca todas las carreras que sirven para el cargo.</p></div>
       <div><label class="f" for="cLugar">Lugar</label><input class="input" id="cLugar" placeholder="Ej.: Faena Centinela, turno 4x4"></div>
       <div><label class="f" for="cCierre">Postulaciones hasta *</label><input class="input" id="cCierre" type="date"><div class="err" id="eCierre">Elige la fecha de cierre.</div></div>
       <div class="full"><label class="f" for="cCond">Condiciones</label><input class="input" id="cCond" placeholder="Duración, jornada, si hay pago o beneficios"><p class="help">Lo que más piden los estudiantes antes de postular: sueldo o apoyo, turnos, lugar y fechas.</p></div>
-      <div class="full"><label class="f" for="cDesc">Qué hará la o el estudiante</label><textarea class="input" id="cDesc" rows="2"></textarea></div>
+      <div class="full"><label class="f" for="cDesc">Descripción general del cargo</label><textarea class="input" id="cDesc" rows="3" placeholder="En qué equipo estará, qué tipo de trabajo hará y con quién"></textarea></div>
       <div class="full"><label class="f" for="cReq">Requisitos</label><textarea class="input" id="cReq" rows="2"></textarea></div>
     </div>
     <label class="chk li-chk"><input type="checkbox" id="cLi" checked> Publicar también en LinkedIn</label>
@@ -107,8 +109,8 @@ function vNuevaConv(vid) {
 function leerConv(v) {
   const sel = id => ($("#" + id) || {}).value;
   return {
-    vinculo: v ? v.id : null, area: v ? v.area : sel("cArea"), compania: v ? (v.compania || "") : sel("cComp"), institucion: v ? v.contraparte : (sel("cInst") || ""), titulo: $("#cTit").value.trim(), tipo: $("#cTipo").value,
-    carreras: $("#cCar").value.trim(), cupos: Math.max(1, +$("#cCupos").value || 1),
+    vinculo: v ? v.id : null, area: v ? v.area : sel("cArea"), companias: $$("#cComps input:checked").map(i => i.value), institucion: v ? v.contraparte : (sel("cInst") || ""), titulo: $("#cTit").value.trim(), tipo: $("#cTipo").value,
+    carreras: [...$$("#cCars input:checked").map(i => i.value), ...$("#cCarOtra").value.split(",").map(x => x.trim()).filter(Boolean)].join(", "), cupos: Math.max(1, +$("#cCupos").value || 1),
     cierre: $("#cCierre").value, lugar: $("#cLugar").value.trim(), condiciones: $("#cCond").value.trim(),
     descripcion: $("#cDesc").value.trim(), requisitos: $("#cReq").value.trim()
   };
@@ -122,7 +124,7 @@ function wireNuevaConv(vid) {
     $("#liPrev").innerHTML = liPostHTML(c);
     $("#liBox").hidden = !$("#cLi").checked;
   };
-  $$("main input, main select, main textarea").forEach(el => el.addEventListener("input", prev));
+  $$("main input, main select, main textarea").forEach(el => { el.addEventListener("input", prev); el.addEventListener("change", prev); });
   $("#cLi").onchange = prev; prev();
   $("#cTit").addEventListener("input", () => $("#eTit").classList.remove("show"));
   $("#cCierre").addEventListener("input", () => $("#eCierre").classList.remove("show"));
@@ -143,7 +145,7 @@ function liPostHTML(c) {
   const t = textoLinkedIn(c).replace(/^Postula aquí: .*$/m, "").trim();
   return `<div class="li-h"><span class="li-logo">AM</span><div><b>Antofagasta Minerals</b><small>Publicación de la empresa</small></div></div>
     <p>${esc(t || "Completa el formulario para ver la publicación.").replace(/\n/g, "<br>")}</p>
-    <div class="li-link"><b>${esc(c.titulo || "Título de la convocatoria")}</b><small>Postula en la página de Vínculos AMSA</small></div>`;
+    <div class="li-link"><b>${esc(c.titulo || "Título de la convocatoria")}</b><small>Postula en la página de convocatorias de Antofagasta Minerals</small></div>`;
 }
 
 /* ---------- Detalle de la convocatoria (interno) ---------- */
@@ -153,7 +155,7 @@ function vConvocatoria(id) {
   const v = vinculo(c.vinculo), ed = puedeEditarConv(c), q = quedaron(c);
   const local = location.protocol === "file:";
   return `<div class="crumbs"><a href="#/mis">Mis vínculos</a> / ${v ? `<a href="#/ficha/${v.id}">${esc(v.nombre)}</a> / ` : ""}Convocatoria</div>
-  <div class="head-row"><div><h1>${esc(c.titulo)}</h1><p class="sub">${esc(c.tipo)} · ${esc(instTxt(c))} · ${compTag(convComp(c))} · cierra el ${fechaTxt(c.cierre)}</p></div>${convPill(c)}</div>
+  <div class="head-row"><div><h1>${esc(c.titulo)}</h1><p class="sub">${esc(c.tipo)} · ${esc(instTxt(c))} · ${compTag(convComps(c))} · cierra el ${fechaTxt(c.cierre)}</p></div>${convPill(c)}</div>
   <div class="statbar">
     <div><span class="lbl">Postulantes</span><b class="statnum">${c.postulantes.length}</b></div>
     <div><span class="lbl">Cupos llenos</span><span class="pcell">${barra(Math.round(q.length / c.cupos * 100))}<b>${q.length} de ${c.cupos}</b></span></div>
@@ -165,11 +167,11 @@ function vConvocatoria(id) {
         : `<div class="empty">Aún no hay postulaciones. Comparte el link de postulación o publícala en LinkedIn.</div>`}
     </div>
     <div class="card"><p class="card-title">Detalle de la oferta</p><dl class="kv">
-      <dt>Carreras</dt><dd class="${c.carreras ? "" : "ph"}">${esc(c.carreras || "Por completar")}</dd>
-      <dt>Lugar</dt><dd class="${c.lugar ? "" : "ph"}">${esc(c.lugar || "Por completar")}</dd>
-      <dt>Condiciones</dt><dd class="${c.condiciones ? "" : "ph"}">${esc(c.condiciones || "Por completar")}</dd>
-      <dt>Qué hará</dt><dd class="${c.descripcion ? "" : "ph"}">${esc(c.descripcion || "Por completar")}</dd>
-      <dt>Requisitos</dt><dd class="${c.requisitos ? "" : "ph"}">${esc(c.requisitos || "Por completar")}</dd></dl></div>
+      <dt>Carreras</dt><dd class="${c.carreras ? "" : "ph"}">${esc(c.carreras || "No definido")}</dd>
+      <dt>Lugar</dt><dd class="${c.lugar ? "" : "ph"}">${esc(c.lugar || "No definido")}</dd>
+      <dt>Condiciones</dt><dd class="${c.condiciones ? "" : "ph"}">${esc(c.condiciones || "No definido")}</dd>
+      <dt>Descripción del cargo</dt><dd class="${c.descripcion ? "" : "ph"}">${esc(c.descripcion || "No definido")}</dd>
+      <dt>Requisitos</dt><dd class="${c.requisitos ? "" : "ph"}">${esc(c.requisitos || "No definido")}</dd></dl></div>
   </div>
   <aside class="stack">
     <div class="card side"><p class="card-title">LinkedIn</p>
@@ -194,7 +196,7 @@ function sincEstudiante(c, p) {
   S.estudiantes = S.estudiantes.filter(e => !(e.conv === c.id && e.nombre === p.nombre));
   if (p.estado === "Quedó") {
     const inst = S.contrapartes.find(x => x.nombre === p.universidad);
-    S.estudiantes.push({ nombre: p.nombre, tipo: c.tipo, contraparte: inst ? inst.id : "", area: convArea(c), compania: convComp(c), nota: null, conv: c.id });
+    S.estudiantes.push({ nombre: p.nombre, tipo: c.tipo, contraparte: inst ? inst.id : "", area: convArea(c), compania: convComps(c)[0] || "", nota: null, conv: c.id });
   }
 }
 
@@ -246,7 +248,7 @@ function vPostular(id) {
     <a class="lnk small" href="#/convocatorias">← Todas las convocatorias</a>
     <p class="sub">${esc(c.tipo)}${cp.tipoOrg === "Universidad" ? " · en alianza con " + esc(cp.nombre) : ""}</p>
     <h1>${esc(c.titulo)}</h1>
-    <div class="card"><dl class="kv">${det("Carreras", c.carreras)}${det("Lugar", c.lugar)}${det("Condiciones", c.condiciones)}${det("Qué harás", c.descripcion)}${det("Requisitos", c.requisitos)}<dt>Cupos</dt><dd>${c.cupos}</dd><dt>Postulaciones hasta</dt><dd>${fechaTxt(c.cierre)}</dd></dl></div>
+    <div class="card"><dl class="kv">${det("Carreras", c.carreras)}${det("Lugar", c.lugar)}${det("Condiciones", c.condiciones)}${det("Descripción del cargo", c.descripcion)}${det("Requisitos", c.requisitos)}<dt>Cupos</dt><dd>${c.cupos}</dd><dt>Postulaciones hasta</dt><dd>${fechaTxt(c.cierre)}</dd></dl></div>
     <div class="card"><p class="card-title">Cómo sigue el proceso</p>${pasosProceso(null)}</div>
     ${cuerpo}
     <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p></main>${pie()}`;
@@ -274,13 +276,13 @@ function vConvPub() {
   const abiertas = S.convocatorias.filter(c => c.estado === "Abierta");
   return `<header class="pub-top"><div class="pub-inner">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></div></header>
   <main class="pub">
-    <h1>Prácticas y memorias en AMSA</h1>
+    <h1>Prácticas y memorias en Antofagasta Minerals</h1>
     <p class="sub">Revisa las convocatorias abiertas, con sus condiciones y fechas, y postula sin crear una cuenta. Te avisaremos por correo cómo terminó tu postulación.</p>
     <div class="filters"><div class="chips"><button class="chip-btn ${pubTipo ? "" : "on"}" data-pubtipo="">Todas (${abiertas.length})</button>${CONV_TIPOS.map(t => `<button class="chip-btn ${pubTipo === t ? "on" : ""}" data-pubtipo="${t}">${t} (${abiertas.filter(c => c.tipo === t).length})</button>`).join("")}</div>
     <div class="frow"><input class="input sm" id="pubQ" placeholder="Buscar por carrera o palabra" value="${esc(pubQ)}" aria-label="Buscar convocatoria"></div></div>
     <div class="stack" id="pubLista">${pubLista()}</div>
     <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>
-    ${ME ? "" : `<p class="help" style="text-align:center"><a class="lnk" href="#/login">Soy de AMSA: ingresar</a></p>`}
+    ${ME ? "" : `<p class="help" style="text-align:center"><a class="lnk" href="#/login">Trabajo en Antofagasta Minerals: iniciar sesión</a></p>`}
   </main>${pie()}`;
 }
 function pubLista() {
@@ -302,7 +304,7 @@ function wireConvPub() {
    El estudiante no tiene cuenta: revisa con su correo. En la versión real
    se le mandaría un link personal por correo (Outlook). */
 const PASOS_POST = [
-  ["Postulación recibida", "AMSA recibió tus datos."],
+  ["Postulación recibida", "Recibimos tus datos."],
   ["En revisión", "El área revisa las postulaciones. Puede que te contacten para una entrevista."],
   ["Resultado", "Te avisamos por correo si quedaste o no."],
   ["Inducción", "Si quedaste, recibes por correo tu fecha de ingreso, tu tutor o tutora y qué llevar el primer día."]

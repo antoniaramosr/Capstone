@@ -5,22 +5,22 @@
 
 const SEED = {
   contrapartes: [
-    { id: "ucn",    nombre: "Universidad Católica del Norte", corto: "UCN", tipoOrg: "Universidad", locacion: "Antofagasta y Coquimbo" },
-    { id: "ceduc",  nombre: "CEDUC UCN", corto: "CEDUC UCN", tipoOrg: "Centro de formación técnica", locacion: "Antofagasta y Los Vilos" },
-    { id: "ua",     nombre: "Universidad de Antofagasta", corto: "U. de Antofagasta", tipoOrg: "Universidad", locacion: "Antofagasta" },
-    { id: "ust",    nombre: "Universidad Santo Tomás", corto: "U. Santo Tomás", tipoOrg: "Universidad", locacion: "Antofagasta" },
-    { id: "ceim",   nombre: "Centro de Entrenamiento Industrial y Minero (CEIM)", corto: "CEIM", tipoOrg: "OTEC", locacion: "Antofagasta" },
-    { id: "inacap", nombre: "INACAP", corto: "INACAP", tipoOrg: "Instituto profesional", locacion: "Nacional" },
-    { id: "duoc",   nombre: "Duoc UC", corto: "Duoc UC", tipoOrg: "Instituto profesional", locacion: "Nacional" },
-    { id: "uch",    nombre: "Universidad de Chile", corto: "U. de Chile", tipoOrg: "Universidad", locacion: "Santiago" },
-    { id: "puc",    nombre: "Pontificia Universidad Católica de Chile", corto: "PUC", tipoOrg: "Universidad", locacion: "Santiago" },
-    { id: "usach",  nombre: "Universidad de Santiago de Chile", corto: "USACH", tipoOrg: "Universidad", locacion: "Santiago" },
-    { id: "utfsm",  nombre: "Universidad Técnica Federico Santa María", corto: "UTFSM", tipoOrg: "Universidad", locacion: "Santiago y Valparaíso" },
-    { id: "pucv",   nombre: "Pontificia Universidad Católica de Valparaíso", corto: "PUCV", tipoOrg: "Universidad", locacion: "Valparaíso" },
-    { id: "uai",    nombre: "Universidad Adolfo Ibáñez", corto: "UAI", tipoOrg: "Universidad", locacion: "Santiago" },
-    { id: "udd",    nombre: "Universidad del Desarrollo", corto: "UDD", tipoOrg: "Universidad", locacion: "Santiago" },
-    { id: "udec",   nombre: "Universidad de Concepción", corto: "UdeC", tipoOrg: "Universidad", locacion: "Biobío" },
-    { id: "uls",    nombre: "Universidad de La Serena", corto: "U. de La Serena", tipoOrg: "Universidad", locacion: "Coquimbo" }
+    { id: "ucn",    nombre: "Universidad Católica del Norte", corto: "UCN", tipoOrg: "Universidad", locacion: "Antofagasta y Coquimbo", zona: "Norte", contactos: [{ nombre: "Paula Herrera", cargo: "Vinculación con el medio", correo: "pherrera@ucn.ejemplo.cl", telefono: "+56 9 5237 2511" }, { nombre: "Ivo Fadic", cargo: "Escuela de Negocios Mineros", correo: "ifadic@ucn.ejemplo.cl", telefono: "+56 9 5374 2822" }, { nombre: "Rodrigo Castillo", cargo: "Jefe de carrera, Ingeniería Civil de Minas", correo: "rcastillo@ucn.ejemplo.cl", telefono: "+56 9 5511 3133" }] },
+    { id: "ceduc",  nombre: "CEDUC UCN", corto: "CEDUC UCN", tipoOrg: "Centro de formación técnica", locacion: "Antofagasta y Los Vilos", zona: "Norte", contactos: [{ nombre: "Andrea Rivera", cargo: "Dirección de sede Los Vilos", correo: "arivera@ceduc.ejemplo.cl", telefono: "+56 9 5648 3444" }] },
+    { id: "ua",     nombre: "Universidad de Antofagasta", corto: "U. de Antofagasta", tipoOrg: "Universidad", locacion: "Antofagasta", zona: "Norte", contactos: [{ nombre: "Felipe Ortiz", cargo: "Vinculación con el medio", correo: "fortiz@uantof.ejemplo.cl", telefono: "+56 9 5785 3755" }] },
+    { id: "ust",    nombre: "Universidad Santo Tomás", corto: "U. Santo Tomás", tipoOrg: "Universidad", locacion: "Antofagasta", zona: "Norte", contactos: [] },
+    { id: "ceim",   nombre: "Centro de Entrenamiento Industrial y Minero (CEIM)", corto: "CEIM", tipoOrg: "OTEC", locacion: "Antofagasta", zona: "Norte", contactos: [] },
+    { id: "inacap", nombre: "INACAP", corto: "INACAP", tipoOrg: "Instituto profesional", locacion: "Nacional", zona: "Nacional", contactos: [{ nombre: "Marcelo Pizarro", cargo: "Vicerrectoría INACAP", correo: "mpizarro@inacap.ejemplo.cl", telefono: "+56 9 5922 4066" }] },
+    { id: "duoc",   nombre: "Duoc UC", corto: "Duoc UC", tipoOrg: "Instituto profesional", locacion: "Nacional", zona: "Nacional", contactos: [] },
+    { id: "uch",    nombre: "Universidad de Chile", corto: "U. de Chile", tipoOrg: "Universidad", locacion: "Santiago", zona: "Centro", contactos: [{ nombre: "Carla Núñez", cargo: "Unidad de empleabilidad, FCFM", correo: "cnunez@uchile.ejemplo.cl", telefono: "+56 9 6059 4377" }] },
+    { id: "puc",    nombre: "Pontificia Universidad Católica de Chile", corto: "PUC", tipoOrg: "Universidad", locacion: "Santiago", zona: "Centro", contactos: [{ nombre: "Josefina Larraín", cargo: "Coordinación de prácticas, Ingeniería", correo: "practicas@ing.ejemplo.cl", telefono: "+56 9 6196 4688" }, { nombre: "Tomás Vial", cargo: "Profesor Capstone, Ingeniería", correo: "tvial@ing.ejemplo.cl", telefono: "+56 9 6333 4999" }] },
+    { id: "usach",  nombre: "Universidad de Santiago de Chile", corto: "USACH", tipoOrg: "Universidad", locacion: "Santiago", zona: "Centro", contactos: [] },
+    { id: "utfsm",  nombre: "Universidad Técnica Federico Santa María", corto: "UTFSM", tipoOrg: "Universidad", locacion: "Santiago y Valparaíso", zona: "Centro", contactos: [] },
+    { id: "pucv",   nombre: "Pontificia Universidad Católica de Valparaíso", corto: "PUCV", tipoOrg: "Universidad", locacion: "Valparaíso", zona: "Centro", contactos: [] },
+    { id: "uai",    nombre: "Universidad Adolfo Ibáñez", corto: "UAI", tipoOrg: "Universidad", locacion: "Santiago", zona: "Centro", contactos: [] },
+    { id: "udd",    nombre: "Universidad del Desarrollo", corto: "UDD", tipoOrg: "Universidad", locacion: "Santiago", zona: "Centro", contactos: [] },
+    { id: "udec",   nombre: "Universidad de Concepción", corto: "UdeC", tipoOrg: "Universidad", locacion: "Biobío", zona: "Sur", contactos: [] },
+    { id: "uls",    nombre: "Universidad de La Serena", corto: "U. de La Serena", tipoOrg: "Universidad", locacion: "Coquimbo", zona: "Norte", contactos: [] }
   ],
 
   // Objetivo y meta sugeridos según la temática del mapeo.
@@ -37,7 +37,7 @@ const SEED = {
 
   /* Filas: [contraparte, sede, área, tipo, nombre, temática, etapa (0-3), extras]
      extras: c = calificación, a = ¿aportó a la meta? (si | parcial | no),
-             h = hitos completados, f = financiamiento, k = contacto, n = necesidades */
+             h = hitos completados, f = financiamiento, k = contacto, n = comentarios */
   filas: [
     // VP Asuntos Corporativos · Asuntos Públicos Norte
     ["ucn", "Antofagasta", "rin", "conv", "Convenio marco 2026-2027", "Por definir", 2, { k: { cargo: "Vinculación con el medio" }, f: "Sin aporte monetario" }],
@@ -58,7 +58,7 @@ const SEED = {
 
     // VP Personas y Organización · Reclutamiento y selección
     ["uch", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 4, a: "si", f: "Sin aporte monetario" }],
-    ["puc", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 5, a: "si", f: "Sin aporte monetario", k: { nombre: "", cargo: "Coordinación de prácticas, Ingeniería", correo: "practicas@ing.ejemplo.cl" } }],
+    ["puc", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 5, a: "si", f: "Sin aporte monetario", k: { nombre: "Josefina Larraín", cargo: "Coordinación de prácticas, Ingeniería", correo: "practicas@ing.ejemplo.cl", telefono: "+56 9 6470 5310" } }],
     ["usach", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 3, a: "parcial" }],
     ["utfsm", "Santiago", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 3, { c: 4, a: "si" }],
     ["utfsm", "Valparaíso", "rys", "char", "Charla JP, prácticas y memorias", "Atracción de talento", 2, {}],
@@ -114,6 +114,10 @@ function companiaDe(area, sede, i) {
   return "corp";
 }
 
+// Varias compañías para los vínculos del norte que comparten las tres operaciones.
+const VARIAS_COMP = ["Plataforma Empleo Región", "Programa Proveedores para un futuro mejor", "Consejo Regional Productivo"];
+const FIN_SEMILLA = { "Sin aporte monetario": "Sin costo", "Financiado por AMSA": "Presupuesto del área", "Mixto": "Mixto" };
+
 function construirVinculosSemilla(areas, tipos) {
   const nombreArea = id => (areas.find(a => a.id === id) || {}).nombre || "";
   return SEED.filas.map((f, i) => {
@@ -122,18 +126,23 @@ function construirVinculosSemilla(areas, tipos) {
     const total = t ? t.hitos.length : 0;
     const hechos = x.h != null ? x.h : etapa === 3 ? total : etapa === 2 ? Math.ceil(total / 2) : etapa === 1 ? 1 : 0;
     const [objetivo] = SEED.temas[tema] || [""];
-    const meta = META_DE_TEMA[tema] || "";
+    const meta = META_DE_TEMA[tema];
+    const comp = companiaDe(area, sede, i);
+    // Si el vínculo tiene calificación de ejemplo, cada criterio parte con esa nota (±1 para que no sean todas iguales).
+    const crit = {};
+    if (x.c && t && t.criterios) t.criterios.forEach((c, j) => { crit[c] = Math.max(1, Math.min(5, x.c + [0, 1, -1][j % 3] * (x.c === 5 || x.c === 1 ? 0 : 1) * (i % 2))); });
     return {
       id: i + 1,
-      nombre, contraparte, sede, area, tipo, etapa, tema, compania: companiaDe(area, sede, i),
-      contacto: Object.assign({ nombre: "", cargo: "", correo: "" }, x.k || {}),
-      responsable: area === "rys" ? "Eduardo" : "Equipo " + nombreArea(area),
-      objetivo, meta, alcance: "",
-      financiamiento: { tipo: x.f || "Por definir", monto: "", fuente: "" },
+      nombre, contraparte, sede, area, tipo, etapa, tema,
+      companias: VARIAS_COMP.includes(nombre) ? ["cen", "ant", "zal"] : [comp],
+      contacto: Object.assign({ nombre: "", cargo: "", correo: "", telefono: "" }, x.k || {}),
+      lider: "", responsable: area === "rys" ? "Eduardo" : "Equipo " + nombreArea(area),
+      objetivo, metas: meta ? [meta] : [], alcance: "",
+      financiamiento: { tipo: FIN_SEMILLA[x.f] || "No definido", monto: "", fuente: "" },
       inicio: etapa >= 2 ? "2026-03-01" : "", termino: etapa === 3 ? "2026-08-31" : "",
       hitos: (t ? t.hitos : []).map((h, j) => ({ t: h, ok: j < hechos })),
-      necesidades: x.n || "", proximos: "",
-      calif: x.c || null, aporta: x.a || null,
+      comentarios: x.n || "",
+      criterios: crit, calif: x.c ? +(Object.values(crit).reduce((a, b) => a + b, 0) / Object.values(crit).length).toFixed(1) : null, aporta: x.a || null,
       versiones: [{ v: 1, fecha: "2026-09-15", autor: "Mapeo ANF-COQ", resumen: "Registro inicial importado desde el mapeo de instituciones formativas." }],
       reuniones: [], cuestionarios: []
     };

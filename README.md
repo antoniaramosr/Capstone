@@ -1,4 +1,4 @@
-# Vínculos · AMSA e instituciones
+# SIVA · Sistema de Vínculos AMSA
 
 **Ver el prototipo:** https://antoniaramosr.github.io/Capstone/ (siempre muestra la última versión de `main`)
 
@@ -7,14 +7,17 @@ Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Gru
 
 ## Qué hace
 
-- **Plantilla README** para cada vínculo: objetivo, meta (para qué sirve), alcance, contacto de la contraparte, responsable en AMSA, financiamiento, fechas, plan de trabajo, necesidades y próximos pasos. Muestra qué tan completo está.
+- **Ficha de cada vínculo**: objetivo, metas a las que busca aportar (varias), compañías (varias o todas), alcance, contacto de la institución (sugiere los contactos ya registrados), líder de la iniciativa y encargado/a, financiamiento con monto aproximado, fechas, plan de trabajo como lista de tareas y comentarios adicionales. Avisa qué datos importantes faltan.
+- **Calificación por criterios**: cada tipo de vínculo tiene tres criterios que se califican de 1 a 5 (administración los edita). La nota del vínculo es el promedio.
 - **Asistente**: completa la plantilla a partir de un correo o notas, actualiza el README con la transcripción de una reunión (pegada, en archivo .txt/.vtt o dictada) proponiendo cambios que la persona aprueba, y arma un cuestionario de feedback para la contraparte.
 - **Historial de versiones** del README, reuniones registradas y respuestas de la contraparte.
 - **Convocatorias para estudiantes**: desde un vínculo de prácticas y memorias o de empleo se crea una convocatoria, se publica en LinkedIn (abre LinkedIn con el texto listo), los estudiantes postulan en una página pública (`#/postular/<id>`, sin iniciar sesión) y se marca quién quedó.
 - **Estado de la postulación** para estudiantes (`#/mi-postulacion`): con su correo ven en qué etapa va (recibida, en revisión, resultado, inducción). La página de cada convocatoria explica cómo sigue el proceso.
 - **Instituciones por tipo de vínculo**: en Instituciones se filtra, por ejemplo, con qué universidades se han hecho Capstone y qué áreas los llevan.
 - **Aviso de contacto existente** cuando otra área ya trabaja con la misma institución.
-- **Dashboard**: cantidad de vínculos, calificación promedio, qué tipos de vínculo y qué contrapartes sirven más, instituciones compartidas entre áreas.
+- **Estadísticas**: resumen en palabras arriba, gráficos de torta y barras, y secciones que se abren y cierran.
+- **Metas**: se desactivan en vez de eliminarse, así siguen en los gráficos.
+- **Instituciones por zona** (norte, centro, sur, nacional).
 - **Administración** (solo administradores): agregar áreas, tipos de vínculo, tipos de institución y contrapartes.
 
 ## Perfiles
@@ -30,8 +33,9 @@ La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya,
 
 ## Cómo verlo
 
-Abre `index.html` en el navegador (o publícalo con GitHub Pages: Settings → Pages → rama `main`, carpeta raíz).
+Abre `index.html` en el navegador y aprieta "Iniciar sesión" para elegir una cuenta (o publícalo con GitHub Pages: Settings → Pages → rama `main`, carpeta raíz).
 Puedes entrar como **Eduardo** (usuario de Reclutamiento y selección) o como **Administración**.
+Para probar desde cero está el **Perfil 0**: entra a una página vacía (sin vínculos, contactos ni convocatorias) que se guarda aparte de los datos de ejemplo. Desde el menú de tu perfil puedes cambiar a jefatura o administración sin salir de la página vacía, y vaciarla otra vez cuando quieras.
 Si después de un push la página se ve igual, es el caché del navegador: sube el número `?v=` de los archivos en `index.html` (por ejemplo de `?v=2` a `?v=3`) y vuelve a hacer push.
 Los cambios se guardan en el navegador de cada persona; Administración → Datos permite restablecer los datos de ejemplo.
 
