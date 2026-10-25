@@ -895,7 +895,7 @@ function wireVista(ruta, p) {
         box.innerHTML = `<details class="panel-brand-light dd"><summary><span class="k">Contactos de la institución</span><b>Elige una institución</b><span class="o">Ver detalle</span></summary><p class="help inner">Al elegir la institución aparecen aquí las personas ya registradas, con correo y teléfono.</p></details>`;
       } else {
         box.innerHTML = `<details class="panel-brand-light dd" open><summary><span class="k">Contactos en ${esc(inst.corto)}</span><b>${ks.length ? ks.length + (ks.length === 1 ? " persona registrada" : " personas registradas") : "Sin contactos aún"}</b><span class="o">Ver detalle</span></summary>
-          ${ks.length ? ks.map(tarjeta).join("") : `<p class="help inner">Todavía no hay contactos guardados. Lo que escribas abajo quedará para las otras áreas.</p>`}
+          ${ks.length ? `<div class="contact-grid">${ks.map(tarjeta).join("")}</div>` : `<p class="help inner">Todavía no hay contactos guardados. Lo que escribas abajo quedará para las otras áreas.</p>`}
           ${ks.length ? `<p class="help inner">Pulsa «Usar este contacto» o completa los campos de abajo.</p>` : ""}</details>`;
       }
       $$("[data-usar]").forEach(b => b.onclick = () => usar(ks.find(k => k.nombre === b.dataset.usar)));
