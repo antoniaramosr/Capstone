@@ -516,13 +516,30 @@ function textoCorreoInst(v, extra) {
   const cuerpo = extra || "[Escribe aquí tu mensaje: coordinación, fechas, próximos pasos…]";
   return `${sal}\n\nEscribo desde ${nombreArea(v.area)} de Antofagasta Minerals respecto del vínculo «${v.nombre}» (${tipo(v.tipo).nombre}) con ${c.nombre}.\n\n${cuerpo}\n\nSaludos cordiales,\n${ME.nombre}\n${ME.correo || "Antofagasta Minerals"}`;
 }
+function mailtoHref(to, subject, body) {
+  to = (to || "").trim();
+  const q = new URLSearchParams();
+  if (subject) q.set("subject", subject);
+  if (body) q.set("body", body);
+  const qs = q.toString();
+  return `mailto:${to}${qs ? "?" + qs : ""}`;
+}
+function abrirMailto(to, subject, body) {
+  to = (to || "").trim();
+  if (!to) return false;
+  const href = mailtoHref(to, subject, body);
+  const a = document.createElement("a");
+  a.href = href;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return true;
+}
 function abrirCorreoInst(v, extra) {
   const to = (v.contacto.correo || "").trim();
   if (!to) { toast("Agrega el correo del contacto en la ficha del vínculo."); location.hash = "#/editar/" + v.id; return; }
-  const a = document.createElement("a");
-  a.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(v.nombre + " · Antofagasta Minerals")}&body=${encodeURIComponent(textoCorreoInst(v, extra))}`;
-  a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
-  toast("Se abrió tu correo con el texto listo. Tú envías el mensaje.");
+  abrirMailto(to, v.nombre + " · Antofagasta Minerals", textoCorreoInst(v, extra));
+  toast("Se abrió el enlace de correo. Si no ves Outlook o Mail, configura un cliente predeterminado en el Mac (Mail → Preferencias → General).");
 }
 /* ============================ Áreas ============================ */
 function vAreas() {
@@ -815,7 +832,7 @@ function wireAsistente(v) {
       const ps = preguntas(); if (!ps.length) return;
       const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] };
       v.cuestionarios.push(q); guardar();
-      const a = document.createElement("a"); a.href = `mailto:${encodeURIComponent(v.contacto.correo || "")}?subject=${encodeURIComponent("Cómo va " + v.nombre + " · Antofagasta Minerals")}&body=${encodeURIComponent(textoCuestionario(v, ps))}`; a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
+      abrirMailto(v.contacto.correo || "", "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, ps));
       asis.extra = []; cerrarAsistente(); toast("Se abrió tu correo. Cuando lo mandes, márcalo como enviado en la ficha."); if (location.hash !== "#/ficha/" + v.id) location.hash = "#/ficha/" + v.id; else render();
     };
   }
