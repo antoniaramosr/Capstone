@@ -15,6 +15,7 @@
   --panel-brand-bg:#E4EEF0; --panel-brand-ink:#0A3A46; --panel-brand-border:#B8CDD2;
   --select-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' viewBox='0 0 12 8'%3E%3Cpath fill='%235D5656' d='M1.4.8 6 5.4l4.6-4.6L12 2.2l-6 6-6-6z'/%3E%3C/svg%3E");
   --section-gap:24px;
+  --block-gap:20px;
   --font:"Aaux Pro","Aaux ProRegular","Barlow","Segoe UI",system-ui,-apple-system,sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
@@ -111,9 +112,14 @@ h2,h3,h4{color:var(--heading-section)}
 .grid-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,320px);gap:28px;align-items:start}
 .form-grid-main{grid-template-columns:minmax(0,1fr) minmax(280px,320px)}
 .card{background:var(--surface-elevated);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow-card);padding:20px 22px}
-.card + .card{margin-top:20px}
+.card + .card{margin-top:var(--block-gap)}
 .card-title{font-size:11px;font-weight:700;color:var(--brand-2);margin:0 0 14px;letter-spacing:.07em;text-transform:uppercase;opacity:.9}
-.stack > * + *{margin-top:20px}
+.stack{display:flex;flex-direction:column;gap:var(--block-gap)}
+.stack > * + *{margin-top:0}
+.block-stack{display:flex;flex-direction:column;gap:var(--block-gap)}
+.block-stack > *{margin-top:0!important;margin-bottom:0!important}
+.form-aside{display:flex;flex-direction:column;gap:var(--block-gap)}
+.form-aside > *{margin-top:0!important}
 
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
 .chip-btn{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;font-weight:500}
@@ -231,7 +237,7 @@ textarea.input{min-height:104px;resize:vertical;line-height:1.6}
 .cnt{background:var(--curso);color:var(--curso-ink);font-size:10.5px;border-radius:10px;padding:2px 9px;font-weight:600;white-space:nowrap}
 
 /* ---------- Estadísticas ---------- */
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--block-gap);margin-bottom:var(--block-gap)}
 .kpi{background:var(--surface-elevated);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow-card)}
 .kpi b{font-size:30px;font-weight:800;display:block;line-height:1.1}
 .kpi span{font-size:12px;color:var(--muted)}
@@ -717,7 +723,7 @@ details.warn.dd[open] > summary{margin-bottom:10px}
 .como{margin-top:6px;font-size:12px}
 .como summary{cursor:pointer;color:var(--brand-2);font-weight:600}
 .como p{margin:6px 0 0;color:var(--muted)}
-.dash-sec{margin-top:14px;border-top:1px solid var(--line);padding-top:6px}
+.dash-sec{margin-top:0;border-top:1px solid var(--line);padding-top:6px}
 .dash-sec > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:8px 0}
 .dash-sec > summary::before{content:"+";width:24px;height:24px;border-radius:50%;background:var(--chip);color:var(--brand);display:grid;place-items:center;font-weight:700;flex-shrink:0}
 .dash-sec[open] > summary::before{content:"−"}
@@ -774,7 +780,9 @@ a.nav-btn{text-decoration:none}
 .grupo-l{font-size:11px;font-weight:700;color:var(--brand-2);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 0}
 .login-opt.vacio{border-style:dashed;border-color:var(--brand-2)}
 .login-opt.vacio .avatar{background:#FFF6DB;color:#5E4700}
-.form-aside > .card + .card,#dupAside > .panel-warn-light,#dupAside > .aviso-pill{margin-top:var(--section-gap)}
+.dash-blocks{display:flex;flex-direction:column;gap:var(--block-gap);margin-bottom:var(--block-gap)}
+.dash-blocks .kpis{margin-bottom:0}
+.dash-blocks + .dash-sec,.dash-sec + .dash-sec{margin-top:var(--block-gap)}
 .aviso-pill{display:block;width:100%;text-align:left;border:1px dashed #E9D18A;background:#FFFBF0;border-radius:10px;padding:11px 14px;font-size:12.5px;font-weight:600;color:#8A6A00;cursor:pointer;line-height:1.4}
 .aviso-pill:hover{background:#FFF6DB}
 #dupAside:empty{margin:0}

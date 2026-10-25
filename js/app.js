@@ -595,14 +595,14 @@ function vDashboard() {
   return `<div class="head-row"><div><h1>Estadísticas</h1><p class="sub">${jef ? "Resultados de " + esc(nombreArea(ME.area)) + "." : "Cuántos vínculos hay, cómo van y cuáles sirven más."}</p></div>
     <div class="frow">${jef ? "" : `<select class="input sm" id="dashVP" style="width:auto" aria-label="Vicepresidencia"><option value="">Todas las vicepresidencias</option>${vps.map(a => `<option value="${a.id}" ${dashVP === a.id ? "selected" : ""}>${esc(a.nombre)}</option>`).join("")}</select>`}
     <select class="input sm" id="dashComp" style="width:auto" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${dashComp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select></div></div>
-  <div class="card resumen-txt"><p class="card-title">En resumen</p><ul>${frases.map(f => `<li>${f}</li>`).join("")}</ul><p class="help">Los datos vienen del mapeo de instituciones; las calificaciones son de ejemplo.</p></div>
+  <div class="dash-blocks"><div class="card resumen-txt"><p class="card-title">En resumen</p><ul>${frases.map(f => `<li>${f}</li>`).join("")}</ul><p class="help">Los datos vienen del mapeo de instituciones; las calificaciones son de ejemplo.</p></div>
   <div class="kpis k4">
     <div class="kpi"><b>${base.length}</b><span>vínculos registrados</span></div>
     <div class="kpi"><b>${activos}</b><span>activos (no cerrados)</span></div>
     <div class="kpi"><b>${cps.length}</b><span>instituciones</span></div>
     <div class="kpi"><b>${num1(promedio(base))}<small> de 5</small></b><span>calificación promedio de ${cal.length} vínculos</span>
       <details class="como"><summary>¿Cómo se calcula?</summary><p>Cada área califica sus vínculos de 1 a 5 en tres criterios que dependen del tipo. Por ejemplo, en prácticas y memorias: calidad de las y los estudiantes, rapidez de respuesta de la institución y calidad del trabajo. La nota del vínculo es el promedio de sus criterios, y este número es el promedio de todos los vínculos calificados.</p></details></div>
-  </div>
+  </div></div>
   ${sec("¿Qué funciona mejor?", "Calificación promedio (de 1 a 5) y si ayudó a cumplir las metas", `<div class="bars2">
     <div class="card"><p class="card-title">Calificación por tipo de vínculo</p>${barrasNota(porTipo.map(r => ({ n: r.t.nombre, p: r.p, s: r.nc ? r.nc + " calificados" : "Sin calificar" })))}</div>
     <div class="card"><p class="card-title">¿Ayudó a cumplir las metas?</p>${torta([{ n: "Sí", v: ev.filter(v => v.aporta === "si").length, color: "#156451" }, { n: "Parcialmente", v: ev.filter(v => v.aporta === "parcial").length, color: "#C89900" }, { n: "No", v: ev.filter(v => v.aporta === "no").length, color: "#AD1900" }], "Ayudó a cumplir las metas")}</div>
