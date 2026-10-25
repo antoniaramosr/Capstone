@@ -84,7 +84,61 @@ const usuarioEspacioVacio = u => u.espacio && esEspacioVacio(u.espacio);
 // Logo de AMSA; si la imagen no carga, se muestra el nombre en texto.
 const logoAmsa = (blanco = false) => `<img class="${blanco ? "brand-logo" : ""}" src="${blanco ? CONFIG.logos.blanco : CONFIG.logos.color}" alt="Antofagasta Minerals" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'logo-txt '+this.className,textContent:'Antofagasta Minerals'}))">`;
 const pie = () => `<footer class="foot"><div class="foot-inner">${logoAmsa(true).replace('class="brand-logo"', "")}<span>Prototipo IDI2025 · Grupo 2 · datos de ejemplo</span></div></footer>`;
+const vinculosContactables = () => misVinculos().filter(puedeEditar);
+function contactShellBits() {
+  const edit = vinculosContactables();
+  if (!edit.length) return { btn: "", pop: "" };
+  const opts = edit.map(v => `<option value="${v.id}">${esc(v.nombre)} · ${esc(contraparte(v.contraparte).corto)}</option>`).join("");
+  return {
+    btn: `<button type="button" class="btn-outline" id="btnContact" aria-haspopup="true">Contactar</button>`,
+    pop: `<div class="pop pop-contact pop-form" id="popContact" role="dialog" aria-labelledby="contactPopTit">
+      <h5 id="contactPopTit">Escribir a la institución</h5>
+      <p class="pop-lead">Completa el mensaje; se abre un correo en Outlook o tu cliente con el destinatario y el texto listos. Tú lo revisas y envías.</p>
+      <label class="f" for="contactSel">Vínculo</label>
+      <select class="input" id="contactSel">${opts}</select>
+      <p class="help contact-to" id="contactTo" aria-live="polite"></p>
+      <label class="f" for="contactMsg">Tu mensaje</label>
+      <textarea class="input" id="contactMsg" rows="5" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>
+      <button type="button" class="btn-accent wide" id="contactGo">Abrir en mi correo</button>
+    </div>`
+  };
+}
+function hintContactoTo() {
+  const sel = $("#contactSel"), hint = $("#contactTo");
+  if (!sel || !hint) return;
+  const v = vinculo(+sel.value);
+  if (!v) { hint.textContent = ""; return; }
+  const nom = v.contacto.nombre ? v.contacto.nombre + " · " : "";
+  hint.textContent = v.contacto.correo ? `Para: ${nom}${v.contacto.correo}` : "Falta el correo del contacto en la ficha; al continuar te llevamos a completarlo.";
+}
+function abrirFormContacto(vid) {
+  const pop = $("#popContact");
+  if (!pop) return;
+  closePops();
+  $("#mega")?.classList.remove("show");
+  const sel = $("#contactSel");
+  if (sel && vid) sel.value = String(vid);
+  hintContactoTo();
+  ubicarPop(pop);
+  pop.classList.add("show");
+  const msg = $("#contactMsg");
+  if (msg) msg.focus();
+}
+function wireContactPop() {
+  const sel = $("#contactSel"), go = $("#contactGo");
+  if (!sel) return;
+  sel.onchange = hintContactoTo;
+  hintContactoTo();
+  if (go) go.onclick = () => {
+    const v = vinculo(+sel.value);
+    if (!v) return;
+    const msg = (($("#contactMsg") || {}).value || "").trim();
+    closePops();
+    abrirCorreoInst(v, msg);
+  };
+}
 function shell(active) {
+  const contact = contactShellBits();
   const navs = ME.rol === "jefatura"
     ? [{ k: "dashboard", t: "Estadísticas" }, { k: "mis", t: "Vínculos de mi gerencia", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "metas", t: "Metas" }]
     : [{ k: "mis", t: ME.admin ? "Vínculos" : "Mis vínculos", mega: 1 }, { k: "areas", t: "Áreas", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "dashboard", t: "Estadísticas" }];
@@ -96,11 +150,13 @@ function shell(active) {
       <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa()}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
       <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><a class="nav-btn ${active === n.k ? "active" : ""}" href="#/${n.k}" ${active === n.k ? 'aria-current="page"' : ""} ${n.mega ? 'aria-haspopup="true" aria-expanded="false"' : ""}>${n.t}${n.mega ? '<i class="caret"></i>' : ""}</a></div>`).join("")}</nav>
       <div class="top-right">
+        ${contact.btn}
         ${puedeCrear() ? `<button class="btn-accent" id="btnAdd" aria-haspopup="true">+ Añadir <i class="caret light"></i></button>` : ""}
         <button class="user" id="btnUser" aria-haspopup="true"><span class="avatar">${ME.inicial}</span><div><b>${esc(ME.nombre)}</b><small>${esc(perfilTxt(ME))}</small></div></button>
       </div>
     </div>
     <div class="mega" id="mega"><div class="mega-inner" id="megaInner"></div></div>
+    ${contact.pop}
     ${puedeCrear() ? `<div class="pop pop-add" id="popAdd"><h5>¿Qué quieres registrar?</h5>
       <a class="pop-item" href="#/nueva-convocatoria"><div><b>Convocatoria para estudiantes</b><small>Prácticas o memorias. Se puede publicar en LinkedIn.</small></div></a>
       <a class="pop-item" href="#/nuevo/char"><div><b>Charla o actividad</b><small>Charlas, ferias o visitas a nuestras oficinas u operaciones.</small></div></a>
@@ -161,14 +217,15 @@ function wireShell() {
     btn.addEventListener("mouseenter", entrar); btn.addEventListener("mouseleave", salir);
     pop.addEventListener("mouseenter", () => clearTimeout(t)); pop.addEventListener("mouseleave", salir);
   };
-  hoverPop("#btnAdd", "#popAdd"); hoverPop("#btnUser", "#popUser");
+  hoverPop("#btnContact", "#popContact"); hoverPop("#btnAdd", "#popAdd"); hoverPop("#btnUser", "#popUser");
+  wireContactPop();
   $$("[data-cambiar]").forEach(b => b.onclick = () => { const id = b.dataset.cambiar; iniciarSesion(id, !CONFIG.usuarios[id].espacio); filtro.comp = ""; location.hash = inicioDe(ME); render(); });
   const vac = $("#vaciar"); if (vac) vac.onclick = () => { const antes = JSON.stringify(S); restablecer(); closePops(); location.hash = inicioDe(ME); render(); toast("Página de prueba vacía otra vez", () => { S = JSON.parse(antes); guardar(); render(); }); };
   $("#salir").onclick = () => { cerrarSesion(); location.hash = "#/login"; render(); };
 }
 function closePops() { $$(".pop").forEach(p => p.classList.remove("show")); }
 // Cada menú se abre justo bajo su botón, alineado a su borde derecho.
-const BTN_DE_POP = { popAdd: "#btnAdd", popUser: "#btnUser" };
+const BTN_DE_POP = { popContact: "#btnContact", popAdd: "#btnAdd", popUser: "#btnUser" };
 function ubicarPop(p) {
   const b = $(BTN_DE_POP[p.id] || ""); if (!b || window.innerWidth <= 760) { p.style.right = ""; return; }
   p.style.right = Math.max(8, document.documentElement.clientWidth - b.getBoundingClientRect().right) + "px";
@@ -214,11 +271,11 @@ function vLogin() {
 let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "" };
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
-  const mailCol = opts.mail !== false && puedeCrear();
+  const mailCol = opts.mail !== false && vinculosContactables().length;
   return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Etapa</th><th>Avance</th><th>Calificación</th>${mailCol ? "<th>Contactar</th>" : ""}</tr></thead><tbody>${list.map(v => {
     const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v);
     const falta = comp.pct < 50 ? `<small class="falta" title="Falta: ${esc(comp.faltan.join(", "))}">Faltan ${comp.faltan.length} datos de la ficha</small>` : "";
-    const mail = mailCol && puedeEditar(v) ? `<a class="link-btn" href="#/ficha/${v.id}" onclick="event.stopPropagation()">Contactar</a>` : "";
+    const mail = mailCol && puedeEditar(v) ? `<button type="button" class="link-btn" data-contact-v="${v.id}">Contactar</button>` : "";
     return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
   }).join("")}</tbody></table></div>`;
 }
@@ -292,8 +349,8 @@ function vFicha(id) {
   const otrosCont = contactosDe(v.contraparte).filter(k => k.nombre !== v.contacto.nombre).slice(0, 3);
   return `<div class="crumbs"><a href="#/mis">${ME.admin ? "Vínculos" : "Mis vínculos"}</a> / ${rutaArea(v.area).map(a => `<a href="#/area/${a.id}">${esc(a.nombre)}</a>`).join(" / ")} / ${esc(v.nombre)}</div>
   <div class="head-row"><div><h1>${esc(v.nombre)}</h1><p class="sub"><a href="#/contraparte/${c.id}" class="lnk">${esc(c.nombre)}</a>${v.sede ? ", " + esc(v.sede) : ""} · ${esc(tipo(v.tipo).nombre)} · ${compTag(compsDe(v))}</p></div>
-    <div class="ficha-head-col"><div class="ficha-head-top"><div class="stepper">${CONFIG.etapas.map((e, i) => `${i ? '<i class="bar"></i>' : ""}<button class="step ${i === v.etapa ? "cur" : i < v.etapa ? "done" : ""}" data-etapa="${i}" ${ed ? "" : "disabled"} title="${esc(e + ": " + etapaAyuda(i, v.tipo))}"><span>${i < v.etapa ? "✓" : i + 1}</span>${e}</button>`).join("")}</div>${ed ? `<button type="button" class="btn-accent" id="contactInst">Contactar</button>` : ""}</div>
-    <p class="etapa-ayuda">${CONFIG.etapas[v.etapa]}: ${esc(etapaAyuda(v.etapa, v.tipo).toLowerCase())}</p>${ed ? `<label class="f contact-msg-lbl" for="contactMsg">Mensaje para la institución (opcional)</label><textarea class="input contact-msg" id="contactMsg" rows="2" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>` : ""}</div></div>
+    <div><div class="stepper">${CONFIG.etapas.map((e, i) => `${i ? '<i class="bar"></i>' : ""}<button class="step ${i === v.etapa ? "cur" : i < v.etapa ? "done" : ""}" data-etapa="${i}" ${ed ? "" : "disabled"} title="${esc(e + ": " + etapaAyuda(i, v.tipo))}"><span>${i < v.etapa ? "✓" : i + 1}</span>${e}</button>`).join("")}</div>
+    <p class="etapa-ayuda">${CONFIG.etapas[v.etapa]}: ${esc(etapaAyuda(v.etapa, v.tipo).toLowerCase())}</p></div></div>
   ${ed ? "" : `<div class="banner">Este vínculo lo edita ${esc(nombreArea(v.area))}. Puedes verlo completo; si necesitas cambiar algo, escríbele a ${esc(v.responsable || "esa área")}.</div>`}
   <div class="statbar">
     <div><span class="lbl">Avance del plan de trabajo</span><span class="pcell">${barra(pr)}<b>${pr}%</b></span><span class="faltan">${hechos} de ${v.hitos.length} tareas hechas</span></div>
@@ -794,8 +851,12 @@ function render() {
   window.scrollTo(0, 0);
 }
 
+function wireContactLinks() {
+  $$("[data-contact-v]").forEach(b => b.onclick = e => { e.stopPropagation(); abrirFormContacto(+b.dataset.contactV); });
+}
 function wireVista(ruta, p) {
   $$("[data-ficha]").forEach(tr => { const go = () => location.hash = "#/ficha/" + tr.dataset.ficha; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
+  wireContactLinks();
   $$("main [data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
   const ca = $("[data-cambiar-admin]"); if (ca) ca.onclick = () => { iniciarSesion("admin", true); render(); };
 
@@ -813,8 +874,6 @@ function wireVista(ruta, p) {
   if (ruta === "ficha") {
     const v = vinculo(+p); if (!v) return;
     $("#dlReadme").onclick = () => descargar(`README-${v.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-")}.md`, readmeMarkdown(v), "text/markdown");
-    const ci = $("#contactInst");
-    if (ci) ci.onclick = () => abrirCorreoInst(v, ($("#contactMsg") || {}).value || "");
     if (!puedeEditar(v)) return;
     $$("[data-etapa]").forEach(b => b.onclick = () => {
       const n = +b.dataset.etapa, antes = v.etapa; if (n === antes) return;
