@@ -93,13 +93,13 @@ function contactShellBits() {
     btn: `<button type="button" class="btn-outline" id="btnContact" aria-haspopup="true">Contactar</button>`,
     pop: `<div class="pop pop-contact pop-form" id="popContact" role="dialog" aria-labelledby="contactPopTit">
       <h5 id="contactPopTit">Escribir a la institución</h5>
-      <p class="pop-lead">Completa el mensaje; se abre un correo en Outlook o tu cliente con el destinatario y el texto listos. Tú lo revisas y envías.</p>
+      <p class="pop-lead">Arma el mensaje y se abre <b>Outlook en la web</b> con el destinatario y el texto listos. Tú revisas y envías desde tu cuenta corporativa.</p>
       <label class="f" for="contactSel">Vínculo</label>
       <select class="input" id="contactSel">${opts}</select>
       <p class="help contact-to" id="contactTo" aria-live="polite"></p>
       <label class="f" for="contactMsg">Tu mensaje</label>
       <textarea class="input" id="contactMsg" rows="5" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>
-      <button type="button" class="btn-accent wide" id="contactGo">Abrir en mi correo</button>
+      <button type="button" class="btn-accent wide" id="contactGo">Abrir en Outlook</button>
     </div>`
   };
 }
@@ -124,17 +124,35 @@ function abrirFormContacto(vid) {
   const msg = $("#contactMsg");
   if (msg) msg.focus();
 }
+function borradorCorreoInst(v, extraMsg) {
+  const to = (v.contacto.correo || "").trim();
+  const subject = v.nombre + " · Antofagasta Minerals";
+  const body = textoCorreoInst(v, extraMsg);
+  return { to, subject, body };
+}
+function outlookWebHref(to, subject, body) {
+  return "https://outlook.office.com/mail/deeplink/compose?" + new URLSearchParams({ to, subject, body }).toString();
+}
+function abrirOutlookWeb(to, subject, body) {
+  to = (to || "").trim();
+  if (!to) return false;
+  window.open(outlookWebHref(to, subject, body), "_blank", "noopener,noreferrer");
+  return true;
+}
 function wireContactPop() {
-  const sel = $("#contactSel"), go = $("#contactGo");
+  const sel = $("#contactSel"), msg = $("#contactMsg"), go = $("#contactGo");
   if (!sel) return;
   sel.onchange = hintContactoTo;
   hintContactoTo();
   if (go) go.onclick = () => {
     const v = vinculo(+sel.value);
     if (!v) return;
-    const msg = (($("#contactMsg") || {}).value || "").trim();
+    const extra = ((msg || {}).value || "").trim();
+    const d = borradorCorreoInst(v, extra);
+    if (!d.to) { toast("Agrega el correo del contacto en la ficha."); closePops(); location.hash = "#/editar/" + v.id; return; }
+    abrirOutlookWeb(d.to, d.subject, d.body);
     closePops();
-    abrirCorreoInst(v, msg);
+    toast("Se abrió Outlook en una pestaña nueva. Inicia sesión si te lo pide y envía el correo.");
   };
 }
 function shell(active) {
@@ -373,7 +391,7 @@ function vFicha(id) {
     <div class="card"><div class="head-row"><p class="card-title">Reuniones</p>${ed ? `<button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button>` : ""}</div>
       ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones registradas. Pega la transcripción o tus notas en el asistente y se agregan aquí con un resumen.</p>`}</div>
     <div class="card"><div class="head-row"><p class="card-title">Feedback de la institución</p>${ed ? `<button class="link-btn" onclick="abrirAsistente(${v.id},'cuestionario')">+ Nuevo cuestionario</button>` : ""}</div>
-      <p class="help" style="margin:-4px 0 10px">El cuestionario se prepara aquí y se manda desde tu correo. Cuando la institución responda, registra sus respuestas o pega su correo.</p>
+      <p class="help" style="margin:-4px 0 10px">El cuestionario se prepara aquí y se envía desde Outlook. Cuando la institución responda, registra sus respuestas o pega su correo.</p>
       ${v.cuestionarios.length ? v.cuestionarios.slice().reverse().map(q => cuestionarioHTML(v, q, ed)).join("") : `<p class="muted small">Aún no se ha preparado un cuestionario para la institución.</p>`}</div>
     <details class="card"><summary class="card-title sum">Historial de cambios (${v.versiones.length})</summary>
       ${v.versiones.slice().reverse().map(x => `<div class="ver"><span class="vn">v${x.v}</span><div><b>${fechaTxt(x.fecha)}</b> · <span class="muted">${esc(x.autor)}</span><br>${esc(x.resumen)}</div></div>`).join("")}</details>
@@ -401,7 +419,7 @@ function cuestionarioHTML(v, q, ed) {
   const preparado = q.estado === "preparado";
   return `<div class="cq"><div class="head-row"><span><b>${fechaTxt(q.fecha)}</b> <span class="pill ${preparado ? "p0" : "p1"}">${preparado ? "Preparado, falta confirmar el envío" : "Enviado, esperando respuesta"}</span></span>
     ${ed ? `<span class="cq-acts">${preparado ? `<button class="link-btn" data-enviado="${q.id}">Ya lo envié</button>` : ""}<button class="link-btn" data-registrar="${q.id}">Registrar respuestas</button></span>` : ""}</div>
-    ${preparado ? `<p class="help">Se abrió tu correo con el texto listo. La página no puede saber si lo mandaste: confírmalo con "Ya lo envié".</p>` : ""}
+    ${preparado ? `<p class="help">Se abrió Outlook con el texto listo. La página no puede saber si lo enviaste: confírmalo con "Ya lo envié".</p>` : ""}
     <div id="reg-${q.id}" hidden>
       <label class="f" for="com-${q.id}">Pega aquí la respuesta del correo o un comentario general</label><textarea class="input" id="com-${q.id}" rows="3" placeholder="Ej.: Respondieron que la charla fue muy útil y piden repetirla en marzo."></textarea>
       <details class="more"><summary>Registrar pregunta por pregunta (opcional)</summary>
@@ -515,31 +533,6 @@ function textoCorreoInst(v, extra) {
   const sal = v.contacto.nombre ? `Hola ${v.contacto.nombre},` : "Hola,";
   const cuerpo = extra || "[Escribe aquí tu mensaje: coordinación, fechas, próximos pasos…]";
   return `${sal}\n\nEscribo desde ${nombreArea(v.area)} de Antofagasta Minerals respecto del vínculo «${v.nombre}» (${tipo(v.tipo).nombre}) con ${c.nombre}.\n\n${cuerpo}\n\nSaludos cordiales,\n${ME.nombre}\n${ME.correo || "Antofagasta Minerals"}`;
-}
-function mailtoHref(to, subject, body) {
-  to = (to || "").trim();
-  const q = new URLSearchParams();
-  if (subject) q.set("subject", subject);
-  if (body) q.set("body", body);
-  const qs = q.toString();
-  return `mailto:${to}${qs ? "?" + qs : ""}`;
-}
-function abrirMailto(to, subject, body) {
-  to = (to || "").trim();
-  if (!to) return false;
-  const href = mailtoHref(to, subject, body);
-  const a = document.createElement("a");
-  a.href = href;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  return true;
-}
-function abrirCorreoInst(v, extra) {
-  const to = (v.contacto.correo || "").trim();
-  if (!to) { toast("Agrega el correo del contacto en la ficha del vínculo."); location.hash = "#/editar/" + v.id; return; }
-  abrirMailto(to, v.nombre + " · Antofagasta Minerals", textoCorreoInst(v, extra));
-  toast("Se abrió el enlace de correo. Si no ves Outlook o Mail, configura un cliente predeterminado en el Mac (Mail → Preferencias → General).");
 }
 /* ============================ Áreas ============================ */
 function vAreas() {
@@ -760,15 +753,15 @@ function renderAsistente() {
     }
   } else {
     const preguntas = PREGUNTAS_BASE.filter((_, i) => asis.base[i]).map(p => p.texto).concat(asis.extra);
-    html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Se abre tu correo con el texto listo para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución (agrega su correo en la ficha)"}. Tú lo envías.</li><li>Cuando respondan, pegas su respuesta en la ficha, en "Feedback de la institución".</li></ol></div>
+    html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Se abre Outlook en la web con el texto listo para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución (agrega su correo en la ficha)"}. Tú lo envías.</li><li>Cuando respondan, pegas su respuesta en la ficha, en "Feedback de la institución".</li></ol></div>
       <p class="card-title">Preguntas generales</p>${PREGUNTAS_BASE.map((p, i) => `<label class="diff"><input type="checkbox" data-base="${i}" ${asis.base[i] ? "checked" : ""}><span>${esc(p.texto)}</span></label>`).join("")}
       <p class="card-title">Preguntas específicas de este vínculo</p>${asis.extra.map((p, i) => `<div class="diff"><span style="flex:1">${esc(p)}</span><button class="link-btn danger" data-quitar="${i}">Quitar</button></div>`).join("") || `<p class="small muted">Puedes sugerirlas con el asistente o escribirlas.</p>`}
       <div class="form-actions"><button class="btn-outline sm" id="asSug" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Pensando…" : "Sugerir con el asistente"}</button></div>
       <div class="inline-form"><input class="input" id="asPreg" placeholder="Escribe otra pregunta"><button class="btn-outline" id="asAddP">Agregar</button></div>
       ${asis.error ? `<div class="err show">${esc(asis.error)}</div>` : ""}
       <p class="card-title" style="margin-top:16px">Vista previa del correo</p><textarea class="input" id="asPrev" rows="8" readonly>${esc(textoCuestionario(v, preguntas))}</textarea>
-      <div class="form-actions"><button class="btn-accent" id="asEnviar">Abrir en mi correo</button><button class="btn-outline" id="asCopiar">Copiar texto</button></div>
-      <p class="help">La página no envía el correo por ti: queda guardado como "preparado" hasta que confirmes que lo mandaste.</p>`;
+      <div class="form-actions"><button class="btn-accent" id="asEnviar">Abrir en Outlook</button><button class="btn-outline" id="asCopiar">Copiar texto</button></div>
+      <p class="help">La página no envía el correo por ti: queda guardado como "preparado" hasta que confirmes que lo mandaste en Outlook.</p>`;
   }
   d.innerHTML = html;
   wireAsistente(v);
@@ -832,8 +825,10 @@ function wireAsistente(v) {
       const ps = preguntas(); if (!ps.length) return;
       const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] };
       v.cuestionarios.push(q); guardar();
-      abrirMailto(v.contacto.correo || "", "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, ps));
-      asis.extra = []; cerrarAsistente(); toast("Se abrió tu correo. Cuando lo mandes, márcalo como enviado en la ficha."); if (location.hash !== "#/ficha/" + v.id) location.hash = "#/ficha/" + v.id; else render();
+      const to = (v.contacto.correo || "").trim();
+      if (!to) { toast("Agrega el correo del contacto en la ficha."); location.hash = "#/editar/" + v.id; render(); return; }
+      abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, ps));
+      asis.extra = []; cerrarAsistente(); toast("Se abrió Outlook. Cuando envíes el cuestionario, márcalo en la ficha."); if (location.hash !== "#/ficha/" + v.id) location.hash = "#/ficha/" + v.id; else render();
     };
   }
 }
