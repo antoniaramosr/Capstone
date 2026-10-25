@@ -79,6 +79,8 @@ const compTag = ids => {
 };
 const inicioDe = u => u && u.rol === "gestor" ? "#/mis" : "#/dashboard";
 const perfilTxt = u => u.admin ? "Administración" : (u.rol === "jefatura" ? "Jefatura · " : "") + nombreArea(u.area) + (u.compania ? " · " + compania(u.compania).nombre : "");
+const etiquetaEspacioVacio = () => (ESPACIO === "vacio2" ? "Página vacía · Perfil 2" : "Página vacía · Perfil 0");
+const usuarioEspacioVacio = u => u.espacio && esEspacioVacio(u.espacio);
 // Logo de AMSA; si la imagen no carga, se muestra el nombre en texto.
 const logoAmsa = (blanco = false) => `<img class="${blanco ? "brand-logo" : ""}" src="${blanco ? CONFIG.logos.blanco : CONFIG.logos.color}" alt="Antofagasta Minerals" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'logo-txt '+this.className,textContent:'Antofagasta Minerals'}))">`;
 const pie = () => `<footer class="foot"><div class="foot-inner">${logoAmsa(true).replace('class="brand-logo"', "")}<span>Prototipo IDI2025 · Grupo 2 · datos de ejemplo</span></div></footer>`;
@@ -92,7 +94,7 @@ function shell(active) {
   return `
   <header class="top">
     <div class="top-inner">
-      <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa()}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${ESPACIO === "vacio" ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">Página vacía</span>` : ""}
+      <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa()}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
       <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><a class="nav-btn ${active === n.k ? "active" : ""}" href="#/${n.k}" ${active === n.k ? 'aria-current="page"' : ""} ${n.mega ? 'aria-haspopup="true" aria-expanded="false"' : ""}>${n.t}${n.mega ? '<i class="caret"></i>' : ""}</a></div>`).join("")}</nav>
       <div class="top-right">
         <button class="btn-ghost-dark" id="btnAvisos" aria-haspopup="true">Avisos <span class="badge ${unread ? "" : "zero"}">${unread}</span></button>
@@ -109,10 +111,10 @@ function shell(active) {
       <a class="pop-item" href="#/nuevo/conv"><div><b>Convenio</b><small>Un acuerdo formal con una institución.</small></div></a>
       <a class="pop-item" href="#/nuevo"><div><b>Otro tipo de vínculo</b><small>Consejos, programas de formación, empleo, I+D y más.</small></div></a></div>` : ""}
     <div class="pop pop-user" id="popUser">
-      <p class="pop-lbl">Cambiar de perfil (prototipo)${ESPACIO === "vacio" ? " · sigues en la página vacía" : ""}</p>
+      <p class="pop-lbl">Cambiar de perfil (prototipo)${esEspacioVacio() ? " · sigues en la página vacía" : ""}</p>
       ${otros.map(u => `<button class="pop-item" data-cambiar="${u.id}"><span class="avatar">${u.inicial}</span><div><b>${esc(u.nombre)}</b><small>${esc(CONFIG.roles[u.rol].nombre)}</small></div></button>`).join("")}
       <a class="pop-item" href="#/convocatorias">Ver la página de estudiantes</a>
-      ${ESPACIO === "vacio" ? `<button class="pop-item" id="vaciar">Vaciar de nuevo la página de prueba</button>` : ""}
+      ${esEspacioVacio() ? `<button class="pop-item" id="vaciar">Vaciar de nuevo la página de prueba</button>` : ""}
       <button class="pop-item" id="salir">Cerrar sesión</button>
     </div>
   </header>`;
@@ -164,7 +166,7 @@ function wireShell() {
   };
   hoverPop("#btnAvisos", "#popAvisos"); hoverPop("#btnAdd", "#popAdd"); hoverPop("#btnUser", "#popUser");
   $$("[data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
-  $$("[data-cambiar]").forEach(b => b.onclick = () => { const id = b.dataset.cambiar; iniciarSesion(id, id !== "perfil0"); filtro.comp = ""; location.hash = inicioDe(ME); render(); });
+  $$("[data-cambiar]").forEach(b => b.onclick = () => { const id = b.dataset.cambiar; iniciarSesion(id, !CONFIG.usuarios[id].espacio); filtro.comp = ""; location.hash = inicioDe(ME); render(); });
   const vac = $("#vaciar"); if (vac) vac.onclick = () => { const antes = JSON.stringify(S); restablecer(); closePops(); location.hash = inicioDe(ME); render(); toast("Página de prueba vacía otra vez", () => { S = JSON.parse(antes); guardar(); render(); }); };
   $("#salir").onclick = () => { cerrarSesion(); location.hash = "#/login"; render(); };
 }
@@ -199,14 +201,14 @@ function vLogin() {
       <div class="cuentas" id="cuentas" ${loginAbierto ? "" : "hidden"}>
         <p class="pop-lbl">Elige una cuenta</p>
         <p class="grupo-l">Con datos de ejemplo</p>
-        ${us.filter(u => u.espacio !== "vacio").map(u => `<button class="login-opt" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)}</b><span class="mail-l">${esc(u.correo)}</span><small class="role-desc">${esc(CONFIG.roles[u.rol].nombre)}${u.area ? " · " + esc(nombreArea(u.area)) : ""}${u.nota ? ". " + esc(u.nota) : ""}</small></span></button>`).join("")}
+        ${us.filter(u => !usuarioEspacioVacio(u)).map(u => `<button class="login-opt" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)}</b><span class="mail-l">${esc(u.correo)}</span><small class="role-desc">${esc(CONFIG.roles[u.rol].nombre)}${u.area ? " · " + esc(nombreArea(u.area)) : ""}${u.nota ? ". " + esc(u.nota) : ""}</small></span></button>`).join("")}
         <p class="grupo-l">Para probar desde cero</p>
-        ${us.filter(u => u.espacio === "vacio").map(u => `<button class="login-opt vacio" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)} · página vacía</b><span class="mail-l">${esc(u.correo)}</span><small class="role-desc">${esc(u.nota)}. Entras como gestor/a de ${esc(nombreArea(u.area))}; desde tu perfil puedes cambiar a jefatura o administración sin salir de la página vacía.</small></span></button>`).join("")}
+        ${us.filter(usuarioEspacioVacio).map(u => `<button class="login-opt vacio" data-login="${u.id}"><span class="avatar big">${u.inicial}</span><span><b>${esc(u.nombre)} · página vacía</b><span class="mail-l">${esc(u.correo)}</span><small class="role-desc">${esc(u.nota)}. Entras como gestor/a de ${esc(nombreArea(u.area))}; desde tu perfil puedes cambiar a jefatura o administración sin salir de la página vacía.</small></span></button>`).join("")}
         <p class="help">En el prototipo cada cuenta muestra un perfil distinto. En la versión real se entra con la cuenta de Microsoft de la empresa y el perfil viene asignado.</p>
       </div>
       <div class="login-extra">
         <a class="login-stu" href="#/convocatorias">¿Eres estudiante? Ver convocatorias abiertas</a>
-        <p class="help"><a class="lnk" href="#/reiniciar">Restablecer todo</a>: vuelve a los datos de ejemplo y vacía la página del Perfil 0 (antes de cada sesión de testeo)</p>
+        <p class="help"><a class="lnk" href="#/reiniciar">Restablecer todo</a>: vuelve a los datos de ejemplo y vacía las páginas del Perfil 0 y del Perfil 2 (antes de cada sesión de testeo)</p>
       </div>
     </div></div>
   </div>`;
@@ -216,10 +218,12 @@ function vLogin() {
 let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "" };
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
-  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Etapa</th><th>Avance</th><th>Calificación</th></tr></thead><tbody>${list.map(v => {
+  const mailCol = opts.mail !== false && puedeCrear();
+  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Etapa</th><th>Avance</th><th>Calificación</th>${mailCol ? "<th>Correo</th>" : ""}</tr></thead><tbody>${list.map(v => {
     const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v);
     const falta = comp.pct < 50 ? `<small class="falta" title="Falta: ${esc(comp.faltan.join(", "))}">Faltan ${comp.faltan.length} datos de la ficha</small>` : "";
-    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td></tr>`;
+    const mail = mailCol && puedeEditar(v) ? (v.contacto.correo ? `<button type="button" class="link-btn" data-mail-v="${v.id}">Escribir</button>` : `<span class="muted small">Sin correo</span>`) : "";
+    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Correo" class="td-mail">${mail}</td>` : ""}</tr>`;
   }).join("")}</tbody></table></div>`;
 }
 function listaFiltrada() {
@@ -257,6 +261,7 @@ function vMis(p) {
     <div class="card" id="tablaMis">${filasVinculos(listaFiltrada(), { area: ME.admin || hijos(ME.area).length, vacio: "No hay vínculos con estos filtros." })}</div>
   </div>
   <aside class="stack">
+    ${mailInstCardHTML(mios)}
     ${convMisHTML()}
     <div class="card"><p class="card-title">Avisos</p>${av.length ? av.map(a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`).join("") : `<p class="muted small">No tienes avisos.</p>`}</div>
     ${ME.admin ? "" : `<div class="card"><p class="card-title">Otras áreas con mis instituciones</p>${otras.length ? otras.slice(0, 8).map(v => `<a class="mini-row" href="#/ficha/${v.id}"><b>${esc(contraparte(v.contraparte).corto)}</b><span>${esc(nombreArea(v.area))}: ${esc(v.nombre)}</span></a>`).join("") + (otras.length > 8 ? `<p class="muted small">y ${otras.length - 8} más</p>` : "") : `<p class="muted small">Ninguna otra área trabaja con tus instituciones.</p>`}</div>`}
@@ -391,7 +396,7 @@ function vForm(id, tipoPre) {
       <div id="secConQuien">${sec(2, "Con quién", "La institución y la persona con quien hablas")}</div>
       <div class="g2"><div><label class="f" for="fCp">Institución *</label><select class="input" id="fCp"><option value="">Elige una institución</option>${S.contrapartes.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => `<option value="${c.id}" ${d.contraparte === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}<option value="__nueva">+ Otra institución…</option></select><div class="err" id="eCp">Elige o agrega la institución.</div></div>
       <div><label class="f" for="fSede">Sede o ciudad</label><input class="input" id="fSede" value="${esc(d.sede)}" placeholder="Ej.: Antofagasta"></div>
-      <div class="full" id="dupBox"></div>
+      <div class="full" id="contBox"></div>
       <div class="full nueva-cp" id="nuevaCp" hidden><div class="g2"><div><label class="f" for="fCpNom">Nombre de la institución</label><input class="input" id="fCpNom"></div><div><label class="f" for="fCpTipo">Tipo de organización</label><select class="input" id="fCpTipo">${S.tiposOrg.map(t => `<option>${esc(t)}</option>`).join("")}</select></div></div></div>
       <div><label class="f" for="fCNom">Nombre del contacto</label><input class="input" id="fCNom" value="${esc(d.contacto.nombre)}" placeholder="Escribe o elige uno registrado" list="contList" autocomplete="off"><datalist id="contList"></datalist></div>
       <div><label class="f" for="fCCar">Cargo o unidad</label><input class="input" id="fCCar" value="${esc(d.contacto.cargo)}" placeholder="Ej.: Coordinación de prácticas"></div>
@@ -422,7 +427,7 @@ function vForm(id, tipoPre) {
   </div>
   <aside class="form-aside" id="formAside">
     <div class="card"><p class="card-title">Datos importantes</p><div id="compBox"></div></div>
-    <div class="card" id="contAside"></div>
+    <div id="dupAside"></div>
   </aside></div>`;
 }
 function leerForm(base) {
@@ -436,15 +441,43 @@ function leerForm(base) {
     hitos, comentarios: val("fCom").trim()
   };
 }
-function dupHTML(cp, areaId, propioId) {
+function dupAsideHTML(cp, areaId, propioId) {
   if (!cp || cp === "__nueva") return "";
   const vs = S.vinculos.filter(v => v.contraparte === cp && v.id !== propioId);
   const c = contraparte(cp);
-  if (!vs.length) return `<div class="calm">Nadie más tiene vínculos registrados con ${esc(c.nombre)}. Serás el primer punto de contacto.</div>`;
+  if (!vs.length) return "";
   const as = [...new Set(vs.map(v => v.area))];
-  return `<details class="warn dd"><summary><span class="k">YA HAY CONTACTO CON ESTA INSTITUCIÓN</span><b>${as.length} ${as.length > 1 ? "áreas ya trabajan" : "área ya trabaja"} con ${esc(c.corto)}</b><span class="o">Ver detalle</span></summary>
-    ${vs.slice(0, 6).map(v => `<div class="it"><b>${esc(nombreArea(v.area))}${v.area === areaId ? " (esta área)" : ""}</b>${esc(v.nombre)} · ${CONFIG.etapas[v.etapa]}<br><span class="o">${v.responsable ? "Lo lleva: " + esc(v.responsable) : ""}${v.contacto.nombre ? ` · Contacto en ${esc(c.corto)}: ${esc(v.contacto.nombre)}` : ""}</span>${v.id ? ` <a class="warn-link" href="#/ficha/${v.id}" target="_blank" rel="noopener">Ver ficha</a>` : ""}</div>`).join("")}${vs.length > 6 ? `<p>y ${vs.length - 6} vínculos más.</p>` : ""}
-    <p>Antes de escribirle a la institución, conviene hablar con estas áreas. Es solo un aviso: puedes crear el vínculo igual.</p></details>`;
+  return `<details class="panel-warn-light dd" open id="dupCard"><summary><span class="k">Ya hay contacto con esta institución</span><b>${as.length} ${as.length > 1 ? "áreas trabajan" : "área trabaja"} con ${esc(c.corto)}</b><span class="o">Ver detalle</span></summary>
+    ${vs.slice(0, 5).map(v => `<div class="it"><b>${esc(nombreArea(v.area))}${v.area === areaId ? " (esta área)" : ""}</b><span class="o">${esc(v.nombre)} · ${CONFIG.etapas[v.etapa]}</span>${v.id ? ` <a class="panel-link" href="#/ficha/${v.id}" target="_blank" rel="noopener">Ver ficha</a>` : ""}</div>`).join("")}
+    ${vs.length > 5 ? `<p class="help inner">y ${vs.length - 5} vínculos más.</p>` : ""}
+    <p class="help inner">Conviene hablar con estas áreas antes de escribirle a la institución. Puedes crear el vínculo igual.</p>
+    <button type="button" class="link-btn sm dup-ocultar" id="dupCerrar">Ocultar aviso</button></details>`;
+}
+function textoCorreoInst(v, extra) {
+  const c = contraparte(v.contraparte);
+  const sal = v.contacto.nombre ? `Hola ${v.contacto.nombre},` : "Hola,";
+  const cuerpo = extra || "[Escribe aquí tu mensaje: coordinación, fechas, próximos pasos…]";
+  return `${sal}\n\nEscribo desde ${nombreArea(v.area)} de Antofagasta Minerals respecto del vínculo «${v.nombre}» (${tipo(v.tipo).nombre}) con ${c.nombre}.\n\n${cuerpo}\n\nSaludos cordiales,\n${ME.nombre}\n${ME.correo || "Antofagasta Minerals"}`;
+}
+function abrirCorreoInst(v, extra) {
+  const to = (v.contacto.correo || "").trim();
+  if (!to) { toast("Agrega el correo del contacto en la ficha del vínculo."); location.hash = "#/editar/" + v.id; return; }
+  const a = document.createElement("a");
+  a.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(v.nombre + " · Antofagasta Minerals")}&body=${encodeURIComponent(textoCorreoInst(v, extra))}`;
+  a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
+  toast("Se abrió tu correo con el texto listo. Tú envías el mensaje.");
+}
+function mailInstCardHTML(mios) {
+  if (!puedeCrear() || !mios.length) return "";
+  const edit = mios.filter(puedeEditar);
+  if (!edit.length) return "";
+  return `<div class="card"><p class="card-title">Correo a la institución</p>
+    <label class="f" for="mailSel">Vínculo</label>
+    <select class="input" id="mailSel">${edit.map(v => `<option value="${v.id}">${esc(v.nombre)} · ${esc(contraparte(v.contraparte).corto)}</option>`).join("")}</select>
+    <label class="f" for="mailMsg">Mensaje</label>
+    <textarea class="input" id="mailMsg" rows="4" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>
+    <button type="button" class="btn-accent wide" id="mailGo">Abrir en mi correo</button>
+    <p class="help">Abre Outlook o tu cliente de correo con el destinatario y el texto listos (como el cuestionario de feedback).</p></div>`;
 }
 
 /* ============================ Áreas ============================ */
@@ -621,7 +654,7 @@ function vAdmin(tab) {
       <div class="card"><div class="table-wrap"><table><thead><tr><th>Institución</th><th>Tipo</th><th>Ubicación</th><th>Vínculos</th></tr></thead><tbody>${S.contrapartes.map(c => `<tr><td class="t">${esc(c.nombre)}</td><td>${esc(c.tipoOrg)}</td><td>${esc(c.locacion)}${c.zona ? `<small>Zona ${esc(c.zona)}</small>` : ""}</td><td>${S.vinculos.filter(v => v.contraparte === c.id).length}</td></tr>`).join("")}</tbody></table></div></div>`;
   } else {
     body = `<div class="card"><p class="card-title">Respaldo</p><p class="small">Descarga todos los datos en JSON, por ejemplo para compartirlos o pasarlos a una base de datos.</p><button class="btn-outline" id="dlJson">Descargar respaldo JSON</button></div>
-      <div class="card"><p class="card-title">Restablecer</p><p class="small">${ESPACIO === "vacio" ? "Deja la página de prueba vacía otra vez. Se pierde lo que registraste en ella." : "Vuelve a los datos de ejemplo del mapeo. Se pierden los cambios hechos en este navegador."}</p>${adminConfirm ? `<div class="form-actions"><button class="btn-accent" id="resetOk">Sí, restablecer</button><button class="btn-outline" id="resetNo">Cancelar</button></div>` : `<button class="btn-outline" id="reset">${ESPACIO === "vacio" ? "Vaciar la página de prueba" : "Restablecer datos de ejemplo"}</button>`}</div>`;
+      <div class="card"><p class="card-title">Restablecer</p><p class="small">${esEspacioVacio() ? "Deja la página de prueba vacía otra vez. Se pierde lo que registraste en ella." : "Vuelve a los datos de ejemplo del mapeo. Se pierden los cambios hechos en este navegador."}</p>${adminConfirm ? `<div class="form-actions"><button class="btn-accent" id="resetOk">Sí, restablecer</button><button class="btn-outline" id="resetNo">Cancelar</button></div>` : `<button class="btn-outline" id="reset">${esEspacioVacio() ? "Vaciar la página de prueba" : "Restablecer datos de ejemplo"}</button>`}</div>`;
   }
   return `<h1>Administración</h1><p class="sub">Configura las áreas, los tipos de vínculo (con sus criterios de calificación), las metas y las instituciones disponibles para todos.</p>
   <div class="tabs">${tabs.map(([k, t]) => `<a class="tab ${tab === k ? "on" : ""}" href="${k === "metas" ? "#/metas" : "#/admin/" + k}">${t}</a>`).join("")}</div><div class="stack">${body}</div>`;
@@ -751,7 +784,7 @@ function render() {
   if (ruta === "convocatorias") { app.innerHTML = vConvPub(); wireConvPub(); window.scrollTo(0, 0); return; }
   if (ruta === "postular") { app.innerHTML = vPostular(p); wirePostular(p); window.scrollTo(0, 0); return; }
   if (ruta === "mi-postulacion") { app.innerHTML = vMiPostulacion(); wireMiPostulacion(); window.scrollTo(0, 0); return; }
-  if (ruta === "reiniciar") { restablecerTodo(); cerrarSesion(); location.hash = "#/login"; setTimeout(() => toast("Listo: datos de ejemplo restablecidos y página del Perfil 0 vacía"), 50); return; }
+  if (ruta === "reiniciar") { restablecerTodo(); cerrarSesion(); location.hash = "#/login"; setTimeout(() => toast("Listo: datos de ejemplo restablecidos y páginas vacías del Perfil 0 y Perfil 2"), 50); return; }
   if (!ME && ruta !== "login") { location.hash = "#/login"; return; }
   if (ruta === "login" || !ruta) {
     if (ME) { location.hash = inicioDe(ME); return; }
@@ -776,12 +809,15 @@ function render() {
 
 function wireVista(ruta, p) {
   $$("[data-ficha]").forEach(tr => { const go = () => location.hash = "#/ficha/" + tr.dataset.ficha; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
+  $$("[data-mail-v]").forEach(b => b.onclick = e => { e.stopPropagation(); const v = vinculo(+b.dataset.mailV); if (v) abrirCorreoInst(v, ""); });
   $$("main [data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
   const ca = $("[data-cambiar-admin]"); if (ca) ca.onclick = () => { iniciarSesion("admin", true); render(); };
 
   const sv = $("#sinVinc"); if (sv) sv.onclick = () => { S.sinVinculos = [...new Set([...(S.sinVinculos || []), ME.id])]; guardar(); render(); toast("Anotado. No tienes que registrar nada más."); };
   if (ruta === "mis" && $("#fq")) {
     const pinta = () => { $("#tablaMis").innerHTML = filasVinculos(listaFiltrada(), { area: ME.admin || hijos(ME.area).length, vacio: "No hay vínculos con estos filtros." }); wireVista("_tabla"); };
+    const mg = $("#mailGo");
+    if (mg) mg.onclick = () => { const v = vinculo(+$("#mailSel").value); if (v) abrirCorreoInst(v, $("#mailMsg").value.trim()); };
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
@@ -836,16 +872,29 @@ function wireVista(ruta, p) {
     const contactos = () => {
       const cp = $("#fCp").value, ks = contactosDe(cp), inst = S.contrapartes.find(c => c.id === cp), actual = $("#fCNom").value.trim().toLowerCase();
       $("#contList").innerHTML = ks.map(k => `<option value="${esc(k.nombre)}">${esc(k.cargo)}</option>`).join("");
-      const tarjeta = k => `<div class="cont-card ${k.nombre.toLowerCase() === actual ? "sel" : ""}"><b>${esc(k.nombre)}</b>${k.cargo ? `<span>${esc(k.cargo)}</span>` : ""}
-        ${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}
-        ${k.nombre.toLowerCase() === actual ? `<span class="usado">Contacto de este vínculo</span>` : `<button type="button" class="link-btn" data-usar="${esc(k.nombre)}">Usar este contacto</button>`}</div>`;
-      $("#contAside").innerHTML = !cp || cp === "__nueva"
-        ? `<p class="card-title">Contactos de la institución</p><p class="muted small">Elige la institución y aquí aparecen las personas ya registradas, con su correo y teléfono.</p>`
-        : `<p class="card-title">Contactos en ${esc(inst ? inst.corto : "la institución")}</p>${ks.length ? ks.map(tarjeta).join("") : `<p class="muted small">Todavía no hay contactos registrados. El que escribas quedará guardado para las otras áreas.</p>`}`;
+      const tarjeta = k => `<div class="it ${k.nombre.toLowerCase() === actual ? "sel" : ""}"><b>${esc(k.nombre)}</b>${k.cargo ? `<span class="o">${esc(k.cargo)}</span>` : ""}
+        ${k.correo ? `<a class="panel-link" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="panel-link" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}
+        ${k.nombre.toLowerCase() === actual ? `<span class="usado">Contacto de este vínculo</span>` : `<button type="button" class="panel-link link-btn" data-usar="${esc(k.nombre)}">Usar este contacto</button>`}</div>`;
+      const box = $("#contBox");
+      if (!box) return;
+      if (!cp || cp === "__nueva") {
+        box.innerHTML = `<details class="panel-brand-light dd"><summary><span class="k">Contactos de la institución</span><b>Elige una institución</b><span class="o">Ver detalle</span></summary><p class="help inner">Al elegir la institución aparecen aquí las personas ya registradas, con correo y teléfono.</p></details>`;
+      } else {
+        box.innerHTML = `<details class="panel-brand-light dd" open><summary><span class="k">Contactos en ${esc(inst.corto)}</span><b>${ks.length ? ks.length + (ks.length === 1 ? " persona registrada" : " personas registradas") : "Sin contactos aún"}</b><span class="o">Ver detalle</span></summary>
+          ${ks.length ? ks.map(tarjeta).join("") : `<p class="help inner">Todavía no hay contactos guardados. Lo que escribas abajo quedará para las otras áreas.</p>`}
+          ${ks.length ? `<p class="help inner">Pulsa «Usar este contacto» o completa los campos de abajo.</p>` : ""}</details>`;
+      }
       $$("[data-usar]").forEach(b => b.onclick = () => usar(ks.find(k => k.nombre === b.dataset.usar)));
     };
     $("#fCNom").addEventListener("change", () => { const k = contactosDe($("#fCp").value).find(x => x.nombre === $("#fCNom").value); if (k) { if (!$("#fCCar").value) $("#fCCar").value = k.cargo || ""; if (!$("#fCCor").value) $("#fCCor").value = k.correo || ""; if (!$("#fCTel").value) $("#fCTel").value = k.telefono || ""; comp(); } contactos(); });
-    const dup = () => { $("#dupBox").innerHTML = dupHTML($("#fCp").value, $("#fArea").value, base ? base.id : null); $("#nuevaCp").hidden = $("#fCp").value !== "__nueva"; };
+    const dup = () => {
+      $("#nuevaCp").hidden = $("#fCp").value !== "__nueva";
+      const cp = $("#fCp").value;
+      if (!cp || cp === "__nueva" || sessionStorage.getItem("siva-ocultar-dup-" + cp)) { $("#dupAside").innerHTML = ""; return; }
+      $("#dupAside").innerHTML = dupAsideHTML(cp, $("#fArea").value, base ? base.id : null);
+      const x = $("#dupCerrar");
+      if (x) x.onclick = e => { e.preventDefault(); e.stopPropagation(); sessionStorage.setItem("siva-ocultar-dup-" + cp, "1"); $("#dupAside").innerHTML = ""; };
+    };
     const fin = () => { const t = $("#fFinT").value; $("#finFuenteBox").hidden = !["Presupuesto del área", "Mixto", "Fondo externo (CORFO, ANID u otro)"].includes(t); $("#fFinFLbl").textContent = t === "Fondo externo (CORFO, ANID u otro)" ? "¿Qué fondo?" : "Presupuesto del área: partida o centro de costo"; };
     $("main").addEventListener("input", comp); $("main").addEventListener("change", comp);
     $("#fCp").addEventListener("change", () => { dup(); contactos(); }); $("#fArea").addEventListener("change", dup);
@@ -868,16 +917,7 @@ function wireVista(ruta, p) {
     };
     $("#fTipo").addEventListener("change", tipoCambio);
     ["fNombre", "fTipo", "fArea", "fCp"].forEach(id => $("#" + id).addEventListener("input", () => { $("#" + id).classList.remove("bad"); $("#e" + id.slice(1)).classList.remove("show"); }));
-    // La tarjeta de contactos se ubica a la altura del paso 2 ("Con quién").
-    const alinear = () => {
-      const card = $("#contAside"), sec = $("#secConQuien"); if (!card || !sec) return;
-      card.style.marginTop = "16px";
-      const gap = sec.getBoundingClientRect().top - card.getBoundingClientRect().top;
-      card.style.marginTop = Math.max(16, 16 + gap) + "px";
-    };
-    window.onresize = alinear;
-    $("main").addEventListener("toggle", alinear, true); $("main").addEventListener("change", () => setTimeout(alinear, 0));
-    dup(); contactos(); fin(); wirePlan(); comp(); alinear();
+    dup(); contactos(); fin(); wirePlan(); comp();
     const fill = $("#aiFill");
     if (fill) fill.onclick = async () => {
       const t = $("#aiTxt").value.trim(); if (!t) { $("#aiEstado").textContent = "Pega primero un texto."; return; }

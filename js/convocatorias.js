@@ -30,7 +30,7 @@ function convSemilla(s) {
 // Los datos guardados antes de esta versión no traen convocatorias: se agregan.
 const _estadoInicialBase = estadoInicial;
 estadoInicial = function () { const s = _estadoInicialBase(); s.convocatorias = convSemilla(s); return s; };
-if (!S.convocatorias) { S.convocatorias = ESPACIO === "vacio" ? [] : convSemilla(S); guardar(); }
+if (!S.convocatorias) { S.convocatorias = esEspacioVacio() ? [] : convSemilla(S); guardar(); }
 
 const convocatoria = id => S.convocatorias.find(c => c.id === id);
 const convArea = c => c.area || (vinculo(c.vinculo) || {}).area;
@@ -274,8 +274,10 @@ function wirePostular(id) {
 let pubTipo = "", pubQ = "";
 function vConvPub() {
   const abiertas = S.convocatorias.filter(c => c.estado === "Abierta");
+  const volver = typeof ME !== "undefined" && ME ? `<p class="pub-volver"><a class="btn-outline sm" href="${inicioDe(ME)}">← Volver a SIVA</a></p>` : "";
   return `<header class="pub-top"><div class="pub-inner">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></div></header>
   <main class="pub">
+    ${volver}
     <h1>Prácticas y memorias en Antofagasta Minerals</h1>
     <p class="sub">Revisa las convocatorias abiertas, con sus condiciones y fechas, y postula sin crear una cuenta. Te avisaremos por correo cómo terminó tu postulación.</p>
     <div class="filters"><div class="chips"><button class="chip-btn ${pubTipo ? "" : "on"}" data-pubtipo="">Todas (${abiertas.length})</button>${CONV_TIPOS.map(t => `<button class="chip-btn ${pubTipo === t ? "on" : ""}" data-pubtipo="${t}">${t} (${abiertas.filter(c => c.tipo === t).length})</button>`).join("")}</div>

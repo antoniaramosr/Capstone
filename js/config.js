@@ -86,6 +86,7 @@ const CONFIG = {
     daniela:  { id: "daniela", nombre: "Daniela", correo: "daniela@aminerals.cl", inicial: "D", rol: "gestor", area: "acds", compania: "cen", admin: false, nota: "Recién llega: aún no tiene vínculos" },
     carolina: { id: "carolina", nombre: "Carolina", correo: "carolina@aminerals.cl", inicial: "C", rol: "jefatura", area: "doc", compania: "corp", admin: false },
     perfil0:  { id: "perfil0", nombre: "Perfil 0", correo: "prueba@aminerals.cl", inicial: "0", rol: "gestor", area: "rys", compania: "corp", admin: false, espacio: "vacio", nota: "Entra a la página vacía, sin ningún vínculo registrado, para probar desde cero" },
+    perfil2:  { id: "perfil2", nombre: "Perfil 2", correo: "prueba2@aminerals.cl", inicial: "2", rol: "gestor", area: "rys", compania: "corp", admin: false, espacio: "vacio2", nota: "Otra página vacía independiente del Perfil 0, para un segundo testeador en paralelo" },
     admin:    { id: "admin", nombre: "Administración", correo: "admin.siva@aminerals.cl", inicial: "A", rol: "admin", area: null, compania: null, admin: true }
   },
 

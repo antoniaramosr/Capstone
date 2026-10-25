@@ -2,14 +2,21 @@
    persona ve sus propios cambios. Para que el equipo comparta datos de verdad,
    el siguiente paso sería un servidor o base de datos. */
 
-/* Hay dos espacios de datos separados:
+/* Tres espacios de datos separados:
    - "ejemplo": los vínculos del mapeo ANF-COQ, para mostrar la página llena.
-   - "vacio": la página sin ningún vínculo, para probar desde cero (Perfil 0).
+   - "vacio": página sin vínculos (Perfil 0).
+   - "vacio2": otro sandbox vacío independiente (Perfil 2).
    Cambiar de perfil dentro de la página mantiene el espacio en que se entró. */
-const STORE_KEYS = { ejemplo: "siva-v4", vacio: "siva-v4-vacio" };
+const STORE_KEYS = { ejemplo: "siva-v4", vacio: "siva-v4-vacio", vacio2: "siva-v4-vacio-2" };
 const SESSION_KEY = "siva-sesion";
 const ESPACIO_KEY = "siva-espacio";
-let ESPACIO = (() => { try { return localStorage.getItem(ESPACIO_KEY) === "vacio" ? "vacio" : "ejemplo"; } catch (e) { return "ejemplo"; } })();
+function esEspacioVacio(esp = ESPACIO) { return esp === "vacio" || esp === "vacio2"; }
+let ESPACIO = (() => {
+  try {
+    const g = localStorage.getItem(ESPACIO_KEY);
+    return g && STORE_KEYS[g] ? g : "ejemplo";
+  } catch (e) { return "ejemplo"; }
+})();
 
 // Página vacía: mantiene la configuración (áreas, tipos, metas, compañías) y la lista
 // de instituciones, pero sin vínculos, contactos, convocatorias ni estudiantes.
@@ -73,16 +80,16 @@ function cargar() {
     const raw = localStorage.getItem(STORE_KEYS[ESPACIO]);
     if (raw) return JSON.parse(raw);
   } catch (e) { /* sin almacenamiento: se usa el estado inicial */ }
-  return ESPACIO === "vacio" ? estadoVacio() : estadoInicial();
+  return esEspacioVacio() ? estadoVacio() : estadoInicial();
 }
 function guardar() {
   try { localStorage.setItem(STORE_KEYS[ESPACIO], JSON.stringify(S)); } catch (e) { /* ignorar */ }
 }
 // Vuelve al estado de partida del espacio actual (con ejemplos o vacío).
-function restablecer() { S = ESPACIO === "vacio" ? estadoVacio() : estadoInicial(); guardar(); }
-// Antes de cada testeo: deja los dos espacios como nuevos.
+function restablecer() { S = esEspacioVacio() ? estadoVacio() : estadoInicial(); guardar(); }
+// Antes de cada testeo: deja los tres espacios como nuevos.
 function restablecerTodo() {
-  try { localStorage.removeItem(STORE_KEYS.vacio); } catch (e) {}
+  try { localStorage.removeItem(STORE_KEYS.vacio); localStorage.removeItem(STORE_KEYS.vacio2); } catch (e) {}
   usarEspacio("ejemplo"); S = estadoInicial(); guardar();
 }
 function usarEspacio(esp) {

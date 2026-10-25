@@ -27,6 +27,7 @@ Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Gru
 | Gestor/a de vinculación | Eduardo; Daniela (sin vínculos aún) | Registra y actualiza los vínculos de su área, crea convocatorias | Mis vínculos |
 | Jefatura | Carolina | Revisa resultados de su gerencia y define metas; no registra | Estadísticas de su gerencia |
 | Administración | Administración | Configura compañías, áreas, tipos, metas e instituciones; ve todo | Estadísticas de toda la empresa |
+| Perfil 0 / Perfil 2 (sandbox) | Perfil 0; Perfil 2 | Misma experiencia que un gestor, en una página vacía guardada aparte | Mis vínculos (sin datos) |
 | Estudiante (externo) | Página pública | Ve convocatorias abiertas y postula sin cuenta | Convocatorias (`#/convocatorias`) |
 
 La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya, Zaldívar) es una asignación propuesta para la demo.
@@ -35,13 +36,14 @@ La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya,
 
 Abre `index.html` en el navegador y aprieta "Iniciar sesión" para elegir una cuenta (o publícalo con GitHub Pages: Settings → Pages → rama `main`, carpeta raíz).
 Puedes entrar como **Eduardo** (usuario de Reclutamiento y selección) o como **Administración**.
-Para probar desde cero está el **Perfil 0**: entra a una página vacía (sin vínculos, contactos ni convocatorias) que se guarda aparte de los datos de ejemplo. Desde el menú de tu perfil puedes cambiar a jefatura o administración sin salir de la página vacía, y vaciarla otra vez cuando quieras.
+Para probar desde cero están el **Perfil 0** y el **Perfil 2**: cada uno entra a su propia página vacía (sin vínculos, contactos ni convocatorias), independiente de los datos de ejemplo y del otro perfil vacío. Desde el menú de tu perfil puedes cambiar a jefatura o administración sin salir de la página vacía, y vaciarla otra vez cuando quieras.
 Si después de un push la página se ve igual, es el caché del navegador: sube el número `?v=` de los archivos en `index.html` (por ejemplo de `?v=2` a `?v=3`) y vuelve a hacer push.
 Los cambios se guardan en el navegador de cada persona; Administración → Datos permite restablecer los datos de ejemplo.
 
 ### Para las sesiones de testeo
 
-- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar` (o el link "Restablecer datos de ejemplo" en el ingreso): borra lo que registró la persona anterior.
+- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar` (o el link "Restablecer todo" en el ingreso): borra lo que registró la persona anterior y reinicia los sandboxes del Perfil 0 y del Perfil 2.
+- Dos testeadores en paralelo: uno entra como **Perfil 0** y otro como **Perfil 2** (cada uno con su página vacía separada).
 - Testeo AMSA: entrar como **Eduardo**. Testeo estudiantes: abrir `#/convocatorias` (sin iniciar sesión).
 - Funciona en celular: las tablas pasan a tarjetas.
 
