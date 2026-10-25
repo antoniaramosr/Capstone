@@ -157,6 +157,12 @@ td small{display:block;color:var(--muted);font-size:11.5px}
 .empty button{margin-top:10px}
 
 /* ---------- Ficha ---------- */
+.ficha-head-col{display:flex;flex-direction:column;align-items:flex-end;gap:8px;max-width:100%}
+.ficha-head-top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;justify-content:flex-end;width:100%}
+.ficha-head-top .stepper{flex:1 1 280px;justify-content:flex-end}
+.ficha-head-col .contact-msg-lbl{margin:4px 0 0;width:100%;max-width:420px;text-align:left}
+.ficha-head-col .contact-msg{width:100%;max-width:420px;font-size:13px;resize:vertical;min-height:52px}
+@media (max-width:760px){.ficha-head-col{align-items:stretch}.ficha-head-top{flex-direction:column}.ficha-head-top .stepper{justify-content:flex-start}}
 .stepper{display:flex;align-items:center;gap:0;flex-wrap:wrap}
 .step{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:4px 12px 4px 5px;font-size:12px;cursor:pointer}
 .step span{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;background:var(--soft)}

@@ -215,11 +215,11 @@ let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "" };
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
   const mailCol = opts.mail !== false && puedeCrear();
-  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Etapa</th><th>Avance</th><th>Calificación</th>${mailCol ? "<th>Correo</th>" : ""}</tr></thead><tbody>${list.map(v => {
+  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Etapa</th><th>Avance</th><th>Calificación</th>${mailCol ? "<th>Contactar</th>" : ""}</tr></thead><tbody>${list.map(v => {
     const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v);
     const falta = comp.pct < 50 ? `<small class="falta" title="Falta: ${esc(comp.faltan.join(", "))}">Faltan ${comp.faltan.length} datos de la ficha</small>` : "";
-    const mail = mailCol && puedeEditar(v) ? (v.contacto.correo ? `<button type="button" class="link-btn" data-mail-v="${v.id}">Escribir</button>` : `<span class="muted small">Sin correo</span>`) : "";
-    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Correo" class="td-mail">${mail}</td>` : ""}</tr>`;
+    const mail = mailCol && puedeEditar(v) ? `<a class="link-btn" href="#/ficha/${v.id}" onclick="event.stopPropagation()">Contactar</a>` : "";
+    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
   }).join("")}</tbody></table></div>`;
 }
 function listaFiltrada() {
@@ -257,7 +257,6 @@ function vMis(p) {
     <div class="card" id="tablaMis">${filasVinculos(listaFiltrada(), { area: ME.admin || hijos(ME.area).length, vacio: "No hay vínculos con estos filtros." })}</div>
   </div>
   <aside class="stack">
-    ${mailInstCardHTML(mios)}
     ${convMisHTML()}
     <div class="card"><p class="card-title">Avisos</p>${av.length ? av.map(a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`).join("") : `<p class="muted small">No tienes avisos.</p>`}</div>
     ${ME.admin ? "" : `<div class="card"><p class="card-title">Otras áreas con mis instituciones</p>${otras.length ? otras.slice(0, 8).map(v => `<a class="mini-row" href="#/ficha/${v.id}"><b>${esc(contraparte(v.contraparte).corto)}</b><span>${esc(nombreArea(v.area))}: ${esc(v.nombre)}</span></a>`).join("") + (otras.length > 8 ? `<p class="muted small">y ${otras.length - 8} más</p>` : "") : `<p class="muted small">Ninguna otra área trabaja con tus instituciones.</p>`}</div>`}
@@ -293,8 +292,8 @@ function vFicha(id) {
   const otrosCont = contactosDe(v.contraparte).filter(k => k.nombre !== v.contacto.nombre).slice(0, 3);
   return `<div class="crumbs"><a href="#/mis">${ME.admin ? "Vínculos" : "Mis vínculos"}</a> / ${rutaArea(v.area).map(a => `<a href="#/area/${a.id}">${esc(a.nombre)}</a>`).join(" / ")} / ${esc(v.nombre)}</div>
   <div class="head-row"><div><h1>${esc(v.nombre)}</h1><p class="sub"><a href="#/contraparte/${c.id}" class="lnk">${esc(c.nombre)}</a>${v.sede ? ", " + esc(v.sede) : ""} · ${esc(tipo(v.tipo).nombre)} · ${compTag(compsDe(v))}</p></div>
-    <div><div class="stepper">${CONFIG.etapas.map((e, i) => `${i ? '<i class="bar"></i>' : ""}<button class="step ${i === v.etapa ? "cur" : i < v.etapa ? "done" : ""}" data-etapa="${i}" ${ed ? "" : "disabled"} title="${esc(e + ": " + etapaAyuda(i, v.tipo))}"><span>${i < v.etapa ? "✓" : i + 1}</span>${e}</button>`).join("")}</div>
-    <p class="etapa-ayuda">${CONFIG.etapas[v.etapa]}: ${esc(etapaAyuda(v.etapa, v.tipo).toLowerCase())}</p></div></div>
+    <div class="ficha-head-col"><div class="ficha-head-top"><div class="stepper">${CONFIG.etapas.map((e, i) => `${i ? '<i class="bar"></i>' : ""}<button class="step ${i === v.etapa ? "cur" : i < v.etapa ? "done" : ""}" data-etapa="${i}" ${ed ? "" : "disabled"} title="${esc(e + ": " + etapaAyuda(i, v.tipo))}"><span>${i < v.etapa ? "✓" : i + 1}</span>${e}</button>`).join("")}</div>${ed ? `<button type="button" class="btn-accent" id="contactInst">Contactar</button>` : ""}</div>
+    <p class="etapa-ayuda">${CONFIG.etapas[v.etapa]}: ${esc(etapaAyuda(v.etapa, v.tipo).toLowerCase())}</p>${ed ? `<label class="f contact-msg-lbl" for="contactMsg">Mensaje para la institución (opcional)</label><textarea class="input contact-msg" id="contactMsg" rows="2" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>` : ""}</div></div>
   ${ed ? "" : `<div class="banner">Este vínculo lo edita ${esc(nombreArea(v.area))}. Puedes verlo completo; si necesitas cambiar algo, escríbele a ${esc(v.responsable || "esa área")}.</div>`}
   <div class="statbar">
     <div><span class="lbl">Avance del plan de trabajo</span><span class="pcell">${barra(pr)}<b>${pr}%</b></span><span class="faltan">${hechos} de ${v.hitos.length} tareas hechas</span></div>
@@ -468,19 +467,6 @@ function abrirCorreoInst(v, extra) {
   a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
   toast("Se abrió tu correo con el texto listo. Tú envías el mensaje.");
 }
-function mailInstCardHTML(mios) {
-  if (!puedeCrear() || !mios.length) return "";
-  const edit = mios.filter(puedeEditar);
-  if (!edit.length) return "";
-  return `<div class="card"><p class="card-title">Correo a la institución</p>
-    <label class="f" for="mailSel">Vínculo</label>
-    <select class="input" id="mailSel">${edit.map(v => `<option value="${v.id}">${esc(v.nombre)} · ${esc(contraparte(v.contraparte).corto)}</option>`).join("")}</select>
-    <label class="f" for="mailMsg">Mensaje</label>
-    <textarea class="input" id="mailMsg" rows="4" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>
-    <button type="button" class="btn-accent wide" id="mailGo">Abrir en mi correo</button>
-    <p class="help">Abre Outlook o tu cliente de correo con el destinatario y el texto listos (como el cuestionario de feedback).</p></div>`;
-}
-
 /* ============================ Áreas ============================ */
 function vAreas() {
   return `<h1>Áreas</h1><p class="sub">Vicepresidencias, gerencias y subáreas que gestionan vínculos.${ME.admin ? ` <a class="lnk" href="#/admin/areas">Administrar áreas</a>` : ""}</p>
@@ -810,15 +796,12 @@ function render() {
 
 function wireVista(ruta, p) {
   $$("[data-ficha]").forEach(tr => { const go = () => location.hash = "#/ficha/" + tr.dataset.ficha; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
-  $$("[data-mail-v]").forEach(b => b.onclick = e => { e.stopPropagation(); const v = vinculo(+b.dataset.mailV); if (v) abrirCorreoInst(v, ""); });
   $$("main [data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
   const ca = $("[data-cambiar-admin]"); if (ca) ca.onclick = () => { iniciarSesion("admin", true); render(); };
 
   const sv = $("#sinVinc"); if (sv) sv.onclick = () => { S.sinVinculos = [...new Set([...(S.sinVinculos || []), ME.id])]; guardar(); render(); toast("Anotado. No tienes que registrar nada más."); };
   if (ruta === "mis" && $("#fq")) {
     const pinta = () => { $("#tablaMis").innerHTML = filasVinculos(listaFiltrada(), { area: ME.admin || hijos(ME.area).length, vacio: "No hay vínculos con estos filtros." }); wireVista("_tabla"); };
-    const mg = $("#mailGo");
-    if (mg) mg.onclick = () => { const v = vinculo(+$("#mailSel").value); if (v) abrirCorreoInst(v, $("#mailMsg").value.trim()); };
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
@@ -830,6 +813,8 @@ function wireVista(ruta, p) {
   if (ruta === "ficha") {
     const v = vinculo(+p); if (!v) return;
     $("#dlReadme").onclick = () => descargar(`README-${v.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-")}.md`, readmeMarkdown(v), "text/markdown");
+    const ci = $("#contactInst");
+    if (ci) ci.onclick = () => abrirCorreoInst(v, ($("#contactMsg") || {}).value || "");
     if (!puedeEditar(v)) return;
     $$("[data-etapa]").forEach(b => b.onclick = () => {
       const n = +b.dataset.etapa, antes = v.etapa; if (n === antes) return;
