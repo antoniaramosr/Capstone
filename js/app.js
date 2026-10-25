@@ -85,7 +85,6 @@ const usuarioEspacioVacio = u => u.espacio && esEspacioVacio(u.espacio);
 const logoAmsa = (blanco = false) => `<img class="${blanco ? "brand-logo" : ""}" src="${blanco ? CONFIG.logos.blanco : CONFIG.logos.color}" alt="Antofagasta Minerals" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'logo-txt '+this.className,textContent:'Antofagasta Minerals'}))">`;
 const pie = () => `<footer class="foot"><div class="foot-inner">${logoAmsa(true).replace('class="brand-logo"', "")}<span>Prototipo IDI2025 · Grupo 2 · datos de ejemplo</span></div></footer>`;
 function shell(active) {
-  const av = calcAvisos(), unread = av.filter(a => !S.leidos.includes(a.id)).length;
   const navs = ME.rol === "jefatura"
     ? [{ k: "dashboard", t: "Estadísticas" }, { k: "mis", t: "Vínculos de mi gerencia", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "metas", t: "Metas" }]
     : [{ k: "mis", t: ME.admin ? "Vínculos" : "Mis vínculos", mega: 1 }, { k: "areas", t: "Áreas", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "dashboard", t: "Estadísticas" }];
@@ -97,13 +96,11 @@ function shell(active) {
       <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa()}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
       <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><a class="nav-btn ${active === n.k ? "active" : ""}" href="#/${n.k}" ${active === n.k ? 'aria-current="page"' : ""} ${n.mega ? 'aria-haspopup="true" aria-expanded="false"' : ""}>${n.t}${n.mega ? '<i class="caret"></i>' : ""}</a></div>`).join("")}</nav>
       <div class="top-right">
-        <button class="btn-ghost-dark" id="btnAvisos" aria-haspopup="true">Avisos <span class="badge ${unread ? "" : "zero"}">${unread}</span></button>
         ${puedeCrear() ? `<button class="btn-accent" id="btnAdd" aria-haspopup="true">+ Añadir <i class="caret light"></i></button>` : ""}
         <button class="user" id="btnUser" aria-haspopup="true"><span class="avatar">${ME.inicial}</span><div><b>${esc(ME.nombre)}</b><small>${esc(perfilTxt(ME))}</small></div></button>
       </div>
     </div>
     <div class="mega" id="mega"><div class="mega-inner" id="megaInner"></div></div>
-    <div class="pop pop-avisos" id="popAvisos"><h5>Avisos</h5>${av.length ? av.map(a => `<button class="pop-item ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><i class="dot"></i><div><b>${esc(a.titulo)}</b><small>${esc(a.texto)}</small></div></button>`).join("") : `<div class="pop-empty">No tienes avisos.</div>`}</div>
     ${puedeCrear() ? `<div class="pop pop-add" id="popAdd"><h5>¿Qué quieres registrar?</h5>
       <a class="pop-item" href="#/nueva-convocatoria"><div><b>Convocatoria para estudiantes</b><small>Prácticas o memorias. Se puede publicar en LinkedIn.</small></div></a>
       <a class="pop-item" href="#/nuevo/char"><div><b>Charla o actividad</b><small>Charlas, ferias o visitas a nuestras oficinas u operaciones.</small></div></a>
@@ -154,7 +151,7 @@ function wireShell() {
   mega.addEventListener("mouseenter", () => clearTimeout(hideT));
   mega.addEventListener("mouseleave", () => { if (desktop()) hideT = setTimeout(close, 200); });
   mega.addEventListener("click", e => { if (e.target.closest("a")) close(); });
-  // Avisos, Añadir y el menú de usuario: se despliegan al pasar el mouse y también con clic.
+  // Añadir y menú de usuario: se despliegan al pasar el mouse y también con clic.
   const hoverPop = (btnSel, popSel) => {
     const btn = $(btnSel), pop = $(popSel); if (!btn) return;
     let t;
@@ -164,15 +161,14 @@ function wireShell() {
     btn.addEventListener("mouseenter", entrar); btn.addEventListener("mouseleave", salir);
     pop.addEventListener("mouseenter", () => clearTimeout(t)); pop.addEventListener("mouseleave", salir);
   };
-  hoverPop("#btnAvisos", "#popAvisos"); hoverPop("#btnAdd", "#popAdd"); hoverPop("#btnUser", "#popUser");
-  $$("[data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
+  hoverPop("#btnAdd", "#popAdd"); hoverPop("#btnUser", "#popUser");
   $$("[data-cambiar]").forEach(b => b.onclick = () => { const id = b.dataset.cambiar; iniciarSesion(id, !CONFIG.usuarios[id].espacio); filtro.comp = ""; location.hash = inicioDe(ME); render(); });
   const vac = $("#vaciar"); if (vac) vac.onclick = () => { const antes = JSON.stringify(S); restablecer(); closePops(); location.hash = inicioDe(ME); render(); toast("Página de prueba vacía otra vez", () => { S = JSON.parse(antes); guardar(); render(); }); };
   $("#salir").onclick = () => { cerrarSesion(); location.hash = "#/login"; render(); };
 }
 function closePops() { $$(".pop").forEach(p => p.classList.remove("show")); }
 // Cada menú se abre justo bajo su botón, alineado a su borde derecho.
-const BTN_DE_POP = { popAvisos: "#btnAvisos", popAdd: "#btnAdd", popUser: "#btnUser" };
+const BTN_DE_POP = { popAdd: "#btnAdd", popUser: "#btnUser" };
 function ubicarPop(p) {
   const b = $(BTN_DE_POP[p.id] || ""); if (!b || window.innerWidth <= 760) { p.style.right = ""; return; }
   p.style.right = Math.max(8, document.documentElement.clientWidth - b.getBoundingClientRect().right) + "px";
