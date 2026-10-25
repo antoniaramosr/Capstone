@@ -447,8 +447,9 @@ function dupAsideHTML(cp, areaId, propioId) {
   const c = contraparte(cp);
   if (!vs.length) return "";
   const as = [...new Set(vs.map(v => v.area))];
+  const filaDup = v => `<div class="it"><b class="it-t">${esc(nombreArea(v.area))}${v.area === areaId ? " (esta área)" : ""}</b><p class="it-sub">${esc(v.nombre)}</p><p class="it-meta">${esc(CONFIG.etapas[v.etapa])}</p>${v.id ? `<a class="panel-link" href="#/ficha/${v.id}" target="_blank" rel="noopener">Ver ficha</a>` : ""}</div>`;
   return `<details class="panel-warn-light dd" open id="dupCard"><summary><span class="k">Ya hay contacto con esta institución</span><b>${as.length} ${as.length > 1 ? "áreas trabajan" : "área trabaja"} con ${esc(c.corto)}</b><span class="o">Ver detalle</span></summary>
-    ${vs.slice(0, 5).map(v => `<div class="it"><b>${esc(nombreArea(v.area))}${v.area === areaId ? " (esta área)" : ""}</b><span class="o">${esc(v.nombre)} · ${CONFIG.etapas[v.etapa]}</span>${v.id ? ` <a class="panel-link" href="#/ficha/${v.id}" target="_blank" rel="noopener">Ver ficha</a>` : ""}</div>`).join("")}
+    ${vs.slice(0, 5).map(filaDup).join("")}
     ${vs.length > 5 ? `<p class="help inner">y ${vs.length - 5} vínculos más.</p>` : ""}
     <p class="help inner">Conviene hablar con estas áreas antes de escribirle a la institución. Puedes crear el vínculo igual.</p>
     <button type="button" class="link-btn sm dup-ocultar" id="dupCerrar">Ocultar aviso</button></details>`;
@@ -864,7 +865,7 @@ function wireVista(ruta, p) {
     if (!$("#guardar")) return;
     const comp = () => {
       const d = leerForm(base), c = completitud(Object.assign({ contacto: {}, financiamiento: {}, hitos: [] }, d));
-      $("#compBox").innerHTML = `<span class="pcell">${barra(c.pct, c.pct < 50 ? "low" : "ok")}<b>${c.pct}%</b></span><ul class="check">${CAMPOS_README.map(x => `<li class="${x[2](d) ? "ok" : ""}">${x[1]}</li>`).join("")}</ul><p class="help">No es obligatorio llenarlo todo ahora. Lo que falte se muestra en la ficha.</p>`;
+      $("#compBox").innerHTML = `<div class="comp-head"><span class="pcell">${barra(c.pct, c.pct < 50 ? "low" : "ok")}<b>${c.pct}%</b></span></div><ul class="check check-aside">${CAMPOS_README.map(x => `<li class="${x[2](d) ? "ok" : ""}">${x[1]}</li>`).join("")}</ul><p class="help">No es obligatorio llenarlo todo ahora. Lo que falte se muestra en la ficha.</p>`;
     };
     // Contactos ya registrados en la institución: se muestran a la derecha (en celular, bajo la institución)
     // y se sugieren al escribir el nombre.
@@ -872,9 +873,15 @@ function wireVista(ruta, p) {
     const contactos = () => {
       const cp = $("#fCp").value, ks = contactosDe(cp), inst = S.contrapartes.find(c => c.id === cp), actual = $("#fCNom").value.trim().toLowerCase();
       $("#contList").innerHTML = ks.map(k => `<option value="${esc(k.nombre)}">${esc(k.cargo)}</option>`).join("");
-      const tarjeta = k => `<div class="it ${k.nombre.toLowerCase() === actual ? "sel" : ""}"><b>${esc(k.nombre)}</b>${k.cargo ? `<span class="o">${esc(k.cargo)}</span>` : ""}
-        ${k.correo ? `<a class="panel-link" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="panel-link" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}
-        ${k.nombre.toLowerCase() === actual ? `<span class="usado">Contacto de este vínculo</span>` : `<button type="button" class="panel-link link-btn" data-usar="${esc(k.nombre)}">Usar este contacto</button>`}</div>`;
+      const tarjeta = k => {
+        const sel = k.nombre.toLowerCase() === actual;
+        const filas = [];
+        if (k.correo) filas.push(`<div class="it-row"><span class="it-lbl">Correo</span><a class="panel-link it-val" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a></div>`);
+        if (k.telefono) filas.push(`<div class="it-row"><span class="it-lbl">Teléfono</span><a class="panel-link it-val" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a></div>`);
+        return `<div class="it ${sel ? "sel" : ""}"><b class="it-t">${esc(k.nombre)}</b>${k.cargo ? `<p class="it-meta">${esc(k.cargo)}</p>` : ""}
+          ${filas.length ? `<div class="it-datos">${filas.join("")}</div>` : ""}
+          <div class="it-act">${sel ? `<span class="usado">Contacto de este vínculo</span>` : `<button type="button" class="link-btn it-usar" data-usar="${esc(k.nombre)}">Usar este contacto</button>`}</div></div>`;
+      };
       const box = $("#contBox");
       if (!box) return;
       if (!cp || cp === "__nueva") {
