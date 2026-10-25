@@ -378,7 +378,7 @@ function vForm(id, tipoPre) {
   const sec = (n, t, sub) => `<div class="sec-h"><span>${n}</span><div><b>${t}</b>${sub ? `<small>${sub}</small>` : ""}</div></div>`;
   return `<div class="crumbs"><a href="#/mis">${ME.admin ? "Vínculos" : "Mis vínculos"}</a> / ${v ? `<a href="#/ficha/${v.id}">${esc(v.nombre)}</a> / Editar ficha` : "Añadir vínculo"}</div>
   <h1>${v ? "Editar ficha" : tPre ? "Añadir: " + esc(tPre.nombre) : "Añadir vínculo"}</h1>${v ? `<p class="sub">Los cambios quedan como una nueva versión en el historial.</p>` : ""}
-  <div class="grid-main form-grid-main"><div class="stack">
+  <div class="grid-main form-grid-main"><div class="stack form-sections">
     ${v ? "" : `<details class="card ai-card"><summary><span>Completar desde un correo o notas</span><span class="ai-tag" data-ai-tag>${AI.etiqueta()}</span></summary>
       <p class="small muted" style="margin:0 0 8px">Pega un correo, notas o la descripción del vínculo y el asistente llena la plantilla. Revisa y corrige antes de guardar.</p>
       <textarea class="input" id="aiTxt" rows="3" placeholder="Ej.: Hoy hablé con María Soto, coordinadora de prácticas de la UCN (msoto@ucn.ejemplo.cl). Quieren hacer una charla de prácticas en marzo para estudiantes de Minas…"></textarea>
@@ -395,9 +395,9 @@ function vForm(id, tipoPre) {
         <p class="help">Marca todas las que participan. Si es para todo el grupo, marca "Todas".</p></div></div>
       <div id="secConQuien">${sec(2, "Con quién", "La institución y la persona con quien hablas")}</div>
       <div class="g2"><div><label class="f" for="fCp">Institución *</label><select class="input" id="fCp"><option value="">Elige una institución</option>${S.contrapartes.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(c => `<option value="${c.id}" ${d.contraparte === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}<option value="__nueva">+ Otra institución…</option></select><div class="err" id="eCp">Elige o agrega la institución.</div></div>
-      <div><label class="f" for="fSede">Sede o ciudad</label><input class="input" id="fSede" value="${esc(d.sede)}" placeholder="Ej.: Antofagasta"></div>
-      <div class="full" id="contBox"></div>
-      <div class="full nueva-cp" id="nuevaCp" hidden><div class="g2"><div><label class="f" for="fCpNom">Nombre de la institución</label><input class="input" id="fCpNom"></div><div><label class="f" for="fCpTipo">Tipo de organización</label><select class="input" id="fCpTipo">${S.tiposOrg.map(t => `<option>${esc(t)}</option>`).join("")}</select></div></div></div>
+      <div><label class="f" for="fSede">Sede o ciudad</label><input class="input" id="fSede" value="${esc(d.sede)}" placeholder="Ej.: Antofagasta"></div></div>
+      <div id="contBox" class="cont-box"></div>
+      <div class="g2"><div class="full nueva-cp" id="nuevaCp" hidden><div class="g2"><div><label class="f" for="fCpNom">Nombre de la institución</label><input class="input" id="fCpNom"></div><div><label class="f" for="fCpTipo">Tipo de organización</label><select class="input" id="fCpTipo">${S.tiposOrg.map(t => `<option>${esc(t)}</option>`).join("")}</select></div></div></div>
       <div><label class="f" for="fCNom">Nombre del contacto</label><input class="input" id="fCNom" value="${esc(d.contacto.nombre)}" placeholder="Escribe o elige uno registrado" list="contList" autocomplete="off"><datalist id="contList"></datalist></div>
       <div><label class="f" for="fCCar">Cargo o unidad</label><input class="input" id="fCCar" value="${esc(d.contacto.cargo)}" placeholder="Ej.: Coordinación de prácticas"></div>
       <div><label class="f" for="fCCor">Correo del contacto</label><input class="input" id="fCCor" type="email" value="${esc(d.contacto.correo)}" placeholder="nombre@institucion.cl"></div>
@@ -453,6 +453,10 @@ function dupAsideHTML(cp, areaId, propioId) {
     ${vs.length > 5 ? `<p class="help inner">y ${vs.length - 5} vínculos más.</p>` : ""}
     <p class="help inner">Conviene hablar con estas áreas antes de escribirle a la institución. Puedes crear el vínculo igual.</p>
     <button type="button" class="link-btn sm dup-ocultar" id="dupCerrar">Ocultar aviso</button></details>`;
+}
+function dupAsideReabrirHTML(cp) {
+  const c = contraparte(cp);
+  return `<button type="button" class="aviso-pill" id="dupReabrir">Mostrar aviso · otras áreas en ${esc(c.corto)}</button>`;
 }
 function textoCorreoInst(v, extra) {
   const c = contraparte(v.contraparte);
@@ -875,12 +879,15 @@ function wireVista(ruta, p) {
       $("#contList").innerHTML = ks.map(k => `<option value="${esc(k.nombre)}">${esc(k.cargo)}</option>`).join("");
       const tarjeta = k => {
         const sel = k.nombre.toLowerCase() === actual;
-        const filas = [];
-        if (k.correo) filas.push(`<div class="it-row"><span class="it-lbl">Correo</span><a class="panel-link it-val" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a></div>`);
-        if (k.telefono) filas.push(`<div class="it-row"><span class="it-lbl">Teléfono</span><a class="panel-link it-val" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a></div>`);
-        return `<div class="it ${sel ? "sel" : ""}"><b class="it-t">${esc(k.nombre)}</b>${k.cargo ? `<p class="it-meta">${esc(k.cargo)}</p>` : ""}
-          ${filas.length ? `<div class="it-datos">${filas.join("")}</div>` : ""}
-          <div class="it-act">${sel ? `<span class="usado">Contacto de este vínculo</span>` : `<button type="button" class="link-btn it-usar" data-usar="${esc(k.nombre)}">Usar este contacto</button>`}</div></div>`;
+        const dl = [];
+        if (k.correo) dl.push(`<div class="contact-field"><span class="contact-lbl">Correo</span><a class="contact-val" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a></div>`);
+        if (k.telefono) dl.push(`<div class="contact-field"><span class="contact-lbl">Teléfono</span><a class="contact-val" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a></div>`);
+        return `<article class="contact-card${sel ? " sel" : ""}">
+          <h4 class="contact-name">${esc(k.nombre)}</h4>
+          ${k.cargo ? `<p class="contact-cargo">${esc(k.cargo)}</p>` : ""}
+          ${dl.length ? `<div class="contact-fields">${dl.join("")}</div>` : ""}
+          ${sel ? `<p class="contact-badge">Contacto de este vínculo</p>` : `<button type="button" class="btn-outline sm contact-use" data-usar="${esc(k.nombre)}">Usar este contacto</button>`}
+        </article>`;
       };
       const box = $("#contBox");
       if (!box) return;
@@ -896,11 +903,17 @@ function wireVista(ruta, p) {
     $("#fCNom").addEventListener("change", () => { const k = contactosDe($("#fCp").value).find(x => x.nombre === $("#fCNom").value); if (k) { if (!$("#fCCar").value) $("#fCCar").value = k.cargo || ""; if (!$("#fCCor").value) $("#fCCor").value = k.correo || ""; if (!$("#fCTel").value) $("#fCTel").value = k.telefono || ""; comp(); } contactos(); });
     const dup = () => {
       $("#nuevaCp").hidden = $("#fCp").value !== "__nueva";
-      const cp = $("#fCp").value;
-      if (!cp || cp === "__nueva" || sessionStorage.getItem("siva-ocultar-dup-" + cp)) { $("#dupAside").innerHTML = ""; return; }
-      $("#dupAside").innerHTML = dupAsideHTML(cp, $("#fArea").value, base ? base.id : null);
+      const cp = $("#fCp").value, aside = $("#dupAside");
+      if (!cp || cp === "__nueva") { aside.innerHTML = ""; return; }
+      const key = "siva-ocultar-dup-" + cp;
+      if (sessionStorage.getItem(key)) {
+        aside.innerHTML = dupAsideReabrirHTML(cp);
+        $("#dupReabrir").onclick = () => { sessionStorage.removeItem(key); dup(); };
+        return;
+      }
+      aside.innerHTML = dupAsideHTML(cp, $("#fArea").value, base ? base.id : null);
       const x = $("#dupCerrar");
-      if (x) x.onclick = e => { e.preventDefault(); e.stopPropagation(); sessionStorage.setItem("siva-ocultar-dup-" + cp, "1"); $("#dupAside").innerHTML = ""; };
+      if (x) x.onclick = e => { e.preventDefault(); e.stopPropagation(); sessionStorage.setItem(key, "1"); dup(); };
     };
     const fin = () => { const t = $("#fFinT").value; $("#finFuenteBox").hidden = !["Presupuesto del área", "Mixto", "Fondo externo (CORFO, ANID u otro)"].includes(t); $("#fFinFLbl").textContent = t === "Fondo externo (CORFO, ANID u otro)" ? "¿Qué fondo?" : "Presupuesto del área: partida o centro de costo"; };
     $("main").addEventListener("input", comp); $("main").addEventListener("change", comp);
