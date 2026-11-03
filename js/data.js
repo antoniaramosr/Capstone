@@ -145,7 +145,8 @@ function construirVinculosSemilla(areas, tipos) {
       hitos: (t ? t.hitos : []).map((h, j) => ({ t: h, ok: j < hechos })),
       comentarios: x.n || "",
       criterios: crit, calif: x.c ? +(Object.values(crit).reduce((a, b) => a + b, 0) / Object.values(crit).length).toFixed(1) : null, aporta: x.a || null,
-      versiones: [{ v: 1, fecha: "2026-09-15", autor: "Mapeo ANF-COQ", resumen: "Registro inicial importado desde el mapeo de instituciones formativas." }],
+      // Fecha del último cambio, relativa a hoy, para que el semáforo de salud tenga los tres colores.
+      versiones: [{ v: 1, fecha: new Date(Date.now() - [5, 12, 25, 40, 75, 18, 90, 8, 33, 64][i % 10] * 86400000).toISOString().slice(0, 10), autor: "Mapeo ANF-COQ", resumen: "Registro inicial importado desde el mapeo de instituciones formativas." }],
       reuniones: [], cuestionarios: []
     };
   });

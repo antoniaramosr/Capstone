@@ -55,6 +55,15 @@ function estadoInicial() {
     const hace = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
     sr.cuestionarios.push({ id: 2, fecha: hace(23), fechaEnvio: hace(22), estado: "enviado", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: [] });
   }
+  // Dos miradas que no calzan: el área pone buena nota y la institución no.
+  const dif = vinculos.find(v => v.contraparte === "uch" && v.tipo === "char" && v.calif >= 4);
+  if (dif) dif.cuestionarios.push({ id: 4, fecha: "2026-08-20", fechaEnvio: "2026-08-20", fechaResp: "2026-08-26", via: "link", estado: "respondido", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: ["2", "Parcialmente", "2", "Que nos avisen antes de cambiar la fecha de la charla.", "Sí", "Tal vez"], comentario: "La charla se movió dos veces y bajó la asistencia." });
+  // Un vínculo activo sin movimiento hace más de dos meses, para ver el semáforo en rojo.
+  const quieto = vinculos.find(v => v.area === "rys" && v.etapa > 0 && v.etapa < 3 && v !== ej && v !== sr && v.nombre === "Meet the Office");
+  if (quieto) quieto.versiones[0].fecha = new Date(Date.now() - 75 * 86400000).toISOString().slice(0, 10);
+  // Cuestionario reciente (sin vencer) en el vínculo de memoristas, para probar la vista de la institución.
+  const mem = vinculos.find(v => v.nombre === "Búsqueda y difusión de memoristas");
+  if (mem) mem.cuestionarios.push({ id: 3, fecha: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10), fechaEnvio: new Date(Date.now() - 4 * 86400000).toISOString().slice(0, 10), estado: "enviado", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: [] });
   return {
     areas, tipos,
     tiposOrg: [...CONFIG.tiposOrg],

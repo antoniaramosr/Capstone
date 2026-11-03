@@ -39,10 +39,40 @@ const CONFIG = {
     { id: "inn",    nombre: "Proyecto de innovación o I+D", hitos: ["Definir problema", "Acuerdo o NDA", "Ejecución", "Resultados", "Decisión de escalamiento"], criterios: ["Calidad de los resultados", "Cumplimiento de plazos", "Potencial de escalamiento"] }
   ],
 
+  // Rúbrica: qué significa cada nivel (1 a 5) de cada criterio de calificación.
+  rubrica: {
+    "Cumplimiento de lo acordado": ["No se cumplió casi nada", "Se cumplió menos de la mitad", "Se cumplió más o menos la mitad", "Se cumplió casi todo", "Se cumplió todo lo acordado"],
+    "Rapidez de respuesta de la institución": ["No respondió", "Respondió después de un mes", "Respondió en dos a cuatro semanas", "Respondió en una semana", "Respondió en menos de tres días"],
+    "Utilidad para el área": ["No le sirvió al área", "Sirvió poco y con mucho esfuerzo", "Sirvió en parte", "Sirvió para lo que se buscaba", "Sirvió más de lo esperado"],
+    "Utilidad de las sesiones para el área": ["Las sesiones no aportaron", "Aportaron muy poco", "Aportaron a veces", "Casi siempre aportaron algo útil", "Cada sesión dejó algo útil"],
+    "Información que llega al área": ["No llega información", "Llega tarde o incompleta", "Llega a veces", "Llega casi siempre", "Llega a tiempo y completa"],
+    "Relación con la institución": ["La relación se cortó", "Hay roces o poca confianza", "Relación correcta, sin más", "Buena relación y confianza", "Relación muy cercana, se proponen cosas nuevas"],
+    "Asistencia e interés de estudiantes": ["Casi nadie asistió", "Asistieron pocos y con poco interés", "Asistencia media", "Buena asistencia y preguntas", "Sala llena y mucho interés"],
+    "Coordinación con la institución": ["No hubo coordinación", "Hubo que insistir mucho", "Coordinación con algunos problemas", "Coordinación fluida", "La institución tomó la iniciativa"],
+    "Postulaciones o contactos que generó": ["No generó nada", "Uno o dos contactos", "Algunos contactos o postulaciones", "Varias postulaciones", "Muchas postulaciones de calidad"],
+    "Calidad de las y los estudiantes": ["No cumplieron lo mínimo", "Cumplieron con mucha ayuda", "Cumplieron lo esperado con ayuda", "Buen nivel y autonomía", "Nivel destacado, se les quiere contratar"],
+    "Calidad del trabajo entregado": ["No entregaron trabajo útil", "El trabajo no se pudo usar", "Se usó una parte", "Se usó casi todo", "Se usó completo y aportó ideas nuevas"],
+    "Calidad de lo entregado": ["No entregaron nada útil", "Poco se pudo usar", "Se usó una parte", "Se usó casi todo", "Se usó completo y aportó ideas nuevas"],
+    "Compromiso de estudiantes y profesores": ["Faltaron a casi todo", "Poco compromiso", "Compromiso irregular", "Buen compromiso", "Muy comprometidos de principio a fin"],
+    "Calidad del programa": ["El programa no sirvió", "Muchos problemas de contenido", "Programa correcto", "Buen programa", "Programa excelente, se recomienda repetirlo"],
+    "Participación": ["Casi nadie participó", "Menos de la mitad de los cupos", "Alrededor de la mitad de los cupos", "Casi todos los cupos", "Cupos llenos y lista de espera"],
+    "Aplicación en el trabajo": ["No se aplica", "Se aplica muy poco", "Se aplica a veces", "Se aplica seguido", "Se aplica todos los días"],
+    "Calidad de las y los candidatos": ["No cumplían los perfiles", "Pocos cumplían", "La mitad cumplía", "Casi todos cumplían", "Todos cumplían y algunos destacaron"],
+    "Contrataciones logradas": ["Ninguna", "Menos de un cuarto de lo esperado", "Cerca de la mitad de lo esperado", "Casi todo lo esperado", "Se superó lo esperado"],
+    "Calidad de los resultados": ["Sin resultados útiles", "Resultados débiles", "Resultados aceptables", "Buenos resultados", "Resultados que se pueden aplicar ya"],
+    "Cumplimiento de plazos": ["No se cumplió ningún plazo", "Atrasos grandes", "Algunos atrasos", "Casi todo a tiempo", "Todo a tiempo"],
+    "Potencial de escalamiento": ["No se puede escalar", "Muy difícil de escalar", "Se podría escalar con cambios grandes", "Se puede escalar con ajustes", "Listo para escalar a otras faenas"],
+    "Calidad del resultado": ["Sin resultado útil", "Resultado débil", "Resultado aceptable", "Buen resultado", "Resultado destacado"]
+  },
+
   tiposOrg: [
     "Universidad", "Centro de formación técnica", "Instituto profesional", "OTEC",
     "Centro de investigación", "Fundación", "Empresa", "Gremio o asociación", "Organismo público"
   ],
+
+  // Salud del vínculo (semáforo en Mis vínculos). Días sin movimiento: reuniones,
+  // cuestionarios o cambios en la ficha. Es una propuesta: falta validarla con la contraparte.
+  salud: { alDia: 30, urgente: 60 },
 
   etapas: ["Exploración", "Formalización", "En ejecución", "Cerrado"],
   // Qué significa cada etapa cuando el tipo de vínculo no trae su propia explicación.
@@ -83,6 +113,7 @@ const CONFIG = {
   // Usuarios de prueba del prototipo.
   usuarios: {
     eduardo:  { id: "eduardo", nombre: "Eduardo", correo: "eduardo@aminerals.cl", inicial: "E", rol: "gestor", area: "rys", compania: "corp", admin: false },
+    matias:   { id: "matias", nombre: "Matías", correo: "matias@aminerals.cl", inicial: "M", rol: "gestor", area: "rys", compania: "corp", admin: false, nota: "Del mismo equipo que Eduardo: para probar el traspaso de un vínculo" },
     daniela:  { id: "daniela", nombre: "Daniela", correo: "daniela@aminerals.cl", inicial: "D", rol: "gestor", area: "acds", compania: "cen", admin: false, nota: "Recién llega: aún no tiene vínculos" },
     carolina: { id: "carolina", nombre: "Carolina", correo: "carolina@aminerals.cl", inicial: "C", rol: "jefatura", area: "doc", compania: "corp", admin: false },
     perfil0:  { id: "perfil0", nombre: "Perfil 0", correo: "prueba@aminerals.cl", inicial: "0", rol: "gestor", area: "rys", compania: "corp", admin: false, espacio: "vacio", nota: "Entra a la página vacía, sin ningún vínculo registrado, para probar desde cero" },

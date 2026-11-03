@@ -945,3 +945,76 @@ details.mas[open] > summary{margin-bottom:6px}
 .dash-body{display:flex;flex-direction:column;gap:var(--block-gap)}
 .dash-body > *{margin:0!important}
 .h-sec{display:block}.h-sec .fold-n{vertical-align:3px;margin-left:6px}
+
+/* ===== Rama Anto v3: tres vistas, salud, rúbrica, traspaso ===== */
+/* Feedback promedio bajo el ciclo */
+.ciclo-fb{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:12px;font-size:13px;color:var(--ink)}
+/* Seguimiento del estudiante (AMSA) */
+.seg-btn{display:block;margin-top:4px}
+tr.seg-row > td{background:#F8FAFA;padding:0!important}
+.segui{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 18px}
+.segui-form{border-top:1px solid var(--line);margin-top:12px;padding-top:4px}
+.fb-t{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13px}
+.fb-t p{margin:6px 0}
+.fb-t ul{margin:2px 0 4px;padding-left:18px}
+.fb-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fb-nota{margin-left:auto;font-weight:700;color:var(--brand);font-size:12.5px}
+@media (max-width:760px){.segui{grid-template-columns:1fr}}
+/* Vista del estudiante */
+.fases{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap}
+.fases span{flex:1;min-width:90px;text-align:center;padding:7px 8px;border-radius:6px;background:var(--soft);font-size:12.5px;font-weight:600;color:var(--muted)}
+.fases span.hecho{background:#E3F0EC;color:var(--ok)}
+.fases span.on{background:var(--brand);color:#fff}
+.est-card .fold{margin-top:14px;box-shadow:none}
+.est-sec{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+.est-sec .h3{font-size:16px;color:var(--brand);margin:0 0 10px}
+.est-card .qa{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ok-txt{color:var(--ok);font-weight:600;font-size:13px;margin:0 0 8px}
+.chk.aut{margin-top:12px;font-weight:600}
+main.pub .card + .card{margin-top:var(--block-gap)}
+/* Semáforo de salud: el color siempre va con una palabra */
+.salud{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.salud i{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.s-verde{color:var(--ok)}.s-verde i{background:#1E8C5A}
+.s-amarillo{color:#8A6A00}.s-amarillo i{background:#E0B000}
+.s-rojo{color:var(--err)}.s-rojo i{background:var(--err)}
+.s-cerrado{color:var(--muted);font-weight:500}.s-cerrado i{background:#B7B2AF}
+.salud-m{display:none}
+@media (max-width:760px){.salud-m{display:block;color:var(--muted)}}
+/* Resumen de la semana */
+.sem{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.sem-col .lbl2{display:flex;align-items:center;gap:6px;margin-top:0!important}
+.sem-acts{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.sem-acts .help{margin:0}
+@media (max-width:900px){.sem{grid-template-columns:1fr}}
+/* Rúbrica y dos miradas */
+.rubrica{font-size:12px;margin:4px 0 10px!important;color:var(--ink)!important;min-height:18px}
+.dos-miradas{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.dm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dm > div{background:var(--soft);border-radius:8px;padding:10px}
+.dm b{display:block;font-size:22px;color:var(--brand);line-height:1.1}
+.dm span{font-size:11.5px;color:var(--muted)}
+.conversar{margin:10px 0 0!important;padding:8px 10px;border-radius:6px;background:#FFF6DD;color:#7A5B00!important;font-size:12.5px!important;font-weight:600}
+/* Traspaso */
+.tp-form{margin-top:12px;border-top:1px solid var(--line);padding-top:4px}
+.tp-card{border-left:4px solid var(--gold)}
+.tp-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:12px}
+.tp-list{margin:0 0 8px;padding-left:18px;font-size:13px}
+.tp-list.tp-alert li{color:var(--err)}
+@media (max-width:760px){.tp-grid{grid-template-columns:1fr}}
+.btn-outline.wide{width:100%}
+/* Notas de reunión desde el celular */
+.mic-big{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin:4px 0 12px;border:0;border-radius:10px;background:var(--brand);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.mic-big.on{background:var(--accent);animation:pulso 1.4s infinite}
+@keyframes pulso{50%{opacity:.8}}
+.apr-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.apr-row{align-items:center}
+.apr-row input{position:absolute;opacity:0;pointer-events:none}
+.apr-row > span:first-of-type{flex:1}
+.apr{flex-shrink:0;border:1px solid var(--brand-2);border-radius:20px;padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--brand-2);min-width:96px;text-align:center}
+.apr::before{content:"Aprobar"}
+.apr-row input:checked ~ .apr{background:var(--ok);border-color:var(--ok);color:#fff}
+.apr-row input:checked ~ .apr::before{content:"✓ Aprobado"}
+.apr-row input:focus-visible ~ .apr{outline:2px solid var(--brand-2);outline-offset:2px}
+@media (max-width:600px){.drawer{width:100vw}.drawer-b .form-actions button{flex:1;min-height:46px}.apr{min-height:40px;display:grid;place-items:center}}
+.aviso-ok{margin-right:8px}

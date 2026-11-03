@@ -8,6 +8,13 @@ const CONV_TIPOS = ["Práctica profesional", "Memoria", "Práctica de verano"];
 // mientras hace su práctica o memoria, hasta que termina (postula → mientras → sale).
 const POST_ESTADOS = ["Postuló", "En revisión", "Aceptado", "No aceptado", "En práctica", "Terminó"];
 const ACEPTADOS = ["Aceptado", "En práctica", "Terminó"];
+// Preguntas que responde el estudiante al terminar (escala de 1 a 5).
+const PREGUNTAS_EST = ["¿Qué tan útil fue la práctica o memoria para tu formación?", "¿Cómo fue el acompañamiento de tu tutor o tutora?", "¿Qué tan claras fueron las tareas que te pidieron?", "¿La recomendarías a otros estudiantes?"];
+// Etapas de la práctica o memoria que ve el estudiante mientras está en AMSA.
+const ETAPAS_PRACTICA = ["Inducción", "Seguimiento a mitad de periodo", "Cierre y evaluación"];
+const promEst = p => p.feedbackEstudiante ? p.feedbackEstudiante.respuestas.filter(Boolean).reduce((a, b) => a + +b, 0) / p.feedbackEstudiante.respuestas.filter(Boolean).length : null;
+const notasTutor = p => (p.feedbackTutor || []).filter(f => f.nota != null).map(f => +f.nota);
+const linkEstudiante = p => location.href.split("#")[0] + "#/mi-postulacion/" + encodeURIComponent(p.correo);
 // Datos guardados con las etiquetas anteriores ("Quedó" / "No quedó").
 const ESTADO_ANTIGUO = { "Quedó": "Aceptado", "No quedó": "No aceptado" };
 
@@ -24,7 +31,11 @@ function convSemilla(s) {
     estado: "Abierta", creada: "2026-10-01",
     linkedin: { publicada: true, fecha: "2026-10-02" },
     postulantes: [
-      { nombre: "Camila Rojas", correo: "camila.rojas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-03", estado: "En práctica", avisado: "En práctica" },
+      { nombre: "Camila Rojas", correo: "camila.rojas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-03", estado: "En práctica", avisado: "En práctica",
+        feedbackTutor: [
+          { fecha: haceDias(20), autor: "Rodrigo Salinas (tutor)", texto: "Buena primera semana. Entendió rápido el proceso de planificación de corto plazo y pregunta cuando tiene dudas.", nota: null, propuestas: ["Anotar en una bitácora lo que aprende en cada reunión de turno", "Agendar una visita a la mina con el equipo de geotecnia"] },
+          { fecha: haceDias(6), autor: "Rodrigo Salinas (tutor)", texto: "Revisión de mitad de periodo: el modelo de su memoria va bien encaminado. Le falta ordenar los datos de producción antes de seguir.", nota: 6.0, propuestas: ["Limpiar la base de producción de 2025 antes del próximo avance", "Presentar un avance corto al equipo el viernes"] }
+        ] },
       { nombre: "Diego Fuentes", correo: "diego.fuentes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-04", estado: "En revisión" },
       { nombre: "Valentina Muñoz", correo: "valentina.munoz@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil Industrial", fecha: "2026-10-06", estado: "Postuló" },
       { nombre: "Tomás Herrera", correo: "tomas.herrera@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-07", estado: "Postuló" }
@@ -36,8 +47,17 @@ function convSemilla(s) {
     descripcion: "Práctica en las áreas de planificación y geología de la operación.", requisitos: "Estar en cuarto o quinto año.",
     estado: "Cerrada", creada: "2025-10-15", linkedin: { publicada: true, fecha: "2025-10-16" },
     postulantes: [
-      { nombre: "Sofía Pizarro", correo: "sofia.pizarro@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Geología", fecha: "2025-10-20", estado: "Terminó", avisado: "Terminó" },
-      { nombre: "Matías Contreras", correo: "matias.contreras@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-21", estado: "Terminó", avisado: "Terminó" },
+      { nombre: "Sofía Pizarro", correo: "sofia.pizarro@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Geología", fecha: "2025-10-20", estado: "Terminó", avisado: "Terminó",
+        feedbackTutor: [
+          { fecha: "2026-01-20", autor: "Carla Fuentes (tutora)", texto: "Se adaptó bien al turno y cumplió con el mapeo del sector norte.", nota: null, propuestas: ["Pedir revisión de sus mapas antes de entregarlos"] },
+          { fecha: "2026-02-27", autor: "Carla Fuentes (tutora)", texto: "Cierre: entregó un mapeo ordenado y útil para el equipo. Trabaja con autonomía.", nota: 6.5, propuestas: ["Seguir practicando la presentación de resultados a jefaturas"], final: true }
+        ],
+        feedbackEstudiante: { respuestas: [5, 4, 4, 5], comentario: "Aprendí mucho en terreno. Me habría servido una inducción más larga en seguridad.", fecha: "2026-03-02" },
+        informe: { nombre: "Informe_practica_Sofia_Pizarro.pdf", fecha: "2026-03-05" }, notaUniversidad: 6.6, autorizaVerNota: true },
+      { nombre: "Matías Contreras", correo: "matias.contreras@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-21", estado: "Terminó", avisado: "Terminó",
+        feedbackTutor: [{ fecha: "2026-02-27", autor: "Jorge Rivera (tutor)", texto: "Cierre: buen trabajo en el análisis de tiempos de ciclo. Le costó cumplir los plazos de las primeras entregas.", nota: 5.8, propuestas: ["Planificar las entregas con hitos semanales"], final: true }],
+        feedbackEstudiante: { respuestas: [4, 3, 3, 4], comentario: "El tutor tenía poco tiempo para reuniones.", fecha: "2026-03-01" },
+        informe: { nombre: "Informe_Matias_Contreras.pdf", fecha: "2026-03-03" }, notaUniversidad: 5.9, autorizaVerNota: false },
       { nombre: "Javiera Castillo", correo: "javiera.castillo@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-22", estado: "Terminó", avisado: "Terminó" },
       { nombre: "Lucas Morales", correo: "lucas.morales@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Geología", fecha: "2025-10-24", estado: "No aceptado", avisado: "No aceptado" },
       { nombre: "Catalina Reyes", correo: "catalina.reyes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Geología", fecha: "2025-10-25", estado: "No aceptado", avisado: "No aceptado" },
@@ -45,6 +65,9 @@ function convSemilla(s) {
     ]
   }];
 }
+
+// Fecha relativa a hoy, para que los ejemplos no envejezcan.
+function haceDias(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
 
 // Los datos guardados antes de esta versión no traen convocatorias: se agregan.
 const _estadoInicialBase = estadoInicial;
@@ -72,7 +95,9 @@ const pct = (n, d) => d ? Math.round(n / d * 100) : 0;
 // haciendo su práctica o memoria y cuántos ya terminaron.
 function cicloDe(postulantes) {
   const n = estados => postulantes.filter(p => estados.includes(p.estado)).length;
-  return { post: postulantes.length, acept: n(ACEPTADOS), mientras: n(["En práctica"]), sale: n(["Terminó"]), no: n(["No aceptado"]), rev: n(["Postuló", "En revisión"]) };
+  const fe = postulantes.map(promEst).filter(x => x != null), ft = postulantes.flatMap(notasTutor);
+  return { post: postulantes.length, acept: n(ACEPTADOS), mientras: n(["En práctica"]), sale: n(["Terminó"]), no: n(["No aceptado"]), rev: n(["Postuló", "En revisión"]),
+    fbEst: fe.length ? fe.reduce((a, b) => a + b, 0) / fe.length : null, nEst: fe.length, fbTut: ft.length ? ft.reduce((a, b) => a + b, 0) / ft.length : null, nTut: ft.length };
 }
 function cicloHTML(k, nota) {
   const paso = (num, t, sub, extra = "") => `<div class="ciclo-paso ${extra}"><b>${num}</b><span>${t}</span><small>${sub}</small></div>`;
@@ -81,7 +106,7 @@ function cicloHTML(k, nota) {
     ${paso(k.acept, "Aceptados", pct(k.acept, k.post) + "% de quienes postulan", "ok")}<i class="ciclo-flecha" aria-hidden="true">→</i>
     ${paso(k.mientras, "Mientras", "en práctica o memoria")}<i class="ciclo-flecha" aria-hidden="true">→</i>
     ${paso(k.sale, "Sale", pct(k.sale, k.acept) + "% de los aceptados terminó")}
-  </div>${nota ? `<p class="help">${nota}</p>` : ""}`;
+  </div>${k.fbEst != null || k.fbTut != null ? `<div class="ciclo-fb">${k.fbEst != null ? `<span>Los estudiantes evalúan su experiencia con <b>${num1(k.fbEst)} de 5</b> (${k.nEst} ${k.nEst === 1 ? "respuesta" : "respuestas"})</span>` : ""}${k.fbTut != null ? `<span>Nota promedio de los tutores: <b>${num1(k.fbTut)} de 7</b> (${k.nTut} ${k.nTut === 1 ? "nota" : "notas"})</span>` : ""}</div>` : ""}${nota ? `<p class="help">${nota}</p>` : ""}`;
 }
 
 // Correo que le llega al estudiante cuando cambia su estado.
@@ -90,10 +115,10 @@ function correoEstudiante(c, p) {
   const firma = `\n\nSaludos,\n${nombreArea(convArea(c))}\nAntofagasta Minerals`;
   const txt = {
     "En revisión": [`Tu postulación está en revisión · ${c.titulo}`, `Hola ${nombre}:\n\nRecibimos tu postulación a "${c.titulo}" y la estamos revisando. Puede que te contactemos para una entrevista.\n\nPuedes ver en qué va tu postulación aquí: ${location.href.split("#")[0]}#/mi-postulacion`],
-    "Aceptado": [`¡Fuiste aceptado/a! · ${c.titulo}`, `Hola ${nombre}:\n\nTe contamos que fuiste aceptado/a en "${c.titulo}". En los próximos días te escribiremos con tu fecha de ingreso, quién será tu tutor o tutora y qué necesitas para el primer día.`],
+    "Aceptado": [`¡Fuiste aceptado/a! · ${c.titulo}`, `Hola ${nombre}:\n\nTe contamos que fuiste aceptado/a en "${c.titulo}". En los próximos días te escribiremos con tu fecha de ingreso, quién será tu tutor o tutora y qué necesitas para el primer día.\n\nTu página personal, donde verás tu etapa y el feedback de tu tutor: ${linkEstudiante(p)}`],
     "No aceptado": [`Resultado de tu postulación · ${c.titulo}`, `Hola ${nombre}:\n\nGracias por postular a "${c.titulo}". Esta vez no fuiste seleccionado/a. Te invitamos a revisar las otras convocatorias abiertas: ${location.href.split("#")[0]}#/convocatorias`],
-    "En práctica": [`Bienvenida/o a Antofagasta Minerals · ${c.titulo}`, `Hola ${nombre}:\n\nTe damos la bienvenida. Desde hoy quedas registrado/a en tu ${c.tipo.toLowerCase()}. Ante cualquier duda puedes escribirnos a este correo.`],
-    "Terminó": [`Cierre de tu ${c.tipo.toLowerCase()} · ${c.titulo}`, `Hola ${nombre}:\n\nTerminaste tu ${c.tipo.toLowerCase()}. Gracias por tu trabajo. Pronto te enviaremos una encuesta corta sobre tu experiencia para mejorar el programa.`]
+    "En práctica": [`Bienvenida/o a Antofagasta Minerals · ${c.titulo}`, `Hola ${nombre}:\n\nTe damos la bienvenida. Desde hoy quedas registrado/a en tu ${c.tipo.toLowerCase()}. En tu página personal vas a ver las etapas y el feedback de tu tutor o tutora:\n${linkEstudiante(p)}`],
+    "Terminó": [`Cierre de tu ${c.tipo.toLowerCase()} · ${c.titulo}`, `Hola ${nombre}:\n\nTerminaste tu ${c.tipo.toLowerCase()}. Gracias por tu trabajo. En tu página personal puedes ver el feedback final de tu tutor o tutora, contarnos cómo te fue, subir tu informe y, si quieres, la nota que te puso tu universidad:\n${linkEstudiante(p)}`]
   }[p.estado];
   return txt ? { asunto: txt[0], cuerpo: txt[1] + firma } : null;
 }
@@ -236,7 +261,7 @@ function vConvocatoria(id) {
   <div class="card"><p class="card-title">Ciclo de las y los estudiantes</p>${cicloHTML(cicloDe(c.postulantes))}</div>
   <div class="grid-main"><div class="stack">
     <div class="card"><div class="head-row"><p class="card-title">Postulantes</p><span class="muted small">Cambia el estado a medida que revisas. Cada cambio prepara el correo para avisarle al estudiante.</span></div>
-      ${c.postulantes.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Postuló</th><th>Estado</th><th>Aviso al estudiante</th></tr></thead><tbody>${c.postulantes.map((p, i) => `<tr><td><span class="t">${esc(p.nombre)}</span><small><a class="lnk" href="mailto:${esc(p.correo)}">${esc(p.correo)}</a></small></td><td>${esc(p.universidad)}<small>${esc(p.carrera)}</small></td><td><small style="color:var(--ink)">${fechaTxt(p.fecha)}</small></td><td><select class="input sm est-${POST_ESTADOS.indexOf(p.estado)}" data-post="${i}" ${ed ? "" : "disabled"} aria-label="Estado de ${esc(p.nombre)}">${POST_ESTADOS.map(e => `<option ${p.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></td><td>${correoEstudiante(c, p) ? (p.avisado === p.estado ? `<span class="aviso-ok">Avisado</span>${ed ? ` <button class="link-btn" data-avisar="${i}">Ver correo</button>` : ""}` : ed ? `<button class="link-btn" data-avisar="${i}">Avisar por correo</button>` : `<span class="muted small">Pendiente</span>`) : `<span class="muted small">No aplica</span>`}</td></tr>`).join("")}</tbody></table></div>`
+      ${c.postulantes.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Postuló</th><th>Estado</th><th>Aviso y seguimiento</th></tr></thead><tbody>${c.postulantes.map((p, i) => `<tr><td><span class="t">${esc(p.nombre)}</span><small><a class="lnk" href="mailto:${esc(p.correo)}">${esc(p.correo)}</a></small></td><td>${esc(p.universidad)}<small>${esc(p.carrera)}</small></td><td><small style="color:var(--ink)">${fechaTxt(p.fecha)}</small></td><td><select class="input sm est-${POST_ESTADOS.indexOf(p.estado)}" data-post="${i}" ${ed ? "" : "disabled"} aria-label="Estado de ${esc(p.nombre)}">${POST_ESTADOS.map(e => `<option ${p.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></td><td>${correoEstudiante(c, p) ? (p.avisado === p.estado ? `<span class="aviso-ok">Avisado</span>${ed ? ` <button class="link-btn" data-avisar="${i}">Ver correo</button>` : ""}` : ed ? `<button class="link-btn" data-avisar="${i}">Avisar por correo</button>` : `<span class="muted small">Pendiente</span>`) : `<span class="muted small">No aplica</span>`}${ACEPTADOS.includes(p.estado) ? `<button class="link-btn seg-btn" data-seg="${i}" aria-expanded="${segAbierto === i}">${segAbierto === i ? "Cerrar seguimiento" : "Seguimiento" + ((p.feedbackTutor || []).length ? ` (${p.feedbackTutor.length})` : "")}</button>` : ""}</td></tr>${segAbierto === i && ACEPTADOS.includes(p.estado) ? `<tr class="seg-row"><td colspan="5">${segHTML(c, p, i, ed)}</td></tr>` : ""}`).join("")}</tbody></table></div>`
         : `<div class="empty">Aún no hay postulaciones. Comparte el link de postulación o publícala en LinkedIn.</div>`}
     </div>
     ${fold("Detalle de la oferta", null, `<dl class="kv">
@@ -264,6 +289,32 @@ function vConvocatoria(id) {
   </aside></div>`;
 }
 
+/* ---------- Seguimiento del estudiante (lado AMSA) ---------- */
+let segAbierto = null;
+const fbTutorHTML = f => `<div class="fb-t"><div class="fb-h"><b>${fechaTxt(f.fecha)}</b>${f.final ? ` <span class="pill p2">Feedback final</span>` : ""}${f.nota != null ? `<span class="fb-nota">Nota ${num1(f.nota)}</span>` : ""}</div><p>${esc(f.texto)}</p>${f.propuestas && f.propuestas.length ? `<p class="lbl2">Propuestas de mejora</p><ul>${f.propuestas.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${f.autor ? `<small class="muted">${esc(f.autor)}</small>` : ""}</div>`;
+function segHTML(c, p, i, ed) {
+  const fe = p.feedbackEstudiante;
+  return `<div class="segui">
+    <div class="segui-col">
+      <p class="card-title">Feedback al estudiante</p>
+      ${(p.feedbackTutor || []).length ? p.feedbackTutor.slice().reverse().map(fbTutorHTML).join("") : `<p class="muted small">Aún no hay feedback. Lo que escribas aquí lo ve ${esc(p.nombre.split(" ")[0])} en su página.</p>`}
+      ${ed ? `<div class="segui-form">
+        <label class="f" for="sgTxt">Nuevo feedback</label><textarea class="input" id="sgTxt" rows="3" placeholder="Qué está haciendo bien y en qué tiene que poner atención"></textarea>
+        <label class="f" for="sgProp">Propuestas de mejora (una por línea)</label><textarea class="input" id="sgProp" rows="2"></textarea>
+        <div class="g2"><div><label class="f" for="sgNota">Nota (opcional, de 1 a 7)</label><input class="input" id="sgNota" type="number" min="1" max="7" step="0.1"></div>
+        <div><label class="f" for="sgAutor">Tutor o tutora</label><input class="input" id="sgAutor" value="${esc(((p.feedbackTutor || []).slice(-1)[0] || {}).autor || "")}" placeholder="Nombre (tutor/a)"></div></div>
+        ${p.estado === "Terminó" ? `<label class="chk"><input type="checkbox" id="sgFinal" checked> Es el feedback final</label>` : ""}
+        <div class="form-actions"><button class="btn-accent" data-seg-guardar="${i}">Guardar feedback</button></div></div>` : ""}
+    </div>
+    <div class="segui-col">
+      <p class="card-title">Lo que dejó el estudiante</p>
+      ${fe ? `<div class="fb-t"><div class="fb-h"><b>${fechaTxt(fe.fecha)}</b><span class="fb-nota">${num1(promEst(p))} de 5</span></div>${PREGUNTAS_EST.map((q, j) => fe.respuestas[j] ? `<div class="qa"><span>${esc(q)}</span><b>${fe.respuestas[j]}</b></div>` : "").join("")}${fe.comentario ? `<p>${esc(fe.comentario)}</p>` : ""}</div>` : `<p class="muted small">${p.estado === "Terminó" ? "Todavía no deja su feedback." : "Lo deja al terminar su práctica o memoria."}</p>`}
+      <p class="lbl2" style="margin-top:12px!important">Informe y nota de la universidad</p>
+      ${p.estado !== "Terminó" ? `<p class="muted small">Se suben al terminar.</p>` : p.autorizaVerNota ? `<p class="small">${p.informe ? `Informe: <b>${esc(p.informe.nombre)}</b> (subido el ${fechaTxt(p.informe.fecha)})` : "Aún no sube su informe."}<br>${p.notaUniversidad != null ? `Nota de la universidad: <b>${num1(p.notaUniversidad)}</b>` : "Aún no ingresa su nota."}</p>` : `<p class="small muted">${p.informe || p.notaUniversidad != null ? "El estudiante subió su informe o su nota, pero no autorizó que AMSA los vea." : "Aún no sube su informe ni su nota."}</p>`}
+      <p class="help"><a class="lnk" href="${linkEstudiante(p)}" target="_blank" rel="noopener">Ver la página del estudiante</a></p>
+    </div></div>`;
+}
+
 // Quien queda en una convocatoria pasa a la lista de estudiantes en práctica o memoria.
 function sincEstudiante(c, p) {
   S.estudiantes = S.estudiantes.filter(e => !(e.conv === c.id && e.nombre === p.nombre));
@@ -279,6 +330,7 @@ function copiar(txt, msg) {
   else { const t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (e) {} t.remove(); ok(); }
 }
 
+window.addEventListener("hashchange", () => { segAbierto = null; });
 function wireConv(id) {
   const c = convocatoria(+id); if (!c) return;
   liAbierto = false;
@@ -287,6 +339,16 @@ function wireConv(id) {
     p.estado = e.target.value; sincEstudiante(c, p); guardar(); render();
     const msg = p.estado === "Aceptado" ? `${p.nombre} fue aceptado/a y pasa a Estudiantes. Falta avisarle por correo.` : correoEstudiante(c, p) ? `Estado actualizado. Falta avisarle a ${p.nombre} por correo.` : "Estado actualizado";
     toast(msg, () => { p.estado = antes; sincEstudiante(c, p); guardar(); render(); });
+  });
+  $$("[data-seg]").forEach(b => b.onclick = () => { const i = +b.dataset.seg; segAbierto = segAbierto === i ? null : i; render(); const r = $(".seg-row"); if (r) r.scrollIntoView({ block: "nearest" }); });
+  $$("[data-seg-guardar]").forEach(b => b.onclick = () => {
+    const p = c.postulantes[+b.dataset.segGuardar], texto = $("#sgTxt").value.trim();
+    if (!texto) { $("#sgTxt").focus(); toast("Escribe el feedback antes de guardar"); return; }
+    const nota = $("#sgNota").value ? Math.min(7, Math.max(1, +$("#sgNota").value)) : null;
+    const f = { fecha: hoy(), autor: $("#sgAutor").value.trim(), texto, nota, propuestas: $("#sgProp").value.split("\n").map(x => x.trim()).filter(Boolean) };
+    if ($("#sgFinal") && $("#sgFinal").checked) f.final = true;
+    p.feedbackTutor = (p.feedbackTutor || []).concat(f); guardar(); render();
+    toast(`Feedback guardado. ${p.nombre.split(" ")[0]} lo ve en su página.`);
   });
   $$("[data-avisar]").forEach(b => b.onclick = () => {
     const p = c.postulantes[+b.dataset.avisar], m = correoEstudiante(c, p); if (!m) return;
@@ -401,24 +463,73 @@ function pasosProceso(estado) {
   }).join("")}</ol>`;
 }
 let miCorreo = "";
-function vMiPostulacion() {
-  return `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></a></div></header>
+function vMiPostulacion(p) {
+  if (p) { try { miCorreo = decodeURIComponent(p); } catch (e) { miCorreo = p; } }
+  return `<header class="pub-top"><div class="pub-inner"><a href="#/convocatorias">${logoAmsa()}<span class="prod"><b>Mi práctica o memoria</b><span>Para estudiantes de Antofagasta Minerals</span></span></a></div></header>
   <main class="pub">
     <a class="lnk small" href="#/convocatorias">← Todas las convocatorias</a>
-    <h1>Estado de mi postulación</h1>
-    <p class="sub">Escribe el correo con que postulaste. En la versión real te llegaría un link personal por correo.</p>
-    <div class="card"><label class="f" for="mpCor">Correo</label><div class="frow"><input class="input" id="mpCor" type="email" autocomplete="email" value="${esc(miCorreo)}" placeholder="nombre@uc.cl"><button class="btn-accent" id="mpVer">Ver estado</button></div>
-    <p class="help">Para probar: camila.rojas@ejemplo.cl o diego.fuentes@ejemplo.cl</p></div>
+    <h1>Mi postulación</h1>
+    <p class="sub">${p ? "Entraste con el link personal que te llegó al correo." : "Escribe el correo con que postulaste. Normalmente entras con el link personal que te llega al correo."}</p>
+    ${p ? "" : `<div class="card"><label class="f" for="mpCor">Correo</label><div class="frow"><input class="input" id="mpCor" type="email" autocomplete="email" value="${esc(miCorreo)}" placeholder="nombre@uc.cl"><button class="btn-accent" id="mpVer">Ver</button></div>
+    <p class="help">Para probar: camila.rojas@ejemplo.cl (en práctica), sofia.pizarro@ejemplo.cl (terminó) o diego.fuentes@ejemplo.cl (en revisión)</p></div>`}
     <div class="post-res" id="mpRes">${miPostRes()}</div>
   </main>${pie()}`;
 }
+function etapasPracticaHTML(p) {
+  const n = (p.feedbackTutor || []).length, fin = p.estado === "Terminó";
+  return `<ol class="pasos">${ETAPAS_PRACTICA.map((t, i) => `<li class="${fin || i < Math.min(n, 2) ? "hecho" : i === Math.min(n, 2) ? "actual" : ""}"><div><b>${t}</b><span>${["Conoces a tu equipo, tu tutor o tutora y las reglas de seguridad.", "Tu tutor o tutora revisa cómo vas y te deja propuestas de mejora.", "Recibes el feedback final y cuentas cómo te fue."][i]}</span></div></li>`).join("")}</ol>`;
+}
 function miPostRes() {
   const q = miCorreo.trim().toLowerCase(); if (!q) return "";
-  const r = []; S.convocatorias.forEach(c => c.postulantes.forEach(p => { if ((p.correo || "").toLowerCase() === q) r.push({ c, p }); }));
+  const r = []; S.convocatorias.forEach(c => c.postulantes.forEach((p, i) => { if ((p.correo || "").toLowerCase() === q) r.push({ c, p, i }); }));
   if (!r.length) return `<div class="card empty">No encontramos postulaciones con ese correo. Revisa que esté bien escrito.</div>`;
-  return r.map(({ c, p }) => `<div class="card"><div class="head-row"><div><h3 class="h3" style="margin:0">${esc(c.titulo)}</h3><p class="small muted" style="margin:4px 0 12px">Postulaste el ${fechaTxt(p.fecha)} · ${esc(c.tipo)}${c.lugar ? " · " + esc(c.lugar) : ""}</p></div></div>${pasosProceso(p.estado)}</div>`).join("");
+  return r.map(({ c, p, i }) => {
+    const k = c.id + "-" + i, fbs = (p.feedbackTutor || []).slice().reverse(), fin = fbs.find(f => f.final);
+    const fase = p.estado === "Terminó" ? 3 : p.estado === "En práctica" ? 2 : 1;
+    const tabs = `<div class="fases">${["Postula", "Mientras", "Sale"].map((t, j) => `<span class="${j + 1 < fase ? "hecho" : j + 1 === fase ? "on" : ""}">${j + 1}. ${t}</span>`).join("")}</div>`;
+    let cuerpo = "";
+    if (p.estado === "En práctica") cuerpo = `<div class="est-sec"><h3 class="h3">Mientras: tu ${esc(c.tipo.toLowerCase())}</h3>${etapasPracticaHTML(p)}</div>
+      <div class="est-sec"><h3 class="h3">Feedback de tu tutor o tutora</h3>${fbs.length ? fbs.map(fbTutorHTML).join("") : `<p class="muted small">Todavía no hay feedback. Te avisamos por correo cuando llegue.</p>`}</div>`;
+    if (p.estado === "Terminó") {
+      const fe = p.feedbackEstudiante;
+      cuerpo = `<div class="est-sec"><h3 class="h3">Feedback final de tu tutor o tutora</h3>${fin ? fbTutorHTML(fin) : `<p class="muted small">Tu tutor o tutora todavía no deja el feedback final.</p>`}
+        ${fbs.filter(f => !f.final).length ? `<details class="mas"><summary>Ver el feedback anterior (${fbs.filter(f => !f.final).length})</summary>${fbs.filter(f => !f.final).map(fbTutorHTML).join("")}</details>` : ""}</div>
+      <div class="est-sec"><h3 class="h3">Cuéntanos cómo te fue</h3>${fe ? `<p class="ok-txt">Gracias, enviaste tu feedback el ${fechaTxt(fe.fecha)}.</p>${PREGUNTAS_EST.map((t, j) => `<div class="qa"><span>${esc(t)}</span><b>${fe.respuestas[j] || "–"}</b></div>`).join("")}${fe.comentario ? `<p class="small">${esc(fe.comentario)}</p>` : ""}`
+        : `${PREGUNTAS_EST.map((t, j) => `<div class="preg"><p class="f"><b>${j + 1}.</b> ${esc(t)}</p><div class="escala" role="radiogroup" aria-label="${esc(t)}">${[1, 2, 3, 4, 5].map(n => `<label><input type="radio" name="e${k}-${j}" value="${n}"><span>${n}</span></label>`).join("")}</div><div class="escala-lbl"><span>Muy mal</span><span>Muy bien</span></div></div>`).join("")}
+          <label class="f" for="eCom${k}">Comentario (opcional)</label><textarea class="input" id="eCom${k}" rows="2" placeholder="Qué te sirvió y qué cambiarías"></textarea>
+          <div class="err" id="eErr${k}">Responde al menos una pregunta.</div>
+          <div class="form-actions"><button class="btn-accent" data-est-fb="${k}">Enviar mi feedback</button></div>`}</div>
+      <div class="est-sec"><h3 class="h3">Tu informe y tu nota</h3>
+        <label class="f" for="eInf${k}">Informe final</label>${p.informe ? `<p class="small">Subiste <b>${esc(p.informe.nombre)}</b> el ${fechaTxt(p.informe.fecha)}.</p>` : ""}
+        <input class="input" type="file" id="eInf${k}" accept=".pdf,.doc,.docx">
+        <p class="help">En el prototipo solo se guarda el nombre del archivo y la fecha.</p>
+        <label class="f" for="eNota${k}">Nota que te puso tu universidad (de 1,0 a 7,0)</label><input class="input sm" id="eNota${k}" type="number" min="1" max="7" step="0.1" value="${p.notaUniversidad != null ? p.notaUniversidad : ""}" style="max-width:140px">
+        <label class="chk aut"><input type="checkbox" id="eAut${k}" ${p.autorizaVerNota ? "checked" : ""}> Autorizo que AMSA vea mi nota y mi informe</label>
+        <p class="help">Si no marcas la casilla, tu nota y tu informe quedan guardados solo para ti. AMSA no los ve.</p>
+        <div class="form-actions"><button class="btn-accent" data-est-inf="${k}">Guardar</button></div></div>`;
+    }
+    return `<div class="card est-card"><div class="head-row"><div><h3 class="h3" style="margin:0">${esc(c.titulo)}</h3><p class="small muted" style="margin:4px 0 0">Postulaste el ${fechaTxt(p.fecha)} · ${esc(c.tipo)}${c.lugar ? " · " + esc(c.lugar) : ""}</p></div></div>
+      ${tabs}
+      ${fold("Postula: estado de tu postulación", null, pasosProceso(p.estado), fase === 1, p.estado)}
+      ${cuerpo}</div>`;
+  }).join("");
 }
 function wireMiPostulacion() {
-  const ver = () => { miCorreo = $("#mpCor").value; $("#mpRes").innerHTML = miPostRes(); };
-  $("#mpVer").onclick = ver; $("#mpCor").onkeydown = e => { if (e.key === "Enter") ver(); };
+  const ver = () => { miCorreo = $("#mpCor").value; $("#mpRes").innerHTML = miPostRes(); wireMiPostulacion(); };
+  if ($("#mpVer")) { $("#mpVer").onclick = ver; $("#mpCor").onkeydown = e => { if (e.key === "Enter") ver(); }; }
+  const buscar = k => { const [cid, i] = k.split("-").map(Number); return convocatoria(cid).postulantes[i]; };
+  const repinta = msg => { $("#mpRes").innerHTML = miPostRes(); wireMiPostulacion(); toast(msg); };
+  $$("[data-est-fb]").forEach(b => b.onclick = () => {
+    const k = b.dataset.estFb, p = buscar(k);
+    const r = PREGUNTAS_EST.map((_, j) => { const x = $(`input[name="e${k}-${j}"]:checked`); return x ? +x.value : null; });
+    if (!r.some(Boolean)) { $("#eErr" + k).classList.add("show"); return; }
+    p.feedbackEstudiante = { respuestas: r, comentario: $("#eCom" + k).value.trim(), fecha: hoy() }; guardar(); repinta("Gracias por tu feedback");
+  });
+  $$("[data-est-inf]").forEach(b => b.onclick = () => {
+    const k = b.dataset.estInf, p = buscar(k), f = $("#eInf" + k).files[0], n = $("#eNota" + k).value;
+    if (f) p.informe = { nombre: f.name, fecha: hoy() };
+    p.notaUniversidad = n ? Math.min(7, Math.max(1, +n)) : null;
+    p.autorizaVerNota = $("#eAut" + k).checked; guardar();
+    repinta(p.autorizaVerNota ? "Guardado. AMSA puede ver tu nota y tu informe." : "Guardado. Tu nota y tu informe quedan solo para ti.");
+  });
 }

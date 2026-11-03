@@ -38,11 +38,32 @@ Propuesta individual de Antonia para el Ejercicio Individual 2. Si al equipo le 
 - **Editar y eliminar**: las convocatorias se pueden editar ("Editar o eliminar"). Vínculos y convocatorias se pueden eliminar con confirmación y opción de deshacer.
 - **Menos ruido visual**: Reuniones, Feedback, Historial, Detalle de la oferta, Convocatorias y Avisos son plegables. Espaciado e interlineado parejos en todas las páginas.
 
+### Tres vistas, una por actor (noviembre, después del informe del Ejercicio Individual 2)
+
+| | AMSA | Institución | Estudiante |
+|---|---|---|---|
+| Cómo entra | Cuenta de AMSA (usuarios de prueba) | Link exclusivo del vínculo, sin cuenta | Link personal en su correo, sin cuenta |
+| Qué hace | Registra, gestiona, hace seguimiento, ve estadísticas | Responde el feedback del vínculo | Postula, ve su avance y su feedback, y al salir deja el suyo |
+| Qué recibe | Qué vínculos atender primero y cuántos estudiantes hay en cada etapa | Cuántos de sus estudiantes postularon, entraron y terminaron | En qué etapa va y el feedback de su tutor/a |
+
+- **Vista del estudiante** (`#/mi-postulacion/<correo>`): tres pasos, Postula, Mientras y Sale. Mientras está en práctica ve las etapas y el feedback de su tutor/a con propuestas de mejora. Al terminar ve el feedback final, responde 4 preguntas de 1 a 5, sube su informe (en el prototipo se guarda solo el nombre del archivo) y la nota de su universidad, y decide con una casilla si AMSA puede verlos. Los correos de aviso traen este link.
+- **Seguimiento desde AMSA**: en la tabla de postulantes, "Seguimiento" abre una fila para escribirle feedback al estudiante (texto, propuestas, nota opcional) y ver lo que él dejó. La nota y el informe aparecen solo si el estudiante lo autorizó. La franja del ciclo muestra el promedio del feedback de estudiantes y tutores.
+- **Institución**: después de responder el cuestionario ve un resumen de sus estudiantes en AMSA (postularon, aceptados, en práctica, terminaron), sin nombres.
+- **Salud del vínculo**: punto de color con palabra en Mis vínculos. "Al día" si hubo movimiento en los últimos 30 días y hay contacto alternativo, "Atender" si falta una de las dos, "Urgente" si pasaron más de 60 días. Los plazos están en `CONFIG.salud` (`js/config.js`) y falta validarlos con la contraparte. Se puede ordenar por salud.
+- **Resumen de la semana**: panel en Mis vínculos con vínculos urgentes, convocatorias que cierran pronto y cuestionarios sin respuesta. "Enviarme este resumen" abre Outlook con el texto. El envío automático semanal no existe en el prototipo.
+- **Rúbrica**: cada criterio tiene una frase por nivel (`CONFIG.rubrica`). Al pasar el mouse por un número se ve qué significa.
+- **Dos miradas**: en la ficha, la nota del área al lado de la nota de la institución. Si difieren en 2 puntos o más aparece "Vale la pena conversarlo".
+- **Traspaso**: "Cambiar encargado/a" arma una hoja de traspaso (últimas reuniones, lo prometido, lo que falta del plan, contactos y alertas). El nuevo encargado/a la ve al entrar y confirma con "Leí y asumo". Para probarlo: traspasar a Matías y cambiar a su perfil.
+- **Notas de reunión desde el celular**: el asistente tiene un botón grande para dictar y cada cambio propuesto se aprueba por separado.
+- La pestaña "Con otras áreas" ahora se llama "Qué hacen otras áreas".
+
+Para probar desde cero: abre el link con `#/reiniciar` al final. Estudiantes de prueba: camila.rojas@ejemplo.cl (en práctica), sofia.pizarro@ejemplo.cl (terminó, autorizó), matias.contreras@ejemplo.cl (terminó, no autorizó), javiera.castillo@ejemplo.cl (terminó, sin datos).
+
 ## Perfiles
 
 | Perfil | Ejemplo en el prototipo | Qué hace | Qué ve al entrar |
 | --- | --- | --- | --- |
-| Gestor/a de vinculación | Eduardo; Daniela (sin vínculos aún) | Registra y actualiza los vínculos de su área, crea convocatorias | Mis vínculos |
+| Gestor/a de vinculación | Eduardo; Matías (mismo equipo, para el traspaso); Daniela (sin vínculos aún) | Registra y actualiza los vínculos de su área, crea convocatorias | Mis vínculos |
 | Gestor/a de metas (jefatura) | Carolina | Revisa resultados de su gerencia y define metas; no registra | Estadísticas de su gerencia |
 | Administración | Administración | Configura compañías, áreas, tipos, metas e instituciones; ve todo | Estadísticas de toda la empresa |
 | Perfil 0 / Perfil 2 (sandbox) | Perfil 0; Perfil 2 | Misma experiencia que un gestor, en una página vacía guardada aparte | Mis vínculos (sin datos) |

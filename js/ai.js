@@ -137,13 +137,14 @@ function buscar(t, palabras) { return oraciones(t).filter(s => palabras.some(p =
 
 function demoReunion(v, texto) {
   const os = oraciones(texto);
-  const correo = (texto.match(/[\w.+-]+@[\w-]+\.[\w.]+/) || [])[0] || "";
+  const correo = ((texto.match(/[\w.+-]+@[\w-]+\.[\w.]+/) || [])[0] || "").replace(/\.+$/, "");
+  const nomCont = ((texto.match(/contacto(?: nuevo)?:\s*([A-ZÁÉÍÓÚÑ][\wáéíóúñ]+(?: [A-ZÁÉÍÓÚÑ][\wáéíóúñ]+)?)/i) || [])[1] || "");
   const nec = buscar(texto, ["necesit", "piden", "solicit", "requier", "falta"]);
   const prox = buscar(texto, ["próxim", "proxim", "vamos a", "quedamos", "agendar", "enviar", "acordamos"]);
   const low = texto.toLowerCase();
   let etapa = null;
   if (/(firmamos|firmado|se firmó|firma del convenio)/.test(low)) etapa = "Formalización";
-  if (/(comenzamos|empezamos|en marcha|arrancó|kickoff)/.test(low)) etapa = "En ejecución";
+  if (/(comenzamos|empezamos|en marcha|arrancó|kickoff|pasamos a ejecución|pasamos a ejecucion)/.test(low)) etapa = "En ejecución";
   if (/(terminamos|cerramos|finalizó|se cerró)/.test(low)) etapa = "Cerrado";
   if (etapa && CONFIG.etapas.indexOf(etapa) <= v.etapa) etapa = null;
   const completados = v.hitos.filter(h => !h.ok && low.includes(h.t.toLowerCase().split(" ")[0]) && /(listo|hecho|realizad|complet|termin)/.test(low)).map(h => h.t).slice(0, 2);
@@ -151,7 +152,8 @@ function demoReunion(v, texto) {
     resumen: os.slice(0, 3).join(" ") || "Reunión registrada.",
     cambios: {
       comentarios: nec.length ? [v.comentarios, ...nec].filter(Boolean).join(" ") : "",
-      contacto_correo: v.contacto.correo ? "" : correo
+      contacto_correo: v.contacto.correo ? "" : correo,
+      contacto_nombre: nomCont && nomCont !== v.contacto.nombre ? nomCont : ""
     },
     hitos_completados: completados, hitos_nuevos: prox.slice(0, 2).map(t => t.replace(/[.!?]$/, "").slice(0, 90)), etapa
   };
