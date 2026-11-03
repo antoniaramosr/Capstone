@@ -139,7 +139,9 @@ function construirVinculosSemilla(areas, tipos) {
       lider: "", responsable: area === "rys" ? "Eduardo" : "Equipo " + nombreArea(area),
       objetivo, metas: meta ? [meta] : [], alcance: "",
       financiamiento: { tipo: FIN_SEMILLA[x.f] || "No definido", monto: "", fuente: "" },
-      inicio: etapa >= 2 ? "2026-03-01" : "", termino: etapa === 3 ? "2026-08-31" : "",
+      // Fechas de ejemplo repartidas para poder ordenar por fecha.
+      inicio: etapa === 3 ? `2025-${String(i % 12 + 1).padStart(2, "0")}-${String(i * 7 % 27 + 1).padStart(2, "0")}` : etapa === 2 ? `2026-${String(i % 9 + 1).padStart(2, "0")}-${String(i * 5 % 27 + 1).padStart(2, "0")}` : etapa === 1 ? `2026-${String(i % 3 + 8).padStart(2, "0")}-${String(i * 3 % 27 + 1).padStart(2, "0")}` : "",
+      termino: etapa === 3 ? `${i % 12 + 7 > 12 ? 2026 : 2025}-${String((i % 12 + 6) % 12 + 1).padStart(2, "0")}-28` : "",
       hitos: (t ? t.hitos : []).map((h, j) => ({ t: h, ok: j < hechos })),
       comentarios: x.n || "",
       criterios: crit, calif: x.c ? +(Object.values(crit).reduce((a, b) => a + b, 0) / Object.values(crit).length).toFixed(1) : null, aporta: x.a || null,

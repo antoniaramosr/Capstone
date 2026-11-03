@@ -812,11 +812,6 @@ a.nav-btn{text-decoration:none}
 .pub-volver{margin:0 0 14px}
 
 /* ===== Rama Anto: mejoras post GE2 ===== */
-/* Indicador de ubicación más visible */
-.crumbs{font-size:14px;color:var(--ink);margin:0 0 14px;padding:8px 12px;background:var(--chip);border-radius:6px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
-.crumbs::before{content:"Estás en";font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-2);margin-right:6px}
-.crumbs a{color:var(--brand-2);font-weight:500}
-.crumbs b{color:var(--brand)}
 /* Estados de la postulación */
 select.est-4{border-color:var(--brand-2);color:var(--brand-2);font-weight:600}
 select.est-5{color:var(--ok)}
@@ -848,3 +843,105 @@ select.est-5{color:var(--ok)}
 .escala-lbl{display:flex;justify-content:space-between;width:252px;font-size:11.5px;color:var(--muted);margin-top:4px}
 .resp-seg{display:flex;gap:8px;flex-wrap:wrap}
 .resp-seg span{display:inline-block;padding:9px 16px;border:1px solid var(--line);border-radius:6px;font-weight:600;font-size:13px}
+
+
+/* ===== Rama Anto v2: ritmo vertical, jerarquía y plegables ===== */
+/* Un solo espacio entre bloques en todas las páginas: --block-gap (20px). */
+main > * {margin-top:0;margin-bottom:0}
+main > * + * {margin-top:var(--block-gap)!important}
+main > h1 + .sub, main > .crumbs + h1 {margin-top:0!important}
+main > .crumbs + * {margin-top:14px!important}
+main .head-row h1{margin:0 0 4px}
+main .head-row .sub{margin:0}
+main > .sub{margin-top:4px!important}
+.statbar,.resumen,.filters{margin:0}
+.grid-main > div{display:flex;flex-direction:column;gap:var(--block-gap);min-width:0}
+.grid-main > div > *{margin:0!important}
+.card + .card{margin-top:0}
+.grid-main > div > .card + .card, .stack > .card + .card{margin-top:0}
+main > .card + .card{margin-top:var(--block-gap)!important}
+.filters .chips{margin-bottom:10px}
+
+/* Interlineado parejo */
+.card,.fold-b{line-height:1.5}
+.help,.small,small,.kpi span,.resumen span,.mini-row span,.conv-row small,.aviso{line-height:1.45}
+.help{margin:4px 0 0}
+p.help + p, .fold-b > p.help{margin:0 0 10px}
+
+/* Indicador de ubicación */
+.crumbs{display:block;font-size:13.5px;line-height:1.4;color:var(--ink);padding:9px 14px;background:var(--chip);border-radius:6px;margin:0}
+.crumbs::before{content:"Estás en:";font-size:13.5px;font-weight:500;color:var(--muted);margin-right:6px;text-transform:none;letter-spacing:0}
+.crumbs a{color:var(--brand-2);font-weight:500;text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.crumbs b{color:var(--brand);font-weight:600}
+
+/* Jerarquía: títulos de sección más legibles que las etiquetas */
+.card-title{font-size:12.5px;letter-spacing:.04em;opacity:1;margin:0 0 12px}
+.h-sec{font-size:18px;color:var(--brand);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.lbl2{letter-spacing:.02em}
+
+/* Tarjetas plegables */
+.fold{padding:0}
+.fold > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:16px 22px;user-select:none}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--brand-2);border-bottom:2px solid var(--brand-2);transform:rotate(45deg);margin-left:auto;transition:transform .15s;flex-shrink:0}
+.fold[open] > summary::after{transform:rotate(-135deg)}
+.fold > summary:hover{background:var(--soft);border-radius:8px}
+.fold-t{font-size:12.5px;font-weight:700;color:var(--brand-2);letter-spacing:.04em;text-transform:uppercase}
+.fold-n{background:var(--chip);color:var(--brand);font-size:11.5px;font-weight:700;border-radius:10px;padding:1px 8px;line-height:1.5}
+.fold-x{font-size:12px;color:var(--muted)}
+.fold-b{padding:0 22px 18px}
+.fold-acts{display:flex;justify-content:flex-end;margin:-4px 0 8px}
+.fold .cq + .cq{margin-top:10px}
+details.mas{margin-top:8px}
+details.mas > summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--brand-2);padding:6px 0}
+details.mas[open] > summary{margin-bottom:6px}
+
+/* Estadísticas: número de estudiantes sin recuadro */
+.kpi.flat{box-shadow:none;border:0;background:transparent;padding:0;border-radius:0}
+.kpi.flat b{font-size:34px}
+.kpi.flat span{display:block;max-width:220px}
+
+/* Fecha en las filas de vínculos */
+.fecha-row{display:block;color:var(--muted)}
+
+/* Vínculos con otras áreas */
+.o-sec .sub{margin:0 0 12px}
+.o-list{padding:4px 0}
+.o-inst{border-bottom:1px solid var(--line)}
+.o-inst:last-child{border-bottom:0}
+.o-inst > summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 22px}
+.o-inst > summary::-webkit-details-marker{display:none}
+.o-inst > summary:hover{background:var(--soft)}
+.o-inst > summary b{display:block;font-size:14px;color:var(--brand)}
+.o-inst > summary small{color:var(--muted);font-size:12px}
+.o-n{font-size:12px;color:var(--muted);white-space:nowrap}
+.o-n::after{content:"";display:inline-block;width:7px;height:7px;border-right:2px solid var(--brand-2);border-bottom:2px solid var(--brand-2);transform:rotate(45deg);margin-left:12px;vertical-align:2px}
+.o-inst[open] .o-n::after{transform:rotate(-135deg);vertical-align:-1px}
+.o-body{padding:0 22px 14px}
+.o-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none}
+.o-row:last-of-type{border-bottom:0}
+.o-row b{display:block;font-size:13px}
+.o-row small{color:var(--muted);font-size:12px}
+.o-row:hover b{color:var(--brand-2)}
+.o-acts{margin-top:8px}
+.tabs{margin-bottom:0}
+
+/* Eliminar */
+.zona-eliminar{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.zona-eliminar b{color:var(--err);font-size:13.5px}
+.zona-eliminar .help{max-width:520px}
+.btn-outline.danger{border-color:var(--err);color:var(--err)}
+.btn-danger{background:var(--err);color:#fff;border:0;border-radius:4px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.zona-eliminar .form-actions{margin:0}
+.resumen > *{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start}
+.resumen a.r-link{text-decoration:none}
+.fold-b .aviso{width:100%}
+.aviso,.fold-b button,.fold-b input{box-sizing:border-box}
+.fold-b,.fold-b *{box-sizing:border-box}
+.card-title,.side .card-title,p.card-title{color:var(--brand-2);margin:0 0 12px}
+.side p.card-title{margin:0 0 12px}
+.side .li-ok,.side > p.small{margin:0 0 10px}
+.dash-body{display:flex;flex-direction:column;gap:var(--block-gap)}
+.dash-body > *{margin:0!important}
+.h-sec{display:block}.h-sec .fold-n{vertical-align:3px;margin-left:6px}

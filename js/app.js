@@ -298,8 +298,17 @@ function vLogin() {
   </div>`;
 }
 
+/* Tarjeta plegable: título, contador y contenido. Baja el ruido visual. */
+const fold = (titulo, cnt, cuerpo, abierta = false, extra = "") => `<details class="card fold" ${abierta ? "open" : ""}><summary><span class="fold-t">${titulo}</span>${cnt != null ? `<span class="fold-n">${cnt}</span>` : ""}${extra ? `<span class="fold-x">${extra}</span>` : ""}</summary><div class="fold-b">${cuerpo}</div></details>`;
+
 /* ============================ Mis vínculos ============================ */
-let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "" };
+let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "", orden: "reciente" };
+const ORDENES = { reciente: "fecha de inicio, más reciente", antiguo: "fecha de inicio, más antigua", nombre: "nombre (A-Z)", etapa: "etapa" };
+function ordenar(list) {
+  const f = v => v.inicio || (filtro.orden === "antiguo" ? "9999" : "0000");
+  const by = { reciente: (a, b) => f(b).localeCompare(f(a)), antiguo: (a, b) => f(a).localeCompare(f(b)), nombre: (a, b) => (a.nombre + contraparte(a.contraparte).corto).localeCompare(b.nombre + contraparte(b.contraparte).corto), etapa: (a, b) => a.etapa - b.etapa || f(b).localeCompare(f(a)) }[filtro.orden] || (() => 0);
+  return list.slice().sort(by);
+}
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
   const mailCol = opts.mail !== false && vinculosContactables().length;
@@ -307,37 +316,43 @@ function filasVinculos(list, opts = {}) {
     const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v);
     const falta = comp.pct < 50 ? `<small class="falta" title="Falta: ${esc(comp.faltan.join(", "))}">Faltan ${comp.faltan.length} datos de la ficha</small>` : "";
     const mail = mailCol && puedeEditar(v) ? `<button type="button" class="link-btn" data-contact-v="${v.id}">Contactar</button>` : "";
-    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
+    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}${v.inicio ? `<span class="fecha-row">desde ${fechaTxt(v.inicio)}</span>` : ""}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
   }).join("")}</tbody></table></div>`;
 }
 function listaFiltrada() {
   const q = filtro.q.toLowerCase();
-  return misVinculos().filter(v => (!filtro.comp || compsDe(v).includes(filtro.comp)) && (filtro.etapa < 0 || v.etapa === filtro.etapa) && (!filtro.tipo || v.tipo === filtro.tipo) && (!filtro.inc || completitud(v).pct < 50) &&
-    (!q || (v.nombre + " " + contraparte(v.contraparte).nombre + " " + contraparte(v.contraparte).corto + " " + v.sede).toLowerCase().includes(q)));
+  return ordenar(misVinculos().filter(v => (!filtro.comp || compsDe(v).includes(filtro.comp)) && (filtro.etapa < 0 || v.etapa === filtro.etapa) && (!filtro.tipo || v.tipo === filtro.tipo) && (!filtro.inc || completitud(v).pct < 50) &&
+    (!q || (v.nombre + " " + contraparte(v.contraparte).nombre + " " + contraparte(v.contraparte).corto + " " + v.sede).toLowerCase().includes(q))));
 }
 function vMis(p) {
   if (p === "incompletos") filtro.inc = true;
   if (p && p.startsWith("etapa-")) { filtro.etapa = +p.slice(6); filtro.inc = false; }
   const mios = misVinculos();
   const misCp = [...new Set(mios.map(v => v.contraparte))];
-  const otras = ME.admin ? [] : S.vinculos.filter(v => !mios.includes(v) && misCp.includes(v.contraparte));
   const av = calcAvisos();
   if (!mios.length && !ME.admin) return vBienvenida();
   const activos = mios.filter(v => v.etapa < 3).length, sinCal = mios.filter(v => v.etapa === 3 && !v.calif).length;
   const incom = mios.filter(v => completitud(v).pct < 50).length, convA = S.convocatorias.filter(c => c.estado === "Abierta" && (ME.admin || descendientes(ME.area).includes(convArea(c)))).length;
   const nInst = misCp.length, comp = misCp.filter(cp => S.vinculos.some(v => v.contraparte === cp && !mios.includes(v))).length;
-  return `<div class="head-row"><div><h1>${ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos"}</h1><p class="sub">${ME.admin ? "Vista de administración" : rutaTxt(ME.area)}</p></div></div>
+  const otrasTab = p === "otras" && !ME.admin;
+  const nOtras = ME.admin ? 0 : [...new Set(S.vinculos.filter(v => !mios.includes(v)).map(v => v.contraparte))].length;
+  const head = `<div class="head-row"><div><h1>${ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos"}</h1><p class="sub">${ME.admin ? "Vista de administración" : rutaTxt(ME.area)}</p></div></div>
   <div class="resumen" role="region" aria-label="Resumen">
     <div><b>${mios.length}</b><span>vínculos con ${nInst} instituciones</span></div>
     <div><b>${activos}</b><span>activos (no cerrados)</span></div>
     <button class="r-link" data-ir-f="inc"><b>${incom}</b><span>con datos por completar</span></button>
     <div><b>${sinCal}</b><span>cerrados sin calificar</span></div>
-    ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<div><b>${comp}</b><span>instituciones que también ven otras áreas</span></div>`}
+    ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<a class="r-link" href="#/mis/otras"><b>${comp}</b><span>de mis instituciones también trabajan con otras áreas</span></a>`}
   </div>
-  <div class="grid-main"><div>
+  ${ME.admin ? "" : `<div class="tabs" role="tablist"><a class="tab ${otrasTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab}">Mis vínculos (${mios.length})</a><a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a></div>`}`;
+  if (otrasTab) return head + vOtrasAreas(mios, misCp);
+  const avVis = av.slice(0, 3), avMas = av.slice(3);
+  const avHTML = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
+  return head + `<div class="grid-main"><div>
     <div class="filters">
       <div class="chips">${["Todos", ...CONFIG.etapas].map((t, i) => `<button class="chip-btn ${filtro.etapa === i - 1 ? "on" : ""}" data-etapa-f="${i - 1}">${t} (${i ? mios.filter(v => v.etapa === i - 1).length : mios.length})</button>`).join("")}</div>
       <div class="frow"><input class="input sm" id="fq" placeholder="Buscar vínculo o institución" value="${esc(filtro.q)}" aria-label="Buscar">
+      <select class="input sm" id="fo" aria-label="Ordenar">${Object.entries(ORDENES).map(([k, t]) => `<option value="${k}" ${filtro.orden === k ? "selected" : ""}>Ordenar: ${t}</option>`).join("")}</select>
       <select class="input sm" id="fc" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${filtro.comp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select>
       <select class="input sm" id="ft" aria-label="Tipo de vínculo"><option value="">Todos los tipos</option>${S.tipos.map(t => `<option value="${t.id}" ${filtro.tipo === t.id ? "selected" : ""}>${esc(t.nombre)}</option>`).join("")}</select>
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
@@ -346,9 +361,27 @@ function vMis(p) {
   </div>
   <aside class="stack">
     ${convMisHTML()}
-    <div class="card"><p class="card-title">Avisos</p>${av.length ? av.map(a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`).join("") : `<p class="muted small">No tienes avisos.</p>`}</div>
-    ${ME.admin ? "" : `<div class="card"><p class="card-title">Otras áreas con mis instituciones</p>${otras.length ? otras.slice(0, 8).map(v => `<a class="mini-row" href="#/ficha/${v.id}"><b>${esc(contraparte(v.contraparte).corto)}</b><span>${esc(nombreArea(v.area))}: ${esc(v.nombre)}</span></a>`).join("") + (otras.length > 8 ? `<p class="muted small">y ${otras.length - 8} más</p>` : "") : `<p class="muted small">Ninguna otra área trabaja con tus instituciones.</p>`}</div>`}
+    ${fold("Avisos", av.length, av.length ? avVis.map(avHTML).join("") + (avMas.length ? `<details class="mas"><summary>Ver ${avMas.length} ${avMas.length === 1 ? "aviso más" : "avisos más"}</summary>${avMas.map(avHTML).join("")}</details>` : "") : `<p class="muted small">No tienes avisos.</p>`, true)}
   </aside></div>`;
+}
+
+/* Vínculos con otras áreas: mis instituciones que también trabajan con otras
+   áreas, y las instituciones con que trabajan otras áreas y yo todavía no. */
+function vOtrasAreas(mios, misCp) {
+  const otros = S.vinculos.filter(v => !mios.includes(v));
+  const fila = v => `<a class="o-row" href="#/ficha/${v.id}"><span><b>${esc(v.nombre)}</b><small>${esc(nombreArea(v.area))}${v.responsable ? " · lo lleva " + esc(v.responsable) : ""}</small></span>${pill(v.etapa, v.tipo)}</a>`;
+  const grupo = (cp, lista, mias) => { const c = contraparte(cp), as = [...new Set(lista.map(v => v.area))];
+    return `<details class="o-inst"><summary><span><b>${esc(c.nombre)}</b><small>${esc(c.tipoOrg)}${c.zona ? " · zona " + esc(c.zona) : ""}</small></span><span class="o-n">${as.length} ${as.length === 1 ? "área" : "áreas"} · ${lista.length} ${lista.length === 1 ? "vínculo" : "vínculos"}</span></summary>
+      <div class="o-body">${mias ? `<p class="lbl2">Mis vínculos con esta institución</p>${mias.map(v => `<a class="tag" href="#/ficha/${v.id}">${esc(v.nombre)}</a>`).join(" ")}<p class="lbl2" style="margin-top:10px">De otras áreas</p>` : ""}${lista.map(fila).join("")}
+      <div class="o-acts"><a class="lnk small" href="#/contraparte/${cp}">Ver la institución completa</a></div></div></details>`; };
+  const comp = misCp.map(cp => ({ cp, l: otros.filter(v => v.contraparte === cp) })).filter(r => r.l.length).sort((a, b) => b.l.length - a.l.length);
+  const nuevas = [...new Set(otros.map(v => v.contraparte))].filter(cp => !misCp.includes(cp)).map(cp => ({ cp, l: otros.filter(v => v.contraparte === cp) })).sort((a, b) => b.l.length - a.l.length);
+  return `<div class="o-sec"><h2 class="h-sec">Mis instituciones que también trabajan con otras áreas <span class="fold-n">${comp.length}</span></h2>
+    <p class="sub">Antes de escribirle a una de estas instituciones, revisa quién más la contacta para no duplicar conversaciones.</p>
+    ${comp.length ? `<div class="card o-list">${comp.map(r => grupo(r.cp, r.l, mios.filter(v => v.contraparte === r.cp))).join("")}</div>` : `<div class="card empty">Ninguna otra área trabaja con tus instituciones.</div>`}</div>
+  <div class="o-sec"><h2 class="h-sec">Instituciones de otras áreas con las que yo no trabajo <span class="fold-n">${nuevas.length}</span></h2>
+    <p class="sub">Contactos que ya existen en AMSA. Si te sirve alguna, pídele el contacto al área que la lleva.</p>
+    ${nuevas.length ? `<div class="card o-list">${nuevas.map(r => grupo(r.cp, r.l)).join("")}</div>` : `<div class="card empty">No hay otras instituciones.</div>`}</div>`;
 }
 
 function vBienvenida() {
@@ -387,7 +420,7 @@ function vFicha(id) {
   <div class="statbar">
     <div><span class="lbl">Avance del plan de trabajo</span><span class="pcell">${barra(pr)}<b>${pr}%</b></span><span class="faltan">${hechos} de ${v.hitos.length} tareas hechas</span></div>
     ${comp.faltan.length ? `<div><span class="lbl">Datos por completar</span><span class="faltan" style="margin-top:0">${comp.faltan.join(", ")}</span></div>` : `<div><span class="lbl">Ficha</span><span class="faltan" style="margin-top:0">Todos los datos importantes están completos</span></div>`}
-    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar ficha</button><button class="btn-accent" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con reunión</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
+    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar o eliminar</button><button class="btn-accent" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con reunión</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
   </div>
   <div class="grid-main"><div class="stack">
     <div class="card"><p class="card-title">Ficha del vínculo</p><dl class="kv">
@@ -402,13 +435,12 @@ function vFicha(id) {
       ${v.hitos.map((h, i) => `<label class="hito ${h.ok ? "ok" : ""}"><input type="checkbox" data-hito="${i}" ${h.ok ? "checked" : ""} ${ed ? "" : "disabled"}><span>${esc(h.t)}</span></label>`).join("") || `<p class="muted small">Sin tareas.</p>`}
       ${ed ? `<div class="inline-form"><input class="input" id="nuevoHito" placeholder="Agregar una tarea" aria-label="Nueva tarea"><button class="btn-outline" id="addHito">Agregar</button></div>` : ""}</div></div>
     ${convFichaHTML(v, ed)}
-    <div class="card"><div class="head-row"><p class="card-title">Reuniones</p>${ed ? `<button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button>` : ""}</div>
-      ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones registradas. Pega la transcripción o tus notas en el asistente y se agregan aquí con un resumen.</p>`}</div>
-    <div class="card"><div class="head-row"><p class="card-title">Feedback de la institución</p>${ed ? `<button class="link-btn" onclick="abrirAsistente(${v.id},'cuestionario')">+ Nuevo cuestionario</button>` : ""}</div>
-      <p class="help" style="margin:-4px 0 10px">La institución responde en un link, sin cuenta y sin correos de ida y vuelta. Sus respuestas llegan solas a esta ficha.</p>
-      ${v.cuestionarios.length ? v.cuestionarios.slice().reverse().map(q => cuestionarioHTML(v, q, ed)).join("") : `<p class="muted small">Aún no se ha preparado un cuestionario para la institución.</p>`}</div>
-    <details class="card"><summary class="card-title sum">Historial de cambios (${v.versiones.length})</summary>
-      ${v.versiones.slice().reverse().map(x => `<div class="ver"><span class="vn">v${x.v}</span><div><b>${fechaTxt(x.fecha)}</b> · <span class="muted">${esc(x.autor)}</span><br>${esc(x.resumen)}</div></div>`).join("")}</details>
+    ${fold("Reuniones", v.reuniones.length, `${ed ? `<div class="fold-acts"><button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button></div>` : ""}
+      ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones registradas. Pega la transcripción o tus notas en el asistente y se agregan aquí con un resumen.</p>`}`, false, v.reuniones.length ? "última: " + fechaTxt(v.reuniones[v.reuniones.length - 1].fecha) : "")}
+    ${fold("Feedback de la institución", v.cuestionarios.length, `${ed ? `<div class="fold-acts"><button class="link-btn" onclick="abrirAsistente(${v.id},'cuestionario')">+ Nuevo cuestionario</button></div>` : ""}
+      <p class="help">La institución responde en un link, sin cuenta y sin correos de ida y vuelta. Sus respuestas llegan solas a esta ficha.</p>
+      ${v.cuestionarios.length ? v.cuestionarios.slice().reverse().map(q => cuestionarioHTML(v, q, ed)).join("") : `<p class="muted small">Aún no se ha preparado un cuestionario para la institución.</p>`}`, v.cuestionarios.some(q => q.estado !== "respondido"), v.cuestionarios.some(q => q.estado !== "respondido") ? "esperando respuesta" : satis ? "nos califican " + num1(satis) + " de 5" : "")}
+    ${fold("Historial de cambios", v.versiones.length, v.versiones.slice().reverse().map(x => `<div class="ver"><span class="vn">v${x.v}</span><div><b>${fechaTxt(x.fecha)}</b> · <span class="muted">${esc(x.autor)}</span><br>${esc(x.resumen)}</div></div>`).join(""))}
   </div>
   <aside class="stack">
     <div class="card side"><p class="card-title">Con quién</p><h4><a class="lnk" href="#/contraparte/${c.id}">${esc(c.nombre)}</a></h4><p>${esc(c.tipoOrg)}${v.sede ? ", " + esc(v.sede) : ""}</p>
@@ -509,6 +541,7 @@ function vForm(id, tipoPre) {
       <label class="f" for="fCom">Comentarios adicionales</label><textarea class="input" id="fCom" rows="2" placeholder="Lo que pide la institución, acuerdos o cualquier otra nota">${esc(d.comentarios || "")}</textarea>
       </details>
       <div class="form-actions"><button class="btn-accent" id="guardar">${v ? "Guardar cambios" : "Crear vínculo"}</button><button class="btn-outline" onclick="history.length > 1 ? history.back() : location.hash='#/mis'">Cancelar</button></div>
+      ${v ? zonaEliminar("vínculo", `Si este vínculo ya no se va a hacer, puedes eliminarlo.${convDe(v.id).length ? ` También se eliminan sus ${convDe(v.id).length} convocatorias.` : ""} Si ya terminó, mejor márcalo como Cerrado para que siga en las estadísticas.`) : ""}
     </div>
   </div>
   <aside class="form-aside" id="formAside">
@@ -871,8 +904,8 @@ function render() {
     $$("[data-login]").forEach(b => b.onclick = () => { iniciarSesion(b.dataset.login); loginAbierto = false; filtro.comp = ""; location.hash = inicioDe(ME); });
     return;
   }
-  const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", metas: ME.admin ? "admin" : "metas" }[ruta];
-  const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, metas: vMetas };
+  const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", "editar-convocatoria": "mis", metas: ME.admin ? "admin" : "metas" }[ruta];
+  const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, "editar-convocatoria": p => { const c = convocatoria(+p); return c ? vNuevaConv(c.vinculo, c) : `<div class="card empty">Esa convocatoria no existe.</div>`; }, metas: vMetas };
   let body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
   // Indicador de ubicación: las páginas sin migas muestran igual en qué sección estás.
   const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", admin: "Administración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria" };
@@ -903,6 +936,7 @@ function wireVista(ruta, p) {
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
+    $("#fo").onchange = e => { filtro.orden = e.target.value; pinta(); };
     $("#fc").onchange = e => { filtro.comp = e.target.value; pinta(); };
     $("#finc").onchange = e => { filtro.inc = e.target.checked; if (!filtro.inc && p === "incompletos") location.hash = "#/mis"; else pinta(); };
     $$("[data-ir-f]").forEach(b => b.onclick = () => { filtro.inc = true; render(); });
@@ -945,6 +979,7 @@ function wireVista(ruta, p) {
     const base = ruta === "editar" ? vinculo(+p) : null;
     if (ruta === "editar" && (!base || !puedeEditar(base))) return;
     if (!$("#guardar")) return;
+    if (base) wireEliminar(() => eliminarVinculo(base));
     const comp = () => {
       const d = leerForm(base), c = completitud(Object.assign({ contacto: {}, financiamiento: {}, hitos: [] }, d));
       $("#compBox").innerHTML = `<div class="comp-head"><span class="pcell">${barra(c.pct, c.pct < 50 ? "low" : "ok")}<b>${c.pct}%</b></span></div><ul class="check check-aside">${CAMPOS_README.map(x => `<li class="${x[2](d) ? "ok" : ""}">${x[1]}</li>`).join("")}</ul><p class="help">No es obligatorio llenarlo todo ahora. Lo que falte se muestra en la ficha.</p>`;
@@ -1074,6 +1109,7 @@ function wireVista(ruta, p) {
   }
   if (ruta === "convocatoria") wireConv(p);
   if (ruta === "nueva-convocatoria") wireNuevaConv(p);
+  if (ruta === "editar-convocatoria") { const c = convocatoria(+p); if (c) wireNuevaConv(c.vinculo, c); }
   if (ruta === "contrapartes") {
     $("#cpq").oninput = e => { cpq = e.target.value; $("#cpGrid").innerHTML = cpCards($("#cpGrid").dataset.tipo); };
     $("#cpTipoV").onchange = e => { cpTipoV = e.target.value; $("#cpGrid").innerHTML = cpCards($("#cpGrid").dataset.tipo); };
@@ -1110,6 +1146,31 @@ document.addEventListener("ai-listo", () => { const m = $("#aiModo"); if (m) m.t
 window.addEventListener("hashchange", render);
 render();
 AI.iniciar();
+
+/* ============================ Eliminar ============================
+   Pide confirmar en la misma página (sin ventanas del navegador) y deja deshacer. */
+let confirmarEliminar = false;
+const zonaEliminar = (que, txt) => `<div class="zona-eliminar"><div><b>Eliminar ${que}</b><p class="help">${txt}</p></div>${confirmarEliminar ? `<div class="form-actions"><button class="btn-danger" id="elimSi">Sí, eliminar</button><button class="btn-outline" id="elimNo">Cancelar</button></div>` : `<button class="btn-outline danger" id="elim">Eliminar ${que}</button>`}</div>`;
+function wireEliminar(fn) {
+  const a = $("#elim"); if (a) a.onclick = () => { confirmarEliminar = true; render(); setTimeout(() => { const b = $("#elimSi"); if (b) b.scrollIntoView({ block: "center" }); }, 0); };
+  const no = $("#elimNo"); if (no) no.onclick = () => { confirmarEliminar = false; render(); };
+  const si = $("#elimSi"); if (si) si.onclick = () => { confirmarEliminar = false; fn(); };
+}
+function snapshot() { const k = JSON.stringify({ v: S.vinculos, c: S.convocatorias, e: S.estudiantes }); return () => { const o = JSON.parse(k); S.vinculos = o.v; S.convocatorias = o.c; S.estudiantes = o.e; guardar(); render(); }; }
+function eliminarVinculo(v) {
+  const undo = snapshot(), ids = convDe(v.id).map(c => c.id);
+  S.vinculos = S.vinculos.filter(x => x.id !== v.id);
+  S.convocatorias = S.convocatorias.filter(c => c.vinculo !== v.id);
+  S.estudiantes = S.estudiantes.filter(e => !ids.includes(e.conv));
+  guardar(); location.hash = "#/mis"; setTimeout(() => toast(`Se eliminó "${v.nombre}"`, undo), 30);
+}
+function eliminarConv(c) {
+  const undo = snapshot();
+  S.convocatorias = S.convocatorias.filter(x => x.id !== c.id);
+  S.estudiantes = S.estudiantes.filter(e => e.conv !== c.id);
+  guardar(); location.hash = c.vinculo ? "#/ficha/" + c.vinculo : "#/mis"; setTimeout(() => toast(`Se eliminó la convocatoria "${c.titulo}"`, undo), 30);
+}
+window.addEventListener("hashchange", () => { confirmarEliminar = false; });
 
 /* ============================ Feedback de la institución (página pública) ============================
    La contraparte responde en un link, sin cuenta y sin correos de ida y vuelta.

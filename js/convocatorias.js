@@ -120,25 +120,29 @@ function textoLinkedIn(c) {
 function convFichaHTML(v, ed) {
   if (!CONV_TIPOS_VINCULO.includes(v.tipo)) return "";
   const cs = convDe(v.id);
-  return `<div class="card"><div class="head-row"><p class="card-title">Convocatorias para estudiantes</p>${ed ? `<button class="link-btn" onclick="location.hash='#/nueva-convocatoria/${v.id}'">+ Crear convocatoria</button>` : ""}</div>
-    ${cs.length ? cs.map(c => `<a class="conv-row" href="#/convocatoria/${c.id}"><span><b>${esc(c.titulo)}</b><small>${c.postulantes.length} postulantes · ${quedaron(c).length} de ${c.cupos} cupos llenos · cierra el ${fechaTxt(c.cierre)}</small></span>${convPill(c)}</a>`).join("")
-      : `<p class="muted small">Aún no hay convocatorias. Crea una para publicar la oferta, recibir postulaciones y registrar quiénes quedan.</p>`}</div>`;
+  const ab = cs.filter(c => c.estado === "Abierta").length;
+  return fold("Convocatorias para estudiantes", cs.length, `${ed ? `<div class="fold-acts"><button class="link-btn" onclick="location.hash='#/nueva-convocatoria/${v.id}'">+ Crear convocatoria</button></div>` : ""}
+    ${cs.length ? cs.map(c => `<a class="conv-row" href="#/convocatoria/${c.id}"><span><b>${esc(c.titulo)}</b><small>${c.postulantes.length} postulantes · ${quedaron(c).length} de ${c.cupos} cupos llenos · ${c.estado === "Abierta" ? "cierra" : "cerró"} el ${fechaTxt(c.cierre)}</small></span>${convPill(c)}</a>`).join("")
+      : `<p class="muted small">Aún no hay convocatorias. Crea una para publicar la oferta, recibir postulaciones y registrar a quienes aceptas.</p>`}`, true, ab ? ab + (ab === 1 ? " abierta" : " abiertas") : "");
 }
 
 function convMisHTML() {
-  const cs = S.convocatorias.filter(c => c.estado === "Abierta" && (ME.admin || descendientes(ME.area).includes(convArea(c))));
-  if (!cs.length) return "";
-  return `<div class="card"><p class="card-title">Convocatorias abiertas</p>${cs.map(c => `<a class="mini-row" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${c.postulantes.length} postulantes${sinRevisar(c).length ? `, ${sinRevisar(c).length} sin revisar` : ""} · cierra el ${fechaTxt(c.cierre)}</span></a>`).join("")}</div>`;
+  const todas = S.convocatorias.filter(c => ME.admin || descendientes(ME.area).includes(convArea(c))).sort((a, b) => (b.cierre || "").localeCompare(a.cierre || ""));
+  if (!todas.length) return "";
+  const ab = todas.filter(c => c.estado === "Abierta"), ce = todas.filter(c => c.estado !== "Abierta");
+  const fila = c => `<a class="mini-row" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${c.postulantes.length} postulantes${c.estado === "Abierta" && sinRevisar(c).length ? `, ${sinRevisar(c).length} sin revisar` : ""} · ${c.estado === "Abierta" ? "cierra" : "cerró"} el ${fechaTxt(c.cierre)}</span></a>`;
+  return fold("Convocatorias", todas.length, `${ab.length ? `<p class="lbl2">Abiertas</p>${ab.map(fila).join("")}` : `<p class="muted small">No hay convocatorias abiertas.</p>`}
+    ${ce.length ? `<details class="mas"><summary>Ver ${ce.length} ${ce.length === 1 ? "cerrada" : "cerradas"}</summary>${ce.map(fila).join("")}</details>` : ""}`, true, ab.length ? ab.length + (ab.length === 1 ? " abierta" : " abiertas") : "");
 }
 
 /* ---------- Crear convocatoria ---------- */
-function vNuevaConv(vid) {
+function vNuevaConv(vid, ce) {
   const v = vid ? vinculo(+vid) : null;
   if (vid && !v) return `<div class="card empty">Ese vínculo no existe.</div>`;
-  if (v ? !puedeEditar(v) : !puedeCrear()) return `<div class="card empty">Tu perfil no puede crear convocatorias.</div>`;
+  if (ce ? !puedeEditarConv(ce) : v ? !puedeEditar(v) : !puedeCrear()) return `<div class="card empty">Tu perfil no puede ${ce ? "editar esta convocatoria" : "crear convocatorias"}.</div>`;
   const cp = v ? contraparte(v.contraparte) : null;
-  return `<div class="crumbs"><a href="#/mis">Mis vínculos</a> / ${v ? `<a href="#/ficha/${v.id}">${esc(v.nombre)}</a> / ` : ""}Crear convocatoria</div>
-  <h1>Crear convocatoria</h1><p class="sub">${v ? `Para ${esc(v.nombre)} con ${esc(cp.nombre)}. ` : ""}Los estudiantes postulan desde un link público y tú revisas las postulaciones aquí.</p>
+  return `<div class="crumbs"><a href="#/mis">Mis vínculos</a> / ${v ? `<a href="#/ficha/${v.id}">${esc(v.nombre)}</a> / ` : ""}${ce ? `<a href="#/convocatoria/${ce.id}">${esc(ce.titulo)}</a> / Editar` : "Crear convocatoria"}</div>
+  <h1>${ce ? "Editar convocatoria" : "Crear convocatoria"}</h1><p class="sub">${v ? `Para ${esc(v.nombre)} con ${esc(cp.nombre)}. ` : ""}Los estudiantes postulan desde un link público y tú revisas las postulaciones aquí.</p>
   <div class="grid-main"><div class="card">
     <div class="g2">
       ${v ? "" : `<div><label class="f" for="cInst">Universidad o institución</label><select class="input" id="cInst"><option value="">Abierta a todas las universidades</option>${S.contrapartes.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(x => `<option value="${x.id}">${esc(x.nombre)}</option>`).join("")}</select></div>
@@ -156,8 +160,9 @@ function vNuevaConv(vid) {
       <div class="full"><label class="f" for="cDesc">Descripción general del cargo</label><textarea class="input" id="cDesc" rows="3" placeholder="En qué equipo estará, qué tipo de trabajo hará y con quién"></textarea></div>
       <div class="full"><label class="f" for="cReq">Requisitos</label><textarea class="input" id="cReq" rows="2"></textarea></div>
     </div>
-    <label class="chk li-chk"><input type="checkbox" id="cLi" checked> Publicar también en LinkedIn</label>
-    <div class="form-actions"><button class="btn-accent" id="cGuardar">Crear convocatoria</button><button class="btn-outline" onclick="${v ? `location.hash='#/ficha/${v.id}'` : "history.back()"}">Cancelar</button></div>
+    ${ce ? "" : `<label class="chk li-chk"><input type="checkbox" id="cLi" checked> Publicar también en LinkedIn</label>`}
+    <div class="form-actions"><button class="btn-accent" id="cGuardar">${ce ? "Guardar cambios" : "Crear convocatoria"}</button><button class="btn-outline" onclick="${ce ? `location.hash='#/convocatoria/${ce.id}'` : v ? `location.hash='#/ficha/${v.id}'` : "history.back()"}">Cancelar</button></div>
+    ${ce ? zonaEliminar("convocatoria", ce.postulantes.length ? `Tiene ${ce.postulantes.length} postulaciones, que también se eliminan. Si solo ya no recibe postulaciones, mejor ciérrala.` : "Si ya no se va a hacer, puedes eliminarla.") : ""}
   </div>
   <aside class="stack sticky-aside"><div class="card" id="liBox"><p class="card-title">Así se verá en LinkedIn</p><div class="li-post" id="liPrev"></div></div></aside></div>`;
 }
@@ -173,21 +178,32 @@ function leerConv(v) {
 }
 
 let liAbierto = false;
-function wireNuevaConv(vid) {
+function wireNuevaConv(vid, ce) {
   const v = vid ? vinculo(+vid) : null; if (!$("#cGuardar")) return;
+  if (ce) {
+    const set = (id, val) => { const el = $("#" + id); if (el && val != null) el.value = val; };
+    set("cInst", ce.institucion); set("cArea", ce.area); set("cTit", ce.titulo); set("cTipo", ce.tipo); set("cCupos", ce.cupos);
+    set("cLugar", ce.lugar); set("cCierre", ce.cierre); set("cCond", ce.condiciones); set("cDesc", ce.descripcion); set("cReq", ce.requisitos);
+    const cs = convComps(ce); $$("#cComps input").forEach(i => i.checked = cs.includes(i.value));
+    const cars = (ce.carreras || "").split(",").map(x => x.trim()).filter(Boolean);
+    $$("#cCars input").forEach(i => i.checked = cars.includes(i.value));
+    set("cCarOtra", cars.filter(x => !CONFIG.carreras.includes(x)).join(", "));
+    wireEliminar(() => eliminarConv(ce));
+  }
   const prev = () => {
-    const c = Object.assign({ id: "nueva", titulo: "", cupos: 1, cierre: "" }, leerConv(v));
+    const c = Object.assign({ id: ce ? ce.id : "nueva", titulo: "", cupos: 1, cierre: "" }, leerConv(v));
     $("#liPrev").innerHTML = liPostHTML(c);
-    $("#liBox").hidden = !$("#cLi").checked;
+    $("#liBox").hidden = $("#cLi") ? !$("#cLi").checked : false;
   };
   $$("main input, main select, main textarea").forEach(el => { el.addEventListener("input", prev); el.addEventListener("change", prev); });
-  $("#cLi").onchange = prev; prev();
+  if ($("#cLi")) $("#cLi").onchange = prev; prev();
   $("#cTit").addEventListener("input", () => $("#eTit").classList.remove("show"));
   $("#cCierre").addEventListener("input", () => $("#eCierre").classList.remove("show"));
   $("#cGuardar").onclick = () => {
     const d = leerConv(v);
     $("#eTit").classList.toggle("show", !d.titulo); $("#eCierre").classList.toggle("show", !d.cierre);
     if (!d.titulo || !d.cierre) return;
+    if (ce) { if (!ce.vinculo) { d.vinculo = null; } else { delete d.vinculo; delete d.area; delete d.institucion; } Object.assign(ce, d); guardar(); location.hash = "#/convocatoria/" + ce.id; setTimeout(() => toast("Cambios guardados"), 50); return; }
     const id = S.convocatorias.reduce((m, c) => Math.max(m, c.id), 0) + 1;
     S.convocatorias.push(Object.assign(d, { id, estado: "Abierta", creada: hoy(), linkedin: { publicada: false, fecha: "" }, postulantes: [] }));
     guardar();
@@ -215,7 +231,7 @@ function vConvocatoria(id) {
   <div class="statbar">
     <div><span class="lbl">Postulantes</span><b class="statnum">${c.postulantes.length}</b></div>
     <div><span class="lbl">Cupos llenos</span><span class="pcell">${barra(Math.min(100, Math.round(q.length / c.cupos * 100)))}<b>${q.length} de ${c.cupos}</b></span></div>
-    <div class="actions">${ed ? `<button class="btn-outline" id="convEstado">${c.estado === "Abierta" ? "Cerrar convocatoria" : "Reabrir"}</button>` : ""}<a class="btn-outline" href="#/postular/${c.id}" target="_blank" rel="noopener">Ver página de postulación</a></div>
+    <div class="actions">${ed ? `<a class="btn-outline" href="#/editar-convocatoria/${c.id}">Editar o eliminar</a><button class="btn-outline" id="convEstado">${c.estado === "Abierta" ? "Cerrar convocatoria" : "Reabrir"}</button>` : ""}<a class="btn-outline" href="#/postular/${c.id}" target="_blank" rel="noopener">Ver página de postulación</a></div>
   </div>
   <div class="card"><p class="card-title">Ciclo de las y los estudiantes</p>${cicloHTML(cicloDe(c.postulantes))}</div>
   <div class="grid-main"><div class="stack">
@@ -223,12 +239,12 @@ function vConvocatoria(id) {
       ${c.postulantes.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Postuló</th><th>Estado</th><th>Aviso al estudiante</th></tr></thead><tbody>${c.postulantes.map((p, i) => `<tr><td><span class="t">${esc(p.nombre)}</span><small><a class="lnk" href="mailto:${esc(p.correo)}">${esc(p.correo)}</a></small></td><td>${esc(p.universidad)}<small>${esc(p.carrera)}</small></td><td><small style="color:var(--ink)">${fechaTxt(p.fecha)}</small></td><td><select class="input sm est-${POST_ESTADOS.indexOf(p.estado)}" data-post="${i}" ${ed ? "" : "disabled"} aria-label="Estado de ${esc(p.nombre)}">${POST_ESTADOS.map(e => `<option ${p.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></td><td>${correoEstudiante(c, p) ? (p.avisado === p.estado ? `<span class="aviso-ok">Avisado</span>${ed ? ` <button class="link-btn" data-avisar="${i}">Ver correo</button>` : ""}` : ed ? `<button class="link-btn" data-avisar="${i}">Avisar por correo</button>` : `<span class="muted small">Pendiente</span>`) : `<span class="muted small">No aplica</span>`}</td></tr>`).join("")}</tbody></table></div>`
         : `<div class="empty">Aún no hay postulaciones. Comparte el link de postulación o publícala en LinkedIn.</div>`}
     </div>
-    <div class="card"><p class="card-title">Detalle de la oferta</p><dl class="kv">
+    ${fold("Detalle de la oferta", null, `<dl class="kv">
       <dt>Carreras</dt><dd class="${c.carreras ? "" : "ph"}">${esc(c.carreras || "No definido")}</dd>
       <dt>Lugar</dt><dd class="${c.lugar ? "" : "ph"}">${esc(c.lugar || "No definido")}</dd>
       <dt>Condiciones</dt><dd class="${c.condiciones ? "" : "ph"}">${esc(c.condiciones || "No definido")}</dd>
       <dt>Descripción del cargo</dt><dd class="${c.descripcion ? "" : "ph"}">${esc(c.descripcion || "No definido")}</dd>
-      <dt>Requisitos</dt><dd class="${c.requisitos ? "" : "ph"}">${esc(c.requisitos || "No definido")}</dd></dl></div>
+      <dt>Requisitos</dt><dd class="${c.requisitos ? "" : "ph"}">${esc(c.requisitos || "No definido")}</dd></dl>${ed ? `<div class="fold-acts"><a class="link-btn" href="#/editar-convocatoria/${c.id}">Editar la oferta</a></div>` : ""}`, false, [c.carreras ? c.carreras.split(",").length + " carreras" : "", c.lugar].filter(Boolean).join(" · "))}
   </div>
   <aside class="stack">
     <div class="card side"><p class="card-title">LinkedIn</p>

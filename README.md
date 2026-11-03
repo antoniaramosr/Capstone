@@ -33,6 +33,10 @@ Propuesta individual de Antonia para el Ejercicio Individual 2. Si al equipo le 
 - **Contacto sin respuesta**: si la institución no responde el cuestionario en 14 días, la ficha y los avisos lo muestran y sugieren escribirle a otro contacto, para que el vínculo no dependa de una sola persona.
 - **Indicador de ubicación**: barra "Estás en" más grande en todas las páginas.
 - **Roles**: "Jefatura" se muestra como "Gestor/a de metas (jefatura)".
+- **Mis vínculos**: se puede ordenar por fecha de inicio (más reciente o más antigua), por nombre o por etapa. El panel de convocatorias muestra también las cerradas.
+- **Pestaña "Con otras áreas"**: mis instituciones que también trabajan con otras áreas, y las instituciones de otras áreas con las que yo no trabajo. Cada institución se abre y se cierra.
+- **Editar y eliminar**: las convocatorias se pueden editar ("Editar o eliminar"). Vínculos y convocatorias se pueden eliminar con confirmación y opción de deshacer.
+- **Menos ruido visual**: Reuniones, Feedback, Historial, Detalle de la oferta, Convocatorias y Avisos son plegables. Espaciado e interlineado parejos en todas las páginas.
 
 ## Perfiles
 
