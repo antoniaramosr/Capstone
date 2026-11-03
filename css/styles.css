@@ -1167,3 +1167,59 @@ main > .hero.hero-cards + .ce-grid{margin-top:-52px!important}
   .pop-contact.show{width:calc(100vw - 24px)}
 }
 .ce-l .tag-auto{background:#D3E3E7}
+
+/* ---- Ajustes de noviembre (2): logo original, barra fija, espaciado parejo ---- */
+.logo-chip{display:inline-flex;align-items:center;background:#fff;border-radius:10px;padding:6px 12px}
+.logo-chip img,.logo-chip .logo-txt{height:30px;width:auto;display:block;color:var(--brand)}
+.logo-chip .logo-txt{line-height:30px;font-size:14px}
+.nav{overflow:visible;gap:2px;min-width:0}
+.nav-btn{padding:0 12px}
+.nav-item[data-mega] .nav-btn{padding:0 2px 0 12px}
+.hero-row{margin-top:0}
+.hero .crumbs + .hero-row{margin-top:20px}
+.pop-add{width:340px}
+.pop-add .pop-item{padding:10px 12px}
+
+/* Un mismo espacio (20 px) entre todas las tarjetas y bloques */
+:root{--gap:20px}
+.resumen,.kpis,.kpis.k4,.piloto,.bars2,.cards2,.ce-grid,.grid-main,.form-grid-main{gap:var(--gap)}
+.grid-main{align-items:start}
+.resumen > *,.kpis-float .kpi,.kpi,.piloto .kpi{padding:20px 22px}
+.resumen b,.kpi b{margin-bottom:8px}
+.resumen span,.kpi span{display:block;line-height:1.45}
+.kpi .kpi-s{margin-top:6px}
+.card{padding:22px}
+.card-title{margin-bottom:16px}
+.card.side .person,.side .person{margin-top:0}
+.person{padding:4px 0 8px;line-height:1.5}
+.person > *{display:block}
+.person b{margin-bottom:2px}
+.person .contactar{margin:6px 0 4px}
+.conv-card .conv-t{margin-bottom:14px}
+.conv-open{padding:0 0 16px}
+.conv-open b{margin-bottom:8px}
+.conv-open span + span{margin-top:2px}
+.conv-card .mas{margin-top:4px}
+.conv-nueva{margin-top:12px}
+.tabla-acts{margin-bottom:16px}
+.filters{margin-bottom:var(--gap)}
+.filters .chips{margin-bottom:14px}
+.frow{gap:12px}
+.tabs{margin-bottom:var(--gap)}
+.leyenda-tabla{margin-top:18px;line-height:1.9}
+.dash-sec > summary{padding:6px 0}
+.dash-body{padding-top:14px}
+.fold > summary{padding:2px 0}
+.fold-b{padding-top:14px}
+.aviso{margin-bottom:10px}
+.link-listo{background:#E8F4F2;border:1px solid #B8D8D2;border-radius:10px;padding:16px;margin-bottom:var(--gap)}
+.link-listo .card-title{margin-bottom:8px}
+.link-listo .inline-form{margin:12px 0}
+main.has-hero .hero + .tabs{margin-top:var(--gap)}
+@media (max-width:1100px){.logo .prod span{display:none}.top-inner{gap:12px}.top .user > div{display:none}}
+@media (max-width:900px){
+  .top-inner{flex-wrap:wrap;height:auto;padding:10px 16px;row-gap:8px}
+  .nav{order:3;width:100%;flex-wrap:wrap}
+  .top-right{margin-left:auto}
+  .logo .prod{display:none}
+}

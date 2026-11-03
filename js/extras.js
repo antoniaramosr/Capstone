@@ -48,7 +48,7 @@ function vAyuda() {
   + `<div class="grid-main"><div>
     <div class="card"><p class="card-title">Cómo empezar</p><ol class="pasos-ayuda">
       <li><b>Mira Mis vínculos.</b> Las filas amarillas son vínculos que conviene atender primero.</li>
-      <li><b>Registra algo nuevo</b> con <b>+ Añadir</b>. Eliges el tipo de vínculo y la institución en la misma ficha; si la institución no está, la agregas ahí.</li>
+      <li><b>Registra algo nuevo</b> con <b>+ Añadir</b>. Se abre un menú para elegir qué tipo de vínculo quieres registrar; en la ficha eliges la institución y, si no está, la agregas ahí.</li>
       <li><b>Escríbele a un contacto</b> con el botón <b>Contactar</b> que está junto a su nombre. Si otra área ya habla con esa institución, SIVA te avisa antes.</li>
       <li><b>Sigue a las y los estudiantes</b> en Estudiantes: quién postula, quién está en práctica y quién terminó.</li>
       <li><b>Revisa Estadísticas</b> para saber cómo van los vínculos y si SIVA está ayudando.</li></ol></div>

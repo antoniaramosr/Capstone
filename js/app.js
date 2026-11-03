@@ -215,15 +215,21 @@ function shell(active) {
   return `
   <header class="top">
     <div class="top-inner">
-      <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa(true)}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
+      <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio"><span class="logo-chip">${logoAmsa()}</span><span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
       <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item ${active === n.k ? "on" : ""}" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><a class="nav-btn ${active === n.k ? "active" : ""}" href="#/${n.k}" ${active === n.k ? 'aria-current="page"' : ""}>${n.t}</a>${n.mega ? `<button type="button" class="nav-more" aria-haspopup="true" aria-expanded="false" aria-label="Abrir el submenú de ${esc(n.t)}"><i class="caret"></i></button>` : ""}</div>`).join("")}</nav>
       <div class="top-right">
-        ${puedeCrear() ? `<a class="btn-accent" id="btnAdd" href="#/nuevo">+ Añadir</a>` : ""}
+        ${puedeCrear() ? `<button type="button" class="btn-accent" id="btnAdd" aria-haspopup="true">+ Añadir <i class="caret light"></i></button>` : ""}
         <button class="user" id="btnUser" aria-haspopup="true"><span class="avatar">${ME.inicial}</span><div><b>${esc(ME.nombre)}</b><small>${esc(perfilTxt(ME))}</small></div></button>
       </div>
     </div>
     <div class="mega" id="mega"><div class="mega-inner" id="megaInner"></div></div>
     ${contact.pop}
+    ${puedeCrear() ? `<div class="pop pop-add" id="popAdd"><h5>¿Qué quieres registrar?</h5>
+      <a class="pop-item" href="#/nueva-convocatoria"><div><b>Convocatoria para estudiantes</b><small>Prácticas o memorias. Se puede publicar en LinkedIn.</small></div></a>
+      <a class="pop-item" href="#/nuevo/char"><div><b>Charla o actividad</b><small>Charlas, ferias o visitas a nuestras oficinas u operaciones.</small></div></a>
+      <a class="pop-item" href="#/nuevo/acad"><div><b>Proyecto académico (Capstone)</b><small>Un desafío nuestro trabajado por estudiantes en un curso.</small></div></a>
+      <a class="pop-item" href="#/nuevo/conv"><div><b>Convenio</b><small>Un acuerdo formal con una institución.</small></div></a>
+      <a class="pop-item" href="#/nuevo"><div><b>Otro tipo de vínculo</b><small>Consejos, programas de formación, empleo, I+D y más.</small></div></a></div>` : ""}
     <div class="pop pop-user" id="popUser">
       <p class="pop-lbl">Cambiar de perfil (prototipo)${esEspacioVacio() ? " · sigues en la página vacía" : ""}</p>
       ${otros.map(u => `<button class="pop-item" data-cambiar="${u.id}"><span class="avatar">${u.inicial}</span><div><b>${esc(u.nombre)}</b><small>${esc(CONFIG.roles[u.rol].nombre)}</small></div></button>`).join("")}
@@ -265,6 +271,7 @@ function wireShell() {
     });
   });
   mega.addEventListener("click", e => { if (e.target.closest("a")) close(); });
+  const ba = $("#btnAdd"); if (ba) ba.onclick = e => { e.stopPropagation(); close(); togglePop("#popAdd"); };
   const bu = $("#btnUser");
   if (bu) bu.onclick = e => { e.stopPropagation(); close(); togglePop("#popUser"); };
   wireContactPop();
@@ -274,7 +281,7 @@ function wireShell() {
 }
 function closePops() { $$(".pop").forEach(p => p.classList.remove("show")); }
 // El menú de usuario se abre justo bajo su botón, alineado a su borde derecho.
-const BTN_DE_POP = { popUser: "#btnUser" };
+const BTN_DE_POP = { popUser: "#btnUser", popAdd: "#btnAdd" };
 function ubicarPop(p) {
   const b = $(BTN_DE_POP[p.id] || ""); if (!b || window.innerWidth <= 760) { p.style.right = ""; return; }
   p.style.right = Math.max(8, document.documentElement.clientWidth - b.getBoundingClientRect().right) + "px";
@@ -320,7 +327,7 @@ function vLogin() {
 const fold = (titulo, cnt, cuerpo, abierta = false, extra = "") => `<details class="card fold" ${abierta ? "open" : ""}><summary><span class="fold-t">${titulo}</span>${cnt != null ? `<span class="fold-n">${cnt}</span>` : ""}${extra ? `<span class="fold-x">${extra}</span>` : ""}</summary><div class="fold-b">${cuerpo}</div></details>`;
 
 /* ============================ Mis vínculos ============================ */
-let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "", orden: "reciente", anio: "", agrupar: false };
+let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "", orden: "reciente", anio: "", agrupar: false, salud: "" };
 const ORDENES = { salud: "salud (urgentes primero)", reciente: "fecha de inicio, más reciente", antiguo: "fecha de inicio, más antigua", nombre: "nombre (A-Z)", etapa: "etapa" };
 function ordenar(list) {
   const f = v => v.inicio || (filtro.orden === "antiguo" ? "9999" : "0000");
@@ -329,7 +336,7 @@ function ordenar(list) {
 }
 /* Encabezado de color de cada página: migas ("Estás en"), título, descripción corta y acciones.
    Si la página tiene tarjetas de resumen, estas quedan montadas sobre el borde del encabezado. */
-const hero = (titulo, sub, o = {}) => `<div class="hero ${o.cards ? "hero-cards" : ""}"><div class="crumbs">${o.crumbs || `<b>${esc(titulo)}</b>`}</div><div class="hero-row"><div><h1>${titulo}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>${o.acciones ? `<div class="hero-acts">${o.acciones}</div>` : ""}</div></div>`;
+const hero = (titulo, sub, o = {}) => `<div class="hero ${o.cards ? "hero-cards" : ""}">${o.crumbs ? `<div class="crumbs">${o.crumbs}</div>` : ""}<div class="hero-row"><div><h1>${titulo}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>${o.acciones ? `<div class="hero-acts">${o.acciones}</div>` : ""}</div></div>`;
 const anioDe = v => (v.inicio || "").slice(0, 4) || "Sin fecha";
 const LEYENDA_TABLA = `<p class="leyenda-tabla"><b>Cómo leer la tabla.</b> <span class="dots"><i></i><i></i><i></i><i class="off"></i><i class="off"></i></span> <b>Calificación</b>: qué tan bien resultó el vínculo, de 1 a 5, la pone el área. <span class="prog sm"><i style="width:60%"></i></span> <b>Avance</b>: qué parte del plan de trabajo ya se hizo. Las filas amarillas son vínculos que conviene atender.</p>`;
 function filasVinculos(list, opts = {}) {
@@ -351,7 +358,7 @@ function filasVinculos(list, opts = {}) {
 }
 function listaFiltrada() {
   const q = filtro.q.toLowerCase();
-  return ordenar(misVinculos().filter(v => (!filtro.comp || compsDe(v).includes(filtro.comp)) && (!filtro.anio || anioDe(v) === filtro.anio) && (filtro.etapa < 0 || v.etapa === filtro.etapa) && (!filtro.tipo || v.tipo === filtro.tipo) && (!filtro.inc || completitud(v).pct < 50) &&
+  return ordenar(misVinculos().filter(v => (!filtro.comp || compsDe(v).includes(filtro.comp)) && (!filtro.anio || anioDe(v) === filtro.anio) && (!filtro.salud || saludDe(v).k === filtro.salud) && (filtro.etapa < 0 || v.etapa === filtro.etapa) && (!filtro.tipo || v.tipo === filtro.tipo) && (!filtro.inc || completitud(v).pct < 50) &&
     (!q || (v.nombre + " " + contraparte(v.contraparte).nombre + " " + contraparte(v.contraparte).corto + " " + v.sede).toLowerCase().includes(q))));
 }
 const opcionesTabla = () => ({ area: ME.admin || hijos(ME.area).length, agrupar: filtro.agrupar, vacio: "No hay vínculos con estos filtros." });
@@ -387,12 +394,13 @@ function vMis(p) {
       <div class="frow"><input class="input sm" id="fq" placeholder="Buscar vínculo o institución" value="${esc(filtro.q)}" aria-label="Buscar">
       <select class="input sm" id="fo" aria-label="Ordenar">${Object.entries(ORDENES).map(([k, t]) => `<option value="${k}" ${filtro.orden === k ? "selected" : ""}>Ordenar: ${t}</option>`).join("")}</select>
       <select class="input sm" id="fa" aria-label="Año de inicio"><option value="">Todos los años</option>${anios.map(a => `<option ${filtro.anio === a ? "selected" : ""}>${a}</option>`).join("")}</select>
+      <select class="input sm" id="fs" aria-label="Salud del vínculo"><option value="">Toda la salud</option>${[["verde", "Al día"], ["amarillo", "Atender"], ["rojo", "Urgente"], ["cerrado", "Cerrado"]].map(([k, t]) => `<option value="${k}" ${filtro.salud === k ? "selected" : ""}>${t} (${mios.filter(v => saludDe(v).k === k).length})</option>`).join("")}</select>
       <select class="input sm" id="fc" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${filtro.comp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select>
       <select class="input sm" id="ft" aria-label="Tipo de vínculo"><option value="">Todos los tipos</option>${S.tipos.map(t => `<option value="${t.id}" ${filtro.tipo === t.id ? "selected" : ""}>${esc(t.nombre)}</option>`).join("")}</select>
       <label class="chk"><input type="checkbox" id="fag" ${filtro.agrupar ? "checked" : ""}> Agrupar por año</label>
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
     </div>
-    <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><a class="btn-accent sm" href="#/nuevo">+ Añadir vínculo</a></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
+    <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
   </div>
   <aside class="stack">
     ${convMisHTML()}
@@ -858,10 +866,10 @@ let reco = null;
 function abrirAsistente(vid, tab) {
   if (vid) asis.vid = vid; if (tab) asis.tab = tab;
   if (!asis.vid || !vinculo(asis.vid) || !puedeEditar(vinculo(asis.vid))) { const m = misVinculos().filter(puedeEditar); asis.vid = m.length ? m[0].id : null; }
-  if (asis.vid !== asis._ultimo) { asis.propuesta = null; asis.extra = []; asis.error = ""; asis._ultimo = asis.vid; }
+  if (asis.vid !== asis._ultimo) { asis.propuesta = null; asis.extra = []; asis.error = ""; asis.creado = null; asis._ultimo = asis.vid; }
   $("#drawer").classList.add("show"); $("#drawerBg").classList.add("show"); renderAsistente();
 }
-function cerrarAsistente() { const d = $("#drawer"); if (!d) return; d.classList.remove("show"); $("#drawerBg").classList.remove("show"); if (reco) { try { reco.stop(); } catch (e) {} } }
+function cerrarAsistente() { const d = $("#drawer"); if (!d) return; asis.creado = null; d.classList.remove("show"); $("#drawerBg").classList.remove("show"); if (reco) { try { reco.stop(); } catch (e) {} } }
 const urlResponder = (v, q) => location.href.split("#")[0] + "#/responder/" + v.id + "." + q.id;
 function textoCuestionario(v, preguntas, q) {
   const link = q ? urlResponder(v, q) : "[el link se genera al abrir Outlook]";
@@ -894,6 +902,12 @@ function renderAsistente() {
     }
   } else {
     const preguntas = PREGUNTAS_BASE.filter((_, i) => asis.base[i]).map(p => p.texto).concat(asis.extra);
+    if (asis.creado && asis.creado.v === v.id) {
+      const q = v.cuestionarios.find(x => x.id === asis.creado.q);
+      if (q) html += `<div class="link-listo"><p class="card-title">Link del cuestionario listo</p><p class="help">Quien tenga este link responde sin crear cuenta. Puedes pegarlo en Teams, WhatsApp o un correo, no solo en Outlook.</p>
+        <div class="inline-form"><input class="input" id="asLinkIn" readonly value="${esc(urlResponder(v, q))}" aria-label="Link del cuestionario"><button class="btn-accent" id="asLinkCopiar">Copiar link</button></div>
+        <div class="form-actions"><button class="btn-outline" id="asLinkOutlook">Abrir en Outlook</button><button class="btn-outline" id="asLinkFicha">Ir a la ficha</button></div></div>`;
+    }
     html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Se abre Outlook en la web con un link listo para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución (agrega su correo en la ficha)"}. Tú lo envías.</li><li>La institución responde en el link, sin cuenta. Sus respuestas llegan solas a la ficha.</li><li>Si no responde en ${DIAS_SIN_RESPUESTA} días, SIVA te avisa.</li></ol></div>
       <p class="card-title">Preguntas generales</p>${PREGUNTAS_BASE.map((p, i) => `<label class="diff"><input type="checkbox" data-base="${i}" ${asis.base[i] ? "checked" : ""}><span>${esc(p.texto)}</span></label>`).join("")}
       <p class="card-title">Preguntas específicas de este vínculo</p>${asis.extra.map((p, i) => `<div class="diff"><span style="flex:1">${esc(p)}</span><button class="link-btn danger" data-quitar="${i}">Quitar</button></div>`).join("") || `<p class="small muted">Puedes sugerirlas con el asistente o escribirlas.</p>`}
@@ -901,7 +915,7 @@ function renderAsistente() {
       <div class="inline-form"><input class="input" id="asPreg" placeholder="Escribe otra pregunta"><button class="btn-outline" id="asAddP">Agregar</button></div>
       ${asis.error ? `<div class="err show">${esc(asis.error)}</div>` : ""}
       <p class="card-title" style="margin-top:16px">Vista previa del correo</p><textarea class="input" id="asPrev" rows="8" readonly>${esc(textoCuestionario(v, preguntas))}</textarea>
-      <div class="form-actions"><button class="btn-accent" id="asEnviar">Abrir en Outlook</button><button class="btn-outline" id="asCopiar">Copiar texto</button></div>
+      <div class="form-actions"><button class="btn-accent" id="asEnviar">Abrir en Outlook</button><button class="btn-outline" id="asLink">Solo crear el link</button><button class="btn-outline" id="asCopiar">Copiar texto</button></div>
       <p class="help">La página no envía el correo por ti: queda guardado como "preparado" hasta que confirmes que lo mandaste en Outlook.</p>`;
   }
   d.innerHTML = html;
@@ -963,17 +977,20 @@ function wireAsistente(v) {
     $("#asAddP").onclick = addP; $("#asPreg").onkeydown = e => { if (e.key === "Enter") addP(); };
     const preguntas = () => PREGUNTAS_BASE.filter((_, i) => asis.base[i]).map(p => p.texto).concat(asis.extra);
     $("#asCopiar").onclick = async () => { const t = $("#asPrev"); try { await navigator.clipboard.writeText(t.value); toast("Texto copiado"); } catch (e) { t.select(); toast("Selecciona y copia el texto (Cmd + C)"); } };
-    $("#asEnviar").onclick = () => {
-      const ps = preguntas(); if (!ps.length) return;
-      const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] };
-      v.cuestionarios.push(q); guardar();
-      const to = (v.contacto.correo || "").trim();
-      if (!to) { toast("Agrega el correo del contacto en la ficha."); location.hash = "#/editar/" + v.id; render(); return; }
-      abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, ps, q));
-      asis.extra = []; cerrarAsistente(); toast("Se abrió Outlook. Cuando envíes el cuestionario, márcalo en la ficha."); if (location.hash !== "#/ficha/" + v.id) location.hash = "#/ficha/" + v.id; else render();
-    };
+    const crear = () => { const ps = preguntas(); if (!ps.length) return null; const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] }; v.cuestionarios.push(q); guardar(); asis.creado = { v: v.id, q: q.id }; asis.extra = []; return q; };
+    const outlookDe = q => { const to = (v.contacto.correo || "").trim(); if (!to) { toast("Agrega el correo del contacto en la ficha para abrir Outlook."); return false; } abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, q.preguntas, q)); return true; };
+    $("#asEnviar").onclick = () => { const q = crear(); if (!q) return; const ok = outlookDe(q); renderAsistente(); if (ok) toast("Se abrió Outlook. El link queda aquí abajo por si lo quieres mandar por otro medio."); };
+    $("#asLink").onclick = () => { if (crear()) { renderAsistente(); toast("Link creado. Cópialo y envíaselo a la institución."); } };
+  }
+  const lc = $("#asLinkCopiar");
+  if (lc) {
+    const q = v.cuestionarios.find(x => asis.creado && x.id === asis.creado.q);
+    lc.onclick = async () => { const t = $("#asLinkIn"); try { await navigator.clipboard.writeText(t.value); toast("Link copiado"); } catch (e) { t.select(); toast("Selecciona y copia el link (Cmd + C)"); } };
+    $("#asLinkOutlook").onclick = () => { if (q && outlookDeVinculo(v, q)) toast("Se abrió Outlook"); };
+    $("#asLinkFicha").onclick = () => { cerrarAsistente(); if (location.hash !== "#/ficha/" + v.id) location.hash = "#/ficha/" + v.id; else render(); };
   }
 }
+function outlookDeVinculo(v, q) { const to = (v.contacto.correo || "").trim(); if (!to) { toast("Agrega el correo del contacto en la ficha para abrir Outlook."); return false; } abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, q.preguntas, q)); return true; }
 
 /* ============================ Router ============================ */
 function render() {
@@ -998,7 +1015,6 @@ function render() {
   let body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
   // Indicador de ubicación: las páginas sin migas muestran igual en qué sección estás.
   const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", admin: "Configuración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria", estudiantes: "Estudiantes", ayuda: "Ayuda" };
-  if (!body.includes('class="crumbs"') && SECCION[ruta]) body = `<div class="crumbs"><b>${esc(SECCION[ruta])}</b></div>` + body;
   app.innerHTML = shell(activo) + `<main class="${body.includes('class="hero') ? "has-hero" : ""}">${body}</main>${pie()}
     <button class="fab" id="fab" aria-label="Abrir asistente"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente</span></button>
     <div class="drawer-bg" id="drawerBg"></div>
@@ -1016,6 +1032,7 @@ function wireContactLinks() {
 function wireVista(ruta, p) {
   $$("[data-ficha]").forEach(tr => { const go = () => location.hash = "#/ficha/" + tr.dataset.ficha; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
   wireContactLinks();
+  $$("[data-abrir-add]").forEach(b => b.onclick = e => { e.stopPropagation(); togglePop("#popAdd"); });
   if (ruta === "estudiantes") wireEstudiantes();
   if (ruta === "correo-aceptados") wireCorreoAceptados(p);
   $$("main [data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
@@ -1028,6 +1045,7 @@ function wireVista(ruta, p) {
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
     $("#fo").onchange = e => { filtro.orden = e.target.value; pinta(); };
+    $("#fs").onchange = e => { filtro.salud = e.target.value; pinta(); };
     $("#fa").onchange = e => { filtro.anio = e.target.value; pinta(); };
     $("#fag").onchange = e => { filtro.agrupar = e.target.checked; pinta(); };
     const sm = $("#semMail"); if (sm) sm.onclick = () => { abrirOutlookWeb(ME.correo, "Tu resumen de la semana en SIVA", textoSemana(misVinculos())); toast("Se abrió Outlook con tu resumen"); };
