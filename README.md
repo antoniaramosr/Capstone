@@ -120,3 +120,33 @@ Datos: los vínculos vienen del *Mapeo instituciones formativas ANF - COQ*. La s
 ## Para trabajar las tres sin pisarnos
 
 `git pull` antes de empezar, una rama por cambio y avisar qué pantalla está tocando cada una.
+
+### Propuestas de Francisca y Allison (Ejercicio Individual 2), sumadas en la rama `Anto`
+
+Se juntaron las ideas de los tres informes. Todo lo de abajo funciona en el prototipo.
+
+**De Francisca**
+
+- **Encabezado de color** (su Propuesta A): barra y título en degradado petróleo, pestaña activa en blanco, tarjetas de resumen que se montan sobre el borde, amarillo para lo que pide atención (filas de la tabla y tarjeta de convocatorias abiertas) y rojo solo para "+ Añadir".
+- **Correo para aceptados** (`#/correo-aceptados/<convocatoria>`): plantilla por área con convocatoria y contacto autocompletados, fecha de inicio, plazo para confirmar (5 días hábiles sugerido), próximos pasos como botones para marcar (más "+ Otro"), mensaje adicional, vista previa en vivo y "Enviar a N aceptados". Se guarda por área y se reutiliza en la siguiente convocatoria. Abre Outlook con los correos en copia oculta y deja a cada estudiante como "Avisado". Se entra desde el detalle de la convocatoria.
+- **Instituciones simplificado**: el submenú muestra un buscador y las 5 con más vínculos, y "Ver todas".
+- **Descripción corta al inicio de cada sección** y botón **+ Añadir vínculo** también dentro de Mis vínculos.
+- **Roles por lo que hacen**: Responsable de vínculos, Revisión y metas, Configuración.
+- **Estadísticas con jerarquía**: tarjetas arriba, resumen en palabras, gráficos, y el "Detalle por institución y por área" plegado.
+
+**De Allison**
+
+- **Submenús solo al presionar**: ya no se abren al pasar el mouse. La flecha junto a cada sección los abre; el nombre lleva directo a la página. Los submenús son cortos: Mis vínculos por etapa y Estudiantes (Practicantes y Memoristas).
+- **Un solo "+ Añadir"** que lleva directo a la ficha, donde se elige el tipo de vínculo y la institución (con "+ Otra institución").
+- **Contactar junto a cada contacto** (ficha, institución y lista), ya no arriba. Se abre en una ventana al centro y avisa si otra área ya habla con esa institución.
+- **Año en cada vínculo**, filtro por año y "Agrupar por año".
+- **Ayuda** (`#/ayuda`): primeros pasos, glosario (vínculo, etapa, avance, calificación, salud, aceptado…), quién usa SIVA y que SIVA no reemplaza el portal de AMSA.
+- **Leyenda de calificación y avance** bajo la tabla de vínculos.
+- **Nexo con el portal de AMSA**: una convocatoria puede llevar el link de su portal. La página pública manda a postular allá, y en el detalle se puede registrar a mano a quien postuló por el portal.
+- **Métricas del piloto** en Estadísticas ("¿Está funcionando SIVA?"): avisos de contacto compartido, áreas que registraron algo en los últimos 30 días, % de vínculos al día y días promedio sin movimiento.
+
+**Página nueva de Estudiantes** (`#/estudiantes`, con Practicantes y Memoristas): quién postula, quién está en práctica y quién terminó, con número y porcentaje.
+
+**Corrección**: abrir directo un link como `#/ficha/3` fallaba por un error de orden al arrancar. Ya se arregló.
+
+**Lo que no se hizo, y por qué**: Allison propone dejar solo dos roles (encargado del área y miembros), pero la retroalimentación de la GE2 pidió un usuario administrador y uno de solo lectura, así que se mantuvieron los tres perfiles, solo con nombres por función. Queda para que el grupo lo converse.

@@ -99,9 +99,10 @@ const CONFIG = {
 
   // Perfiles de uso. El estudiante no inicia sesión: usa la página pública de convocatorias.
   roles: {
-    gestor: { nombre: "Gestor/a de vinculación", desc: "Registra y actualiza los vínculos de su área y crea convocatorias para estudiantes." },
-    jefatura: { nombre: "Gestor/a de metas (jefatura)", desc: "Define las metas de su gerencia y revisa si los vínculos aportan a ellas. No registra vínculos." },
-    admin: { nombre: "Administración", desc: "Configura compañías, áreas, tipos de vínculo y metas. Ve todos los vínculos." }
+    // Los perfiles se nombran por lo que hacen en la plataforma, no por su cargo en la empresa.
+    gestor: { nombre: "Responsable de vínculos", desc: "Registra y actualiza los vínculos de su área y crea convocatorias para estudiantes." },
+    jefatura: { nombre: "Revisión y metas", desc: "Define las metas de su gerencia y revisa si los vínculos aportan a ellas. No registra vínculos." },
+    admin: { nombre: "Configuración", desc: "Configura compañías, áreas, tipos de vínculo y metas. Ve todos los vínculos." }
   },
 
   // Quién financia el vínculo. "Presupuesto del área" pide además de qué partida sale.

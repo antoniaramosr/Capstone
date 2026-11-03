@@ -79,27 +79,33 @@ const saludHTML = v => { const x = saludDe(v); return `<span class="salud s-${x.
 
 /* ============================ Shell ============================ */
 function megaHTML(k) {
+  // Los submenús son cortos: una explicación y pocos enlaces. El detalle está en la página.
   if (k === "mis") {
     const mios = misVinculos();
-    const cols = CONFIG.etapas.map((et, i) => {
-      const vs = mios.filter(v => v.etapa === i);
-      return `<div class="mega-col"><h4><a href="#/mis/etapa-${i}">${et} <span class="mini-n">${vs.length}</span></a></h4><ul>${vs.slice(0, 5).map(v => `<li><a href="#/ficha/${v.id}">${esc(v.nombre)}<span class="mini">${esc(contraparte(v.contraparte).corto)}</span></a></li>`).join("") || `<li><span>Sin vínculos</span></li>`}${vs.length > 5 ? `<li><a href="#/mis">y ${vs.length - 5} más</a></li>` : ""}</ul></div>`;
-    }).join("");
-    return `<div class="mega-intro"><h3>${ME.admin ? "Todos los vínculos" : "Mis vínculos"}</h3><p>${ME.admin ? "Todos los vínculos registrados" : "Los vínculos de " + esc(nombreArea(ME.area))}, ordenados por etapa.</p><a href="#/mis">Ver la lista completa</a></div><div class="mega-cols">${cols}</div>`;
+    const lista = CONFIG.etapas.map((et, i) => `<li><a href="#/mis/etapa-${i}"><b>${et}</b><span class="mini-n">${mios.filter(v => v.etapa === i).length}</span><small>${esc(CONFIG.etapasAyuda[i])}</small></a></li>`).join("");
+    return `<div class="mega-intro"><h3>${ME.admin ? "Todos los vínculos" : "Mis vínculos"}</h3><p>${ME.admin ? "Todos los vínculos registrados" : "Los vínculos de " + esc(nombreArea(ME.area))}, ordenados según cómo van. Elige una etapa para ver solo esos.</p><a href="#/mis">Ver la lista completa</a></div><ul class="mega-list">${lista}</ul>`;
   }
   if (k === "areas") {
-    const cols = S.areas.filter(a => !a.parent).map(vp => `<div class="mega-col"><h4><a href="#/area/${vp.id}">${esc(vp.nombre)}</a></h4><ul>${hijos(vp.id).map(g => `<li><a href="#/area/${g.id}" class="g">${esc(g.nombre)}</a></li>${hijos(g.id).map(s => `<li><a href="#/area/${s.id}" class="s">${esc(s.nombre)}${s.id === ME.area ? '<span class="tag-mine">Mi área</span>' : ""}</a></li>`).join("")}`).join("")}</ul></div>`).join("");
-    return `<div class="mega-intro"><h3>Áreas</h3><p>Vicepresidencias, gerencias y subáreas que gestionan vínculos.</p><a href="#/areas">Ver todas las áreas</a></div><div class="mega-cols">${cols}</div>`;
+    const cols = S.areas.filter(a => !a.parent).map(vp => `<div class="mega-col"><h4><a href="#/area/${vp.id}">${esc(vp.nombre)}</a></h4><ul>${hijos(vp.id).map(g => `<li><a href="#/area/${g.id}" class="g">${esc(g.nombre)}${g.id === ME.area ? '<span class="tag-mine">Mi área</span>' : ""}</a></li>`).join("")}</ul></div>`).join("");
+    return `<div class="mega-intro"><h3>Áreas</h3><p>Vicepresidencias y gerencias que gestionan vínculos.</p><a href="#/areas">Ver todas las áreas</a></div><div class="mega-cols">${cols}</div>`;
   }
   if (k === "contrapartes") {
-    const tiposCon = S.tiposOrg.filter(t => S.contrapartes.some(c => c.tipoOrg === t)).slice(0, 4);
-    const cols = tiposCon.map(t => {
-      const cs = S.contrapartes.filter(c => c.tipoOrg === t);
-      return `<div class="mega-col"><h4><a href="#/contrapartes/${encodeURIComponent(t)}">${esc(t)}</a></h4><ul>${cs.slice(0, 7).map(c => `<li><a href="#/contraparte/${c.id}">${esc(c.corto)}<span class="mini">${S.vinculos.filter(v => v.contraparte === c.id).length} vínculos</span></a></li>`).join("")}${cs.length > 7 ? `<li><a href="#/contrapartes/${encodeURIComponent(t)}">y ${cs.length - 7} más</a></li>` : ""}</ul></div>`;
-    }).join("");
-    return `<div class="mega-intro"><h3>Instituciones</h3><p>Universidades, centros de formación, OTEC y otras instituciones con las que trabajan las áreas.</p><a href="#/contrapartes">Ver todas las instituciones</a></div><div class="mega-cols">${cols}</div>`;
+    return `<div class="mega-intro"><h3>Instituciones</h3><p>Universidades, centros de formación, OTEC y otras instituciones con las que trabajan las áreas.</p><a href="#/contrapartes">Ver todas (${S.contrapartes.length})</a></div>
+      <div class="mega-inst"><input class="input sm" id="megaQ" type="search" placeholder="Buscar institución" aria-label="Buscar institución" autocomplete="off"><p class="lbl2" id="megaCpT">Con más vínculos</p><ul class="mega-list one" id="megaCp">${megaCpLista("")}</ul></div>`;
+  }
+  if (k === "estudiantes") {
+    const cs = convVisibles(), pr = estudiantesDe("practicantes").length, me = estudiantesDe("memoristas").length;
+    return `<div class="mega-intro"><h3>Estudiantes</h3><p>Quiénes postulan a tus convocatorias, quiénes están haciendo su práctica o memoria y quiénes ya terminaron.</p><a href="#/estudiantes">Ver a todas y todos</a></div>
+      <ul class="mega-list"><li><a href="#/estudiantes/practicantes"><b>Practicantes</b><span class="mini-n">${pr}</span><small>Práctica profesional o de verano</small></a></li><li><a href="#/estudiantes/memoristas"><b>Memoristas</b><span class="mini-n">${me}</span><small>Memoria o proyecto de título</small></a></li><li><a href="#/mis"><b>Convocatorias abiertas</b><span class="mini-n">${cs.filter(c => c.estado === "Abierta").length}</span><small>Se administran desde el vínculo o la lista de Mis vínculos</small></a></li></ul>`;
   }
   return "";
+}
+// Instituciones del submenú: las que más vínculos tienen o las que coinciden con lo escrito.
+function megaCpLista(q) {
+  q = (q || "").toLowerCase().trim();
+  const filas = S.contrapartes.map(c => ({ c, n: S.vinculos.filter(v => v.contraparte === c.id).length }))
+    .filter(r => q ? (r.c.nombre + " " + r.c.corto).toLowerCase().includes(q) : r.n > 0).sort((a, b) => b.n - a.n).slice(0, q ? 8 : 5);
+  return filas.length ? filas.map(r => `<li><a href="#/contraparte/${r.c.id}"><b>${esc(r.c.corto)}</b><span class="mini-n">${r.n}</span><small>${esc(r.c.tipoOrg)}</small></a></li>`).join("") : `<li><span class="muted small">No hay instituciones con ese nombre.</span></li>`;
 }
 
 // Etiqueta de compañías: si son todas, se dice así; si son muchas, se muestran dos y "+n".
@@ -111,77 +117,87 @@ const compTag = ids => {
   return t + (ids.length > 2 ? ` <span class="comp" title="${esc(compsTxt(ids))}">+${ids.length - 2}</span>` : "");
 };
 const inicioDe = u => u && u.rol === "gestor" ? "#/mis" : "#/dashboard";
-const perfilTxt = u => u.admin ? "Administración" : (u.rol === "jefatura" ? "Gestor/a de metas · " : "") + nombreArea(u.area) + (u.compania ? " · " + compania(u.compania).nombre : "");
+const perfilTxt = u => u.admin ? CONFIG.roles.admin.nombre : (u.rol === "jefatura" ? CONFIG.roles.jefatura.nombre + " · " : "") + nombreArea(u.area) + (u.compania ? " · " + compania(u.compania).nombre : "");
 const etiquetaEspacioVacio = () => (ESPACIO === "vacio2" ? "Página vacía · Perfil 2" : "Página vacía · Perfil 0");
 const usuarioEspacioVacio = u => u.espacio && esEspacioVacio(u.espacio);
 // Logo de AMSA; si la imagen no carga, se muestra el nombre en texto.
 const logoAmsa = (blanco = false) => `<img class="${blanco ? "brand-logo" : ""}" src="${blanco ? CONFIG.logos.blanco : CONFIG.logos.color}" alt="Antofagasta Minerals" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'logo-txt '+this.className,textContent:'Antofagasta Minerals'}))">`;
 const pie = () => `<footer class="foot"><div class="foot-inner">${logoAmsa(true).replace('class="brand-logo"', "")}<span>Prototipo IDI2025 · Grupo 2 · datos de ejemplo</span></div></footer>`;
 const vinculosContactables = () => misVinculos().filter(puedeEditar);
+// Contactar vive junto a cada contacto (ficha, institución y lista), no en la barra de arriba:
+// así el nombre y el correo ya vienen elegidos. Se abre como una ventana al centro.
+let contactoPara = null;
 function contactShellBits() {
   const edit = vinculosContactables();
   if (!edit.length) return { btn: "", pop: "" };
   const opts = edit.map(v => `<option value="${v.id}">${esc(v.nombre)} · ${esc(contraparte(v.contraparte).corto)}</option>`).join("");
   return {
-    btn: `<button type="button" class="btn-outline" id="btnContact" aria-haspopup="true">Contactar</button>`,
-    pop: `<div class="pop pop-contact pop-form" id="popContact" role="dialog" aria-labelledby="contactPopTit">
+    btn: "",
+    pop: `<div class="pop pop-contact pop-form" id="popContact" role="dialog" aria-modal="true" aria-labelledby="contactPopTit">
       <h5 id="contactPopTit">Escribir a la institución</h5>
       <p class="pop-lead">Arma el mensaje y se abre <b>Outlook en la web</b> con el destinatario y el texto listos. Tú revisas y envías desde tu cuenta corporativa.</p>
       <label class="f" for="contactSel">Vínculo</label>
       <select class="input" id="contactSel">${opts}</select>
       <p class="help contact-to" id="contactTo" aria-live="polite"></p>
+      <div class="contact-dup" id="contactDup" hidden></div>
       <label class="f" for="contactMsg">Tu mensaje</label>
       <textarea class="input" id="contactMsg" rows="5" placeholder="Ej.: Queríamos coordinar la fecha de la charla y confirmar cupos…"></textarea>
-      <button type="button" class="btn-accent wide" id="contactGo">Abrir en Outlook</button>
+      <div class="form-actions"><button type="button" class="btn-accent" id="contactGo">Abrir en Outlook</button><button type="button" class="btn-outline" id="contactCancel">Cancelar</button></div>
     </div>`
   };
 }
+// Otras áreas que ya hablan con la misma institución (para no duplicar el contacto).
+const otrasAreasCon = v => [...new Set(S.vinculos.filter(x => x.contraparte === v.contraparte && !misVinculos().includes(x)).map(x => nombreArea(x.area)))];
 function hintContactoTo() {
-  const sel = $("#contactSel"), hint = $("#contactTo");
+  const sel = $("#contactSel"), hint = $("#contactTo"), dup = $("#contactDup");
   if (!sel || !hint) return;
   const v = vinculo(+sel.value);
   if (!v) { hint.textContent = ""; return; }
-  const nom = v.contacto.nombre ? v.contacto.nombre + " · " : "";
-  hint.textContent = v.contacto.correo ? `Para: ${nom}${v.contacto.correo}` : "Falta el correo del contacto en la ficha; al continuar te llevamos a completarlo.";
+  const nom = contactoPara ? contactoPara.nombre : v.contacto.nombre, cor = contactoPara ? contactoPara.correo : v.contacto.correo;
+  hint.textContent = cor ? `Para: ${nom ? nom + " · " : ""}${cor}` : "Falta el correo del contacto en la ficha; al continuar te llevamos a completarlo.";
+  const as = otrasAreasCon(v);
+  if (dup) { dup.hidden = !as.length; dup.innerHTML = as.length ? `<b>Antes de escribir</b>${esc(as.slice(0, 2).join(" y "))}${as.length > 2 ? " y otras áreas" : ""} también ${as.length > 1 ? "trabajan" : "trabaja"} con ${esc(contraparte(v.contraparte).corto)}. Revisa con ${as.length > 1 ? "ellas" : "esa área"} para no duplicar la conversación. <a class="lnk" href="#/contraparte/${v.contraparte}">Ver quién la lleva</a>` : ""; }
 }
-function abrirFormContacto(vid) {
+function abrirFormContacto(vid, para) {
   const pop = $("#popContact");
   if (!pop) return;
-  closePops();
-  $("#mega")?.classList.remove("show");
+  closePops(); cerrarMega();
+  contactoPara = para && (para.correo || para.nombre) ? para : null;
   const sel = $("#contactSel");
   if (sel && vid) sel.value = String(vid);
   hintContactoTo();
-  ubicarPop(pop);
+  const v = sel ? vinculo(+sel.value) : null;
+  if (v && otrasAreasCon(v).length) registrarMetrica("duplicados");
   pop.classList.add("show");
   const msg = $("#contactMsg");
   if (msg) msg.focus();
 }
-function borradorCorreoInst(v, extraMsg) {
-  const to = (v.contacto.correo || "").trim();
+function borradorCorreoInst(v, extraMsg, para) {
+  const to = ((para ? para.correo : v.contacto.correo) || "").trim();
   const subject = v.nombre + " · Antofagasta Minerals";
-  const body = textoCorreoInst(v, extraMsg);
+  const body = textoCorreoInst(v, extraMsg, para);
   return { to, subject, body };
 }
-function outlookWebHref(to, subject, body) {
-  return "https://outlook.office.com/mail/deeplink/compose?" + new URLSearchParams({ to, subject, body }).toString();
+function outlookWebHref(to, subject, body, bcc) {
+  const q = { to, subject, body }; if (bcc) q.bcc = bcc;
+  return "https://outlook.office.com/mail/deeplink/compose?" + new URLSearchParams(q).toString();
 }
-function abrirOutlookWeb(to, subject, body) {
+function abrirOutlookWeb(to, subject, body, bcc) {
   to = (to || "").trim();
-  if (!to) return false;
-  window.open(outlookWebHref(to, subject, body), "_blank", "noopener,noreferrer");
+  if (!to && !bcc) return false;
+  window.open(outlookWebHref(to, subject, body, bcc), "_blank", "noopener,noreferrer");
   return true;
 }
 function wireContactPop() {
   const sel = $("#contactSel"), msg = $("#contactMsg"), go = $("#contactGo");
   if (!sel) return;
-  sel.onchange = hintContactoTo;
-  hintContactoTo();
+  sel.onchange = () => { contactoPara = null; hintContactoTo(); };
+  const no = $("#contactCancel"); if (no) no.onclick = () => closePops();
   if (go) go.onclick = () => {
     const v = vinculo(+sel.value);
     if (!v) return;
     const extra = ((msg || {}).value || "").trim();
-    const d = borradorCorreoInst(v, extra);
+    const d = borradorCorreoInst(v, extra, contactoPara);
     if (!d.to) { toast("Agrega el correo del contacto en la ficha."); closePops(); location.hash = "#/editar/" + v.id; return; }
     abrirOutlookWeb(d.to, d.subject, d.body);
     closePops();
@@ -192,28 +208,22 @@ function shell(active) {
   const contact = contactShellBits();
   const navs = ME.rol === "jefatura"
     ? [{ k: "dashboard", t: "Estadísticas" }, { k: "mis", t: "Vínculos de mi gerencia", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "metas", t: "Metas" }]
-    : [{ k: "mis", t: ME.admin ? "Vínculos" : "Mis vínculos", mega: 1 }, { k: "areas", t: "Áreas", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "dashboard", t: "Estadísticas" }];
-  if (ME.admin) navs.push({ k: "admin", t: "Administración" });
+    : [{ k: "mis", t: ME.admin ? "Vínculos" : "Mis vínculos", mega: 1 }, { k: "areas", t: "Áreas", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "estudiantes", t: "Estudiantes", mega: 1 }, { k: "dashboard", t: "Estadísticas" }];
+  if (ME.admin) navs.push({ k: "admin", t: "Configuración" });
+  navs.push({ k: "ayuda", t: "Ayuda" });
   const otros = Object.values(CONFIG.usuarios).filter(u => u.id !== ME.id);
   return `
   <header class="top">
     <div class="top-inner">
-      <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa()}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
-      <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><a class="nav-btn ${active === n.k ? "active" : ""}" href="#/${n.k}" ${active === n.k ? 'aria-current="page"' : ""} ${n.mega ? 'aria-haspopup="true" aria-expanded="false"' : ""}>${n.t}${n.mega ? '<i class="caret"></i>' : ""}</a></div>`).join("")}</nav>
+      <a class="logo" href="${inicioDe(ME)}" aria-label="${CONFIG.app.sigla}, inicio">${logoAmsa(true)}<span class="prod"><b>${CONFIG.app.sigla}</b><span>${CONFIG.app.nombre}</span></span></a>${esEspacioVacio() ? `<span class="modo-vacio" title="Estás en la página de prueba: lo que registres aquí no se mezcla con los datos de ejemplo">${etiquetaEspacioVacio()}</span>` : ""}
+      <nav class="nav" aria-label="Secciones">${navs.map(n => `<div class="nav-item ${active === n.k ? "on" : ""}" data-k="${n.k}" ${n.mega ? 'data-mega="1"' : ""}><a class="nav-btn ${active === n.k ? "active" : ""}" href="#/${n.k}" ${active === n.k ? 'aria-current="page"' : ""}>${n.t}</a>${n.mega ? `<button type="button" class="nav-more" aria-haspopup="true" aria-expanded="false" aria-label="Abrir el submenú de ${esc(n.t)}"><i class="caret"></i></button>` : ""}</div>`).join("")}</nav>
       <div class="top-right">
-        ${contact.btn}
-        ${puedeCrear() ? `<button class="btn-accent" id="btnAdd" aria-haspopup="true">+ Añadir <i class="caret light"></i></button>` : ""}
+        ${puedeCrear() ? `<a class="btn-accent" id="btnAdd" href="#/nuevo">+ Añadir</a>` : ""}
         <button class="user" id="btnUser" aria-haspopup="true"><span class="avatar">${ME.inicial}</span><div><b>${esc(ME.nombre)}</b><small>${esc(perfilTxt(ME))}</small></div></button>
       </div>
     </div>
     <div class="mega" id="mega"><div class="mega-inner" id="megaInner"></div></div>
     ${contact.pop}
-    ${puedeCrear() ? `<div class="pop pop-add" id="popAdd"><h5>¿Qué quieres registrar?</h5>
-      <a class="pop-item" href="#/nueva-convocatoria"><div><b>Convocatoria para estudiantes</b><small>Prácticas o memorias. Se puede publicar en LinkedIn.</small></div></a>
-      <a class="pop-item" href="#/nuevo/char"><div><b>Charla o actividad</b><small>Charlas, ferias o visitas a nuestras oficinas u operaciones.</small></div></a>
-      <a class="pop-item" href="#/nuevo/acad"><div><b>Proyecto académico (Capstone)</b><small>Un desafío nuestro trabajado por estudiantes en un curso.</small></div></a>
-      <a class="pop-item" href="#/nuevo/conv"><div><b>Convenio</b><small>Un acuerdo formal con una institución.</small></div></a>
-      <a class="pop-item" href="#/nuevo"><div><b>Otro tipo de vínculo</b><small>Consejos, programas de formación, empleo, I+D y más.</small></div></a></div>` : ""}
     <div class="pop pop-user" id="popUser">
       <p class="pop-lbl">Cambiar de perfil (prototipo)${esEspacioVacio() ? " · sigues en la página vacía" : ""}</p>
       ${otros.map(u => `<button class="pop-item" data-cambiar="${u.id}"><span class="avatar">${u.inicial}</span><div><b>${esc(u.nombre)}</b><small>${esc(CONFIG.roles[u.rol].nombre)}</small></div></button>`).join("")}
@@ -224,67 +234,55 @@ function shell(active) {
   </header>`;
 }
 
-// Barra de arriba: al pasar el mouse se despliega la lista; al hacer clic se abre la página.
-// En celular (sin mouse) el primer toque despliega la lista y el enlace "Ver todo" abre la página.
-let navRecienClic = null;
+// Los submenús se abren solo al presionar la flecha junto a cada sección, nunca al pasar el mouse.
+// Hacer clic en el nombre de la sección lleva directo a su página.
+function cerrarMega() {
+  const m = $("#mega"); if (!m) return;
+  m.classList.remove("show");
+  $$(".nav-item").forEach(n => { n.classList.remove("open"); const b = n.querySelector(".nav-more"); if (b) b.setAttribute("aria-expanded", "false"); });
+}
 function wireShell() {
   const mega = $("#mega"), inner = $("#megaInner");
-  let hideT, showT, openK = null;
-  const close = () => { clearTimeout(showT); mega.classList.remove("show"); $$(".nav-item").forEach(n => { n.classList.remove("open"); const a = n.querySelector("a"); if (n.dataset.mega) a.setAttribute("aria-expanded", "false"); }); openK = null; };
+  let openK = null;
+  const close = () => { cerrarMega(); openK = null; };
   const open = (k, item) => {
-    clearTimeout(hideT); if (openK === k) return;
+    close(); closePops();
     inner.innerHTML = megaHTML(k);
-    $$(".nav-item").forEach(n => { n.classList.remove("open"); if (n.dataset.mega) n.querySelector("a").setAttribute("aria-expanded", "false"); });
-    item.classList.add("open"); item.querySelector("a").setAttribute("aria-expanded", "true");
-    mega.classList.add("show"); openK = k; closePops();
+    item.classList.add("open"); item.querySelector(".nav-more").setAttribute("aria-expanded", "true");
+    mega.classList.add("show"); openK = k;
+    const mq = $("#megaQ");
+    if (mq) mq.oninput = () => { $("#megaCp").innerHTML = megaCpLista(mq.value); $("#megaCpT").textContent = mq.value.trim() ? "Resultados" : "Con más vínculos"; };
   };
-  const desktop = () => window.matchMedia("(min-width:761px) and (hover:hover)").matches;
   $$(".nav-item").forEach(item => {
-    const k = item.dataset.k, a = item.querySelector("a");
-    item.addEventListener("mouseenter", () => {
-      if (!desktop()) return;
-      if (!item.dataset.mega) { close(); return; }
-      if (navRecienClic === k) return;               // recién abierta con clic: no tapar la página
-      clearTimeout(showT); showT = setTimeout(() => open(k, item), openK ? 0 : 120);
-    });
-    item.addEventListener("mouseleave", () => { if (!desktop()) return; clearTimeout(showT); if (navRecienClic === k) navRecienClic = null; hideT = setTimeout(close, 200); });
+    const k = item.dataset.k, a = item.querySelector("a"), more = item.querySelector(".nav-more");
+    if (more) {
+      more.onclick = e => { e.stopPropagation(); openK === k ? close() : open(k, item); };
+      more.addEventListener("keydown", e => { if (e.key === "ArrowDown") { e.preventDefault(); if (openK !== k) open(k, item); const f = mega.querySelector("a, input"); if (f) f.focus(); } });
+    }
     a.addEventListener("click", e => {
-      if (item.dataset.mega && !desktop()) { e.preventDefault(); openK === k ? close() : open(k, item); return; }
-      navRecienClic = k; close(); if (k === "mis") { filtro.etapa = -1; filtro.inc = false; }
+      close(); if (k === "mis") { filtro.etapa = -1; filtro.inc = false; }
       if (location.hash === "#/" + k) { e.preventDefault(); filtro.etapa = -1; render(); }
     });
-    a.addEventListener("keydown", e => { if (item.dataset.mega && e.key === "ArrowDown") { e.preventDefault(); open(k, item); const f = mega.querySelector("a"); if (f) f.focus(); } });
   });
-  mega.addEventListener("mouseenter", () => clearTimeout(hideT));
-  mega.addEventListener("mouseleave", () => { if (desktop()) hideT = setTimeout(close, 200); });
   mega.addEventListener("click", e => { if (e.target.closest("a")) close(); });
-  // Añadir y menú de usuario: se despliegan al pasar el mouse y también con clic.
-  const hoverPop = (btnSel, popSel) => {
-    const btn = $(btnSel), pop = $(popSel); if (!btn) return;
-    let t;
-    btn.onclick = e => { e.stopPropagation(); close(); if (desktop() && pop.classList.contains("show")) return; togglePop(popSel); };
-    const entrar = () => { if (!desktop()) return; clearTimeout(t); close(); if (!pop.classList.contains("show")) { closePops(); ubicarPop(pop); pop.classList.add("show"); } };
-    const salir = () => { if (!desktop()) return; t = setTimeout(() => pop.classList.remove("show"), 250); };
-    btn.addEventListener("mouseenter", entrar); btn.addEventListener("mouseleave", salir);
-    pop.addEventListener("mouseenter", () => clearTimeout(t)); pop.addEventListener("mouseleave", salir);
-  };
-  hoverPop("#btnContact", "#popContact"); hoverPop("#btnAdd", "#popAdd"); hoverPop("#btnUser", "#popUser");
+  const bu = $("#btnUser");
+  if (bu) bu.onclick = e => { e.stopPropagation(); close(); togglePop("#popUser"); };
   wireContactPop();
   $$("[data-cambiar]").forEach(b => b.onclick = () => { const id = b.dataset.cambiar; iniciarSesion(id, !CONFIG.usuarios[id].espacio); filtro.comp = ""; location.hash = inicioDe(ME); render(); });
   const vac = $("#vaciar"); if (vac) vac.onclick = () => { const antes = JSON.stringify(S); restablecer(); closePops(); location.hash = inicioDe(ME); render(); toast("Página de prueba vacía otra vez", () => { S = JSON.parse(antes); guardar(); render(); }); };
   $("#salir").onclick = () => { cerrarSesion(); location.hash = "#/login"; render(); };
 }
 function closePops() { $$(".pop").forEach(p => p.classList.remove("show")); }
-// Cada menú se abre justo bajo su botón, alineado a su borde derecho.
-const BTN_DE_POP = { popContact: "#btnContact", popAdd: "#btnAdd", popUser: "#btnUser" };
+// El menú de usuario se abre justo bajo su botón, alineado a su borde derecho.
+const BTN_DE_POP = { popUser: "#btnUser" };
 function ubicarPop(p) {
   const b = $(BTN_DE_POP[p.id] || ""); if (!b || window.innerWidth <= 760) { p.style.right = ""; return; }
   p.style.right = Math.max(8, document.documentElement.clientWidth - b.getBoundingClientRect().right) + "px";
 }
 function togglePop(sel) { const p = $(sel), was = p.classList.contains("show"); closePops(); if (!was) { ubicarPop(p); p.classList.add("show"); } }
-function abrirAviso(id, ir) { if (!S.leidos.includes(id)) S.leidos.push(id); guardar(); closePops(); if (location.hash === ir) render(); else location.hash = ir; }
-document.addEventListener("click", e => { if (!e.target.closest(".pop")) closePops(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { closePops(); cerrarAsistente(); } });
+function abrirAviso(id, ir) { if (!S.leidos.includes(id)) S.leidos.push(id); if (id.startsWith("cx-")) registrarMetrica("duplicados"); guardar(); closePops(); if (location.hash === ir) render(); else location.hash = ir; }
+document.addEventListener("click", e => { if (!e.target.closest(".pop")) closePops(); if (!e.target.closest(".mega, .nav-more")) cerrarMega(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closePops(); cerrarMega(); cerrarAsistente(); } });
 
 /* ============================ Login ============================ */
 let loginAbierto = false;
@@ -322,28 +320,41 @@ function vLogin() {
 const fold = (titulo, cnt, cuerpo, abierta = false, extra = "") => `<details class="card fold" ${abierta ? "open" : ""}><summary><span class="fold-t">${titulo}</span>${cnt != null ? `<span class="fold-n">${cnt}</span>` : ""}${extra ? `<span class="fold-x">${extra}</span>` : ""}</summary><div class="fold-b">${cuerpo}</div></details>`;
 
 /* ============================ Mis vínculos ============================ */
-let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "", orden: "reciente" };
+let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "", orden: "reciente", anio: "", agrupar: false };
 const ORDENES = { salud: "salud (urgentes primero)", reciente: "fecha de inicio, más reciente", antiguo: "fecha de inicio, más antigua", nombre: "nombre (A-Z)", etapa: "etapa" };
 function ordenar(list) {
   const f = v => v.inicio || (filtro.orden === "antiguo" ? "9999" : "0000");
   const by = { reciente: (a, b) => f(b).localeCompare(f(a)), antiguo: (a, b) => f(a).localeCompare(f(b)), nombre: (a, b) => (a.nombre + contraparte(a.contraparte).corto).localeCompare(b.nombre + contraparte(b.contraparte).corto), etapa: (a, b) => a.etapa - b.etapa || f(b).localeCompare(f(a)), salud: (a, b) => saludDe(a).orden - saludDe(b).orden || (saludDe(b).dias || 0) - (saludDe(a).dias || 0) }[filtro.orden] || (() => 0);
   return list.slice().sort(by);
 }
+/* Encabezado de color de cada página: migas ("Estás en"), título, descripción corta y acciones.
+   Si la página tiene tarjetas de resumen, estas quedan montadas sobre el borde del encabezado. */
+const hero = (titulo, sub, o = {}) => `<div class="hero ${o.cards ? "hero-cards" : ""}"><div class="crumbs">${o.crumbs || `<b>${esc(titulo)}</b>`}</div><div class="hero-row"><div><h1>${titulo}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>${o.acciones ? `<div class="hero-acts">${o.acciones}</div>` : ""}</div></div>`;
+const anioDe = v => (v.inicio || "").slice(0, 4) || "Sin fecha";
+const LEYENDA_TABLA = `<p class="leyenda-tabla"><b>Cómo leer la tabla.</b> <span class="dots"><i></i><i></i><i></i><i class="off"></i><i class="off"></i></span> <b>Calificación</b>: qué tan bien resultó el vínculo, de 1 a 5, la pone el área. <span class="prog sm"><i style="width:60%"></i></span> <b>Avance</b>: qué parte del plan de trabajo ya se hizo. Las filas amarillas son vínculos que conviene atender.</p>`;
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
   const mailCol = opts.mail !== false && vinculosContactables().length;
-  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Salud</th><th>Etapa</th><th>Avance</th><th>Calificación</th>${mailCol ? "<th>Contactar</th>" : ""}</tr></thead><tbody>${list.map(v => {
-    const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v);
+  const ncol = 6 + (opts.area ? 1 : 0) + (mailCol ? 1 : 0);
+  const fila = v => {
+    const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v), sal = saludDe(v);
     const falta = comp.pct < 50 ? `<small class="falta" title="Falta: ${esc(comp.faltan.join(", "))}">Faltan ${comp.faltan.length} datos de la ficha</small>` : "";
-    const mail = mailCol && puedeEditar(v) ? `<button type="button" class="link-btn" data-contact-v="${v.id}">Contactar</button>` : "";
-    return `<tr class="row" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}${v.inicio ? `<span class="fecha-row">desde ${fechaTxt(v.inicio)}</span>` : ""}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td data-l="Salud">${saludHTML(v)}<small class="salud-m">${esc(saludDe(v).motivo)}</small></td><td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
-  }).join("")}</tbody></table></div>`;
+    const mail = mailCol && puedeEditar(v) ? `<button type="button" class="link-btn" data-contact-v="${v.id}" data-contact-n="${esc(v.contacto.nombre)}" data-contact-c="${esc(v.contacto.correo)}" title="${esc(v.contacto.nombre ? "Escribirle a " + v.contacto.nombre : "Escribir a la institución")}">Contactar</button>` : "";
+    return `<tr class="row ${sal.k === "rojo" || sal.k === "amarillo" ? "atender" : ""}" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span> <span class="anio" title="Año de inicio">${anioDe(v)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}${v.inicio ? `<span class="fecha-row">desde ${fechaTxt(v.inicio)}</span>` : ""}</small></td><td>${esc(c.corto)}<small>${esc(v.sede)}</small></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td data-l="Salud">${saludHTML(v)}<small class="salud-m">${esc(sal.motivo)}</small></td><td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
+  };
+  let cuerpo;
+  if (opts.agrupar) {
+    const anios = [...new Set(list.map(anioDe))].sort((a, b) => filtro.orden === "antiguo" ? a.localeCompare(b) : b.localeCompare(a));
+    cuerpo = anios.map(a => { const l = list.filter(v => anioDe(v) === a); return `<tr class="grupo-anio"><td colspan="${ncol}"><b>${a}</b> · ${l.length} ${l.length === 1 ? "vínculo" : "vínculos"} · ${l.filter(v => v.etapa < 3).length} vigentes</td></tr>${l.map(fila).join("")}`; }).join("");
+  } else cuerpo = list.map(fila).join("");
+  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Salud</th><th>Etapa</th><th>Avance</th><th title="Qué tan bien resultó el vínculo, de 1 a 5">Calificación</th>${mailCol ? "<th>Contactar</th>" : ""}</tr></thead><tbody>${cuerpo}</tbody></table></div>${LEYENDA_TABLA}`;
 }
 function listaFiltrada() {
   const q = filtro.q.toLowerCase();
-  return ordenar(misVinculos().filter(v => (!filtro.comp || compsDe(v).includes(filtro.comp)) && (filtro.etapa < 0 || v.etapa === filtro.etapa) && (!filtro.tipo || v.tipo === filtro.tipo) && (!filtro.inc || completitud(v).pct < 50) &&
+  return ordenar(misVinculos().filter(v => (!filtro.comp || compsDe(v).includes(filtro.comp)) && (!filtro.anio || anioDe(v) === filtro.anio) && (filtro.etapa < 0 || v.etapa === filtro.etapa) && (!filtro.tipo || v.tipo === filtro.tipo) && (!filtro.inc || completitud(v).pct < 50) &&
     (!q || (v.nombre + " " + contraparte(v.contraparte).nombre + " " + contraparte(v.contraparte).corto + " " + v.sede).toLowerCase().includes(q))));
 }
+const opcionesTabla = () => ({ area: ME.admin || hijos(ME.area).length, agrupar: filtro.agrupar, vacio: "No hay vínculos con estos filtros." });
 function vMis(p) {
   if (p === "incompletos") filtro.inc = true;
   if (p && p.startsWith("etapa-")) { filtro.etapa = +p.slice(6); filtro.inc = false; }
@@ -356,16 +367,18 @@ function vMis(p) {
   const nInst = misCp.length, comp = misCp.filter(cp => S.vinculos.some(v => v.contraparte === cp && !mios.includes(v))).length;
   const otrasTab = p === "otras" && !ME.admin;
   const nOtras = ME.admin ? 0 : [...new Set(S.vinculos.filter(v => !mios.includes(v)).map(v => v.contraparte))].length;
-  const head = `<div class="head-row"><div><h1>${ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos"}</h1><p class="sub">${ME.admin ? "Vista de administración" : rutaTxt(ME.area)}</p></div></div>
+  const titulo = ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos";
+  const head = hero(titulo, ME.admin ? "Aquí ves todos los vínculos registrados en SIVA." : "Aquí ves y gestionas los vínculos de tu área con universidades e instituciones. <span class=\"hero-ruta\">" + rutaTxt(ME.area) + "</span>", { cards: true }) + `
   <div class="resumen" role="region" aria-label="Resumen">
     <div><b>${mios.length}</b><span>vínculos con ${nInst} instituciones</span></div>
     <div><b>${activos}</b><span>activos (no cerrados)</span></div>
     <button class="r-link" data-ir-f="inc"><b>${incom}</b><span>con datos por completar</span></button>
     <div><b>${sinCal}</b><span>cerrados sin calificar</span></div>
-    ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<a class="r-link" href="#/mis/otras"><b>${comp}</b><span>de mis instituciones también trabajan con otras áreas</span></a>`}
+    ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<a class="r-link" href="#/mis/otras"><b>${comp}</b><span>instituciones compartidas con otras áreas</span></a>`}
   </div>
-  ${ME.admin ? "" : `<div class="tabs" role="tablist"><a class="tab ${otrasTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab}">Mis vínculos (${mios.length})</a><a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Qué hacen otras áreas (${nOtras} instituciones)</a></div>`}`;
+  ${ME.admin ? "" : `<div class="tabs" role="tablist"><a class="tab ${otrasTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab}">Mis vínculos (${mios.length})</a><a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a></div>`}`;
   if (otrasTab) return head + vOtrasAreas(mios, misCp);
+  const anios = [...new Set(mios.map(anioDe))].sort().reverse();
   const avVis = av.slice(0, 3), avMas = av.slice(3);
   const avHTML = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
   return head + resumenSemanaHTML(mios) + `<div class="grid-main"><div>
@@ -373,11 +386,13 @@ function vMis(p) {
       <div class="chips">${["Todos", ...CONFIG.etapas].map((t, i) => `<button class="chip-btn ${filtro.etapa === i - 1 ? "on" : ""}" data-etapa-f="${i - 1}">${t} (${i ? mios.filter(v => v.etapa === i - 1).length : mios.length})</button>`).join("")}</div>
       <div class="frow"><input class="input sm" id="fq" placeholder="Buscar vínculo o institución" value="${esc(filtro.q)}" aria-label="Buscar">
       <select class="input sm" id="fo" aria-label="Ordenar">${Object.entries(ORDENES).map(([k, t]) => `<option value="${k}" ${filtro.orden === k ? "selected" : ""}>Ordenar: ${t}</option>`).join("")}</select>
+      <select class="input sm" id="fa" aria-label="Año de inicio"><option value="">Todos los años</option>${anios.map(a => `<option ${filtro.anio === a ? "selected" : ""}>${a}</option>`).join("")}</select>
       <select class="input sm" id="fc" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${filtro.comp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select>
       <select class="input sm" id="ft" aria-label="Tipo de vínculo"><option value="">Todos los tipos</option>${S.tipos.map(t => `<option value="${t.id}" ${filtro.tipo === t.id ? "selected" : ""}>${esc(t.nombre)}</option>`).join("")}</select>
+      <label class="chk"><input type="checkbox" id="fag" ${filtro.agrupar ? "checked" : ""}> Agrupar por año</label>
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
     </div>
-    <div class="card" id="tablaMis">${filasVinculos(listaFiltrada(), { area: ME.admin || hijos(ME.area).length, vacio: "No hay vínculos con estos filtros." })}</div>
+    <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><a class="btn-accent sm" href="#/nuevo">+ Añadir vínculo</a></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
   </div>
   <aside class="stack">
     ${convMisHTML()}
@@ -446,6 +461,7 @@ function vBienvenida() {
 
 /* ============================ Ficha ============================ */
 // Campos opcionales vacíos: "No definido" (no "por completar", que suena a error).
+const contactarBtn = (vid, nombre, correo) => vid && (nombre || correo) ? `<button type="button" class="link-btn contactar" data-contact-v="${vid}" data-contact-n="${esc(nombre)}" data-contact-c="${esc(correo)}">Contactar${nombre ? " a " + esc(nombre.split(" ")[0]) : ""}</button>` : "";
 const kv = (k, val, html) => `<dt>${k}</dt><dd class="${val ? "" : "ph"}">${val ? (html ? val : esc(val).replace(/\n/g, "<br>")) : "No definido"}</dd>`;
 function vFicha(id) {
   const v = vinculo(+id);
@@ -493,8 +509,8 @@ function vFicha(id) {
   <aside class="stack">
     <div class="card side"><p class="card-title">Con quién</p><h4><a class="lnk" href="#/contraparte/${c.id}">${esc(c.nombre)}</a></h4><p>${esc(c.tipoOrg)}${v.sede ? ", " + esc(v.sede) : ""}</p>
       ${sinResp ? `<div class="alerta-cont"><b>${esc(sinResp.titulo)}</b><span>${esc(sinResp.texto)}</span>${otrosCont.length ? `<span>Puedes escribirle a otro contacto de la institución (abajo) para que el vínculo no dependa de una sola persona.</span>` : ed ? `<span>Agrega un segundo contacto en la ficha para que el vínculo no dependa de una sola persona.</span>` : ""}</div>` : ""}
-      <div class="person">${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? `<b>${esc(v.contacto.nombre || "Contacto")}</b>${v.contacto.cargo ? `<span>${esc(v.contacto.cargo)}</span>` : ""}${v.contacto.correo ? `<a class="mail" href="mailto:${esc(v.contacto.correo)}">${esc(v.contacto.correo)}</a>` : ""}${v.contacto.telefono ? `<a class="mail" href="tel:${esc(v.contacto.telefono.replace(/\s/g, ""))}">${esc(v.contacto.telefono)}</a>` : ""}` : `<span class="muted">Contacto no definido</span>`}</div>
-      ${otrosCont.length ? `<p class="lbl2" style="margin-top:12px!important">Otros contactos registrados</p>${otrosCont.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}` : ""}
+      <div class="person">${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? `<b>${esc(v.contacto.nombre || "Contacto")}</b>${v.contacto.cargo ? `<span>${esc(v.contacto.cargo)}</span>` : ""}${contactarBtn(ed ? v.id : 0, v.contacto.nombre, v.contacto.correo)}${v.contacto.correo ? `<a class="mail" href="mailto:${esc(v.contacto.correo)}">${esc(v.contacto.correo)}</a>` : ""}${v.contacto.telefono ? `<a class="mail" href="tel:${esc(v.contacto.telefono.replace(/\s/g, ""))}">${esc(v.contacto.telefono)}</a>` : ""}` : `<span class="muted">Contacto no definido</span>`}</div>
+      ${otrosCont.length ? `<p class="lbl2" style="margin-top:12px!important">Otros contactos registrados</p>${otrosCont.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${contactarBtn(ed ? v.id : 0, k.nombre, k.correo)}${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}` : ""}
       ${otras.length ? `<details class="note dd"><summary><b>${[...new Set(otras.map(x => x.area))].length} ${[...new Set(otras.map(x => x.area))].length === 1 ? "otra área trabaja" : "otras áreas trabajan"} con esta institución</b></summary>${otras.slice(0, 6).map(x => `<a href="#/ficha/${x.id}"><b>${esc(nombreArea(x.area))}</b>${esc(x.nombre)} · ${CONFIG.etapas[x.etapa]}${x.responsable ? `<br><span class="muted">Lo lleva: ${esc(x.responsable)}</span>` : ""}</a>`).join("")}</details>` : ""}</div>
     <div class="card side"><p class="card-title">Personas a cargo</p>
       <p class="lbl2">Líder de la iniciativa</p><h4>${esc(v.lider || "No definido")}</h4>
@@ -628,15 +644,16 @@ function dupAsideReabrirHTML(cp) {
   const c = contraparte(cp);
   return `<button type="button" class="aviso-pill" id="dupReabrir">Mostrar aviso · otras áreas en ${esc(c.corto)}</button>`;
 }
-function textoCorreoInst(v, extra) {
+function textoCorreoInst(v, extra, para) {
   const c = contraparte(v.contraparte);
-  const sal = v.contacto.nombre ? `Hola ${v.contacto.nombre},` : "Hola,";
+  const nomC = para ? para.nombre : v.contacto.nombre;
+  const sal = nomC ? `Hola ${nomC},` : "Hola,";
   const cuerpo = extra || "[Escribe aquí tu mensaje: coordinación, fechas, próximos pasos…]";
   return `${sal}\n\nEscribo desde ${nombreArea(v.area)} de Antofagasta Minerals respecto del vínculo «${v.nombre}» (${tipo(v.tipo).nombre}) con ${c.nombre}.\n\n${cuerpo}\n\nSaludos cordiales,\n${ME.nombre}\n${ME.correo || "Antofagasta Minerals"}`;
 }
 /* ============================ Áreas ============================ */
 function vAreas() {
-  return `<h1>Áreas</h1><p class="sub">Vicepresidencias, gerencias y subáreas que gestionan vínculos.${ME.admin ? ` <a class="lnk" href="#/admin/areas">Administrar áreas</a>` : ""}</p>
+  return hero("Áreas", `Vicepresidencias, gerencias y subáreas que gestionan vínculos.${ME.admin ? ` <a class="lnk" href="#/admin/areas">Configurar áreas</a>` : ""}`) + `
   <div class="cards2">${S.areas.filter(a => !a.parent).map(vp => {
     const n = S.vinculos.filter(v => descendientes(vp.id).includes(v.area)).length;
     const fila = (a, nivel) => { const k = S.vinculos.filter(v => descendientes(a.id).includes(v.area)).length; return `<a class="tree-row l${nivel}" href="#/area/${a.id}"><span>${esc(a.nombre)}${a.id === ME.area ? ' <span class="mine">Mi área</span>' : ""}</span><b>${k}</b></a>` + hijos(a.id).map(h => fila(h, nivel + 1)).join(""); };
@@ -658,7 +675,7 @@ let cpq = "", cpTipoV = "", cpZona = "";
 function vContrapartes(tipoSel) {
   tipoSel = tipoSel ? decodeURIComponent(tipoSel) : "";
   const tipos = S.tiposOrg.filter(t => S.contrapartes.some(c => c.tipoOrg === t));
-  return `<h1>Instituciones</h1><p class="sub">Cada institución, las áreas que trabajan con ella y cómo han resultado esos vínculos.</p>
+  return hero("Instituciones", "Cada institución, las áreas que trabajan con ella y cómo han resultado esos vínculos.") + `
   <div class="filters"><div class="chips"><a class="chip-btn ${tipoSel ? "" : "on"}" href="#/contrapartes">Todas (${S.contrapartes.length})</a>${tipos.map(t => `<a class="chip-btn ${tipoSel === t ? "on" : ""}" href="#/contrapartes/${encodeURIComponent(t)}">${esc(t)} (${S.contrapartes.filter(c => c.tipoOrg === t).length})</a>`).join("")}</div>
   <div class="frow"><input class="input sm" id="cpq" placeholder="Buscar institución" value="${esc(cpq)}" aria-label="Buscar institución"><select class="input sm" id="cpZona" aria-label="Filtrar por zona"><option value="">Todas las zonas</option>${CONFIG.zonas.map(z => `<option ${cpZona === z ? "selected" : ""}>${z}</option>`).join("")}</select><select class="input sm" id="cpTipoV" aria-label="Filtrar por tipo de vínculo"><option value="">Todos los tipos de vínculo</option>${S.tipos.map(t => `<option value="${t.id}" ${cpTipoV === t.id ? "selected" : ""}>${esc(t.nombre)}</option>`).join("")}</select></div></div>
   <p class="small muted" id="cpRes"></p>
@@ -677,13 +694,13 @@ function cpCards(tipoSel) {
 function vContraparte(id) {
   const c = S.contrapartes.find(x => x.id === id); if (!c) return vContrapartes();
   const vs = S.vinculos.filter(v => v.contraparte === id), as = [...new Set(vs.map(v => v.area))];
-  const cal = vs.filter(v => v.aporta), si = cal.filter(v => v.aporta === "si").length;
+  const cal = vs.filter(v => v.aporta), si = cal.filter(v => v.aporta === "si").length, mio = misVinculos().find(x => x.contraparte === id && puedeEditar(x));
   return `<div class="crumbs"><a href="#/contrapartes">Instituciones</a> / ${esc(c.corto)}</div>
   <div class="head-row"><div><h1>${esc(c.nombre)}</h1><p class="sub">${esc(c.tipoOrg)}${c.locacion ? ", " + esc(c.locacion) : ""}${c.zona ? " · Zona " + esc(c.zona) : ""}</p></div>${puedeCrear() ? `<button class="btn-accent" id="nuevoCon" data-cp="${c.id}">+ Añadir vínculo con esta institución</button>` : ""}</div>
   <div class="grid-main"><div class="card">${filasVinculos(vs, { area: true })}</div>
   <aside class="stack"><div class="card side"><p class="card-title">Resumen</p><p style="color:var(--ink)"><b>${as.length}</b> ${as.length === 1 ? "área" : "áreas"} en contacto</p><p>Calificación promedio: <b style="color:var(--ink)">${num1(promedio(vs))}</b> de 5</p><p>${cal.length ? `Ayudó a la meta en ${si} de ${cal.length} vínculos evaluados` : "Sin vínculos evaluados"}</p><p>${S.estudiantes.filter(e => e.contraparte === id).length} estudiantes en práctica o memoria hoy</p>
     <div style="margin-top:10px">${as.map(a => `<a class="tag" href="#/area/${a}">${esc(nombreArea(a))}</a>`).join("")}</div></div>
-    ${(c.contactos || []).length ? `<div class="card side"><p class="card-title">Contactos registrados</p>${c.contactos.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}</div>` : ""}
+    ${(c.contactos || []).length ? `<div class="card side"><p class="card-title">Contactos registrados</p>${c.contactos.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${contactarBtn(mio ? mio.id : 0, k.nombre, k.correo)}${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}</div>` : ""}
     ${as.length > 1 ? `<div class="note"><b>Oportunidad de coordinación</b>Varias áreas trabajan con esta institución. Conviene acordar quién lleva cada tema para no duplicar contactos.</div>` : ""}</aside></div>`;
 }
 
@@ -742,17 +759,34 @@ function vDashboard() {
     compartidas.length ? `<b>${compartidas.length} ${compartidas.length === 1 ? "institución trabaja" : "instituciones trabajan"}</b> con más de un área: conviene coordinarse.` : ""
   ].filter(Boolean);
   const sec = (titulo, sub, cuerpo, abierta = true) => `<details class="dash-sec" ${abierta ? "open" : ""}><summary><span><b>${titulo}</b><small>${sub}</small></span></summary><div class="dash-body">${cuerpo}</div></details>`;
-  return `<div class="head-row"><div><h1>Estadísticas</h1><p class="sub">${jef ? "Resultados de " + esc(nombreArea(ME.area)) + "." : "Cuántos vínculos hay, cómo van y cuáles sirven más."}</p></div>
-    <div class="frow">${jef ? "" : `<select class="input sm" id="dashVP" style="width:auto" aria-label="Vicepresidencia"><option value="">Todas las vicepresidencias</option>${vps.map(a => `<option value="${a.id}" ${dashVP === a.id ? "selected" : ""}>${esc(a.nombre)}</option>`).join("")}</select>`}
-    <select class="input sm" id="dashComp" style="width:auto" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${dashComp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select></div></div>
-  <div class="dash-blocks"><div class="card resumen-txt"><p class="card-title">En resumen</p><ul>${frases.map(f => `<li>${f}</li>`).join("")}</ul><p class="help">Los datos vienen del mapeo de instituciones; las calificaciones son de ejemplo.</p></div>
-  <div class="kpis k4">
+  const porAnio = [...new Set(base.map(anioDe))].sort().map(a => ({ n: a, v: base.filter(v => anioDe(v) === a).length }));
+  const detalle = cps.map(id => { const l = base.filter(v => v.contraparte === id); return { id, n: l.length, as: [...new Set(l.map(v => v.area))], p: promedio(l) }; }).sort((a, b) => b.n - a.n);
+  // ¿Está funcionando SIVA? Indicadores del piloto, a partir de lo que la plataforma ya registra.
+  const areasReg = [...new Set(base.map(v => v.area))];
+  const areasMes = areasReg.filter(a => base.some(v => v.area === a && v.versiones.some(x => x.fecha && diasDesde(x.fecha) <= 30)));
+  const vivos = base.filter(v => v.etapa < 3), alDia = vivos.filter(v => saludDe(v).k === "verde").length;
+  const dSin = vivos.map(v => { const u = ultimoMovimiento(v); return u ? diasDesde(u) : null; }).filter(x => x != null);
+  const promSin = dSin.length ? Math.round(dSin.reduce((a, b) => a + b, 0) / dSin.length) : null;
+  const revisiones = (S.metricas || {}).duplicados || 0;
+  const pilotoHTML = sec("¿Está funcionando SIVA?", "Cuatro indicadores para saber si la plataforma ayuda a las áreas", `<div class="piloto">
+    <div class="kpi"><b>${revisiones}</b><span>veces que SIVA avisó que otra área ya habla con una institución, antes de escribirle</span></div>
+    <div class="kpi"><b>${areasMes.length}<small> de ${areasReg.length}</small></b><span>áreas que registraron o actualizaron un vínculo en los últimos 30 días</span></div>
+    <div class="kpi"><b>${vivos.length ? Math.round(alDia / vivos.length * 100) : 0}<small>%</small></b><span>de los vínculos activos están al día (${alDia} de ${vivos.length})</span></div>
+    <div class="kpi"><b>${promSin == null ? "–" : promSin}<small> días</small></b><span>sin movimiento, en promedio, en los vínculos activos</span></div></div>
+    <p class="help">Para el piloto proponemos mirar esto cada mes. El primer indicador cuenta los avisos de contacto compartido: es una forma de medir conversaciones que no se duplicaron. Hoy ${compartidas.length} ${compartidas.length === 1 ? "institución trabaja" : "instituciones trabajan"} con más de un área.</p>`);
+  const detalleHTML = sec("Detalle por institución y por área", `${detalle.length} instituciones`, `<div class="card"><div class="table-wrap"><table><thead><tr><th>Institución</th><th>Vínculos</th><th>Áreas que trabajan con ella</th><th>Calificación</th></tr></thead><tbody>${detalle.map(r => `<tr><td class="t"><a class="lnk" href="#/contraparte/${r.id}">${esc(contraparte(r.id).nombre)}</a></td><td>${r.n}</td><td>${r.as.map(a => `<span class="tag">${esc(nombreArea(a))}</span>`).join("")}</td><td>${r.p ? dots(r.p) + " " + num1(r.p) : '<span class="muted">Sin calificar</span>'}</td></tr>`).join("")}</tbody></table></div></div>`, false);
+  return hero("Estadísticas", jef ? "Resultados de " + esc(nombreArea(ME.area)) + "." : "Cuántos vínculos hay, cómo van y si SIVA está funcionando.", { cards: true, acciones: `<div class="frow">${jef ? "" : `<select class="input sm" id="dashVP" style="width:auto" aria-label="Vicepresidencia"><option value="">Todas las vicepresidencias</option>${vps.map(a => `<option value="${a.id}" ${dashVP === a.id ? "selected" : ""}>${esc(a.nombre)}</option>`).join("")}</select>`}
+    <select class="input sm" id="dashComp" style="width:auto" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${dashComp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select></div>` }) + `
+  <div class="kpis k4 kpis-float">
     <div class="kpi"><b>${base.length}</b><span>vínculos registrados</span></div>
     <div class="kpi"><b>${activos}</b><span>activos (no cerrados)</span></div>
     <div class="kpi"><b>${cps.length}</b><span>instituciones</span></div>
     <div class="kpi"><b>${num1(promedio(base))}<small> de 5</small></b><span>calificación promedio de ${cal.length} vínculos</span>
       <details class="como"><summary>¿Cómo se calcula?</summary><p>Cada área califica sus vínculos de 1 a 5 en tres criterios que dependen del tipo. Por ejemplo, en prácticas y memorias: calidad de las y los estudiantes, rapidez de respuesta de la institución y calidad del trabajo. La nota del vínculo es el promedio de sus criterios, y este número es el promedio de todos los vínculos calificados.</p></details></div>
-  </div></div>
+  </div>
+  <div class="dash-blocks"><div class="card resumen-txt"><p class="card-title">En resumen</p><ul>${frases.map(f => `<li>${f}</li>`).join("")}</ul><p class="help">Los datos vienen del mapeo de instituciones; las calificaciones son de ejemplo.</p></div>
+  </div>
+  ${pilotoHTML}
   ${sec("¿Qué funciona mejor?", "Calificación promedio (de 1 a 5) y si ayudó a cumplir las metas", `<div class="bars2">
     <div class="card"><p class="card-title">Calificación por tipo de vínculo</p>${barrasNota(porTipo.map(r => ({ n: r.t.nombre, p: r.p, s: r.nc ? r.nc + " calificados" : "Sin calificar" })))}</div>
     <div class="card"><p class="card-title">¿Ayudó a cumplir las metas?</p>${torta([{ n: "Sí", v: ev.filter(v => v.aporta === "si").length, color: "#156451" }, { n: "Parcialmente", v: ev.filter(v => v.aporta === "parcial").length, color: "#C89900" }, { n: "No", v: ev.filter(v => v.aporta === "no").length, color: "#AD1900" }], "Ayudó a cumplir las metas")}</div>
@@ -761,6 +795,7 @@ function vDashboard() {
     <div class="card"><p class="card-title">Por etapa</p>${torta(porEtapa, "Vínculos por etapa")}</div>
     <div class="card"><p class="card-title">Por compañía</p>${torta(porComp, "Vínculos por compañía")}<p class="help">Un vínculo de varias compañías cuenta en cada una.</p></div>
     <div class="card"><p class="card-title">Por área</p>${barras(hojas, mx(hojas))}</div>
+    <div class="card"><p class="card-title">Por año de inicio</p>${barras(porAnio, mx(porAnio), false)}<p class="help">Sirve para comparar un año con otro.</p></div>
     <div class="card"><p class="card-title">Por meta a la que aporta</p>${porMeta.length ? barras(porMeta, mx(porMeta)) : `<p class="muted small">Ningún vínculo tiene metas asignadas.</p>`}</div>
     <div class="card"><p class="card-title">Por tipo de institución</p>${torta(porOrg, "Vínculos por tipo de institución")}</div>
     <div class="card"><p class="card-title">Instituciones por zona</p>${torta(porZona, "Instituciones por zona")}<p class="help"><a class="lnk" href="#/contrapartes">Ver instituciones por zona</a></p></div></div>`)}
@@ -770,7 +805,8 @@ function vDashboard() {
     <div class="card"><div class="est-grid"><div class="kpi flat"><b>${est.length}</b><span>estudiantes hoy · nota promedio ${num1(notaProm(est))} (de 1 a 7, la pone la o el tutor)</span></div>
       <div>${barras(estTipo, mx(estTipo), false)}</div></div>
       ${estUni.length ? `<div class="table-wrap"><table><thead><tr><th>Universidad o institución</th><th>Estudiantes</th><th>Nota promedio</th></tr></thead><tbody>${estUni.map(r => `<tr><td class="t">${esc(contraparte(r.id).nombre)}</td><td>${r.n}</td><td>${r.p == null ? '<span class="muted">Sin evaluar</span>' : num1(r.p)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No hay estudiantes con este filtro.</p>`}
-      <p class="card-title" style="margin-top:14px">Feedback de instituciones (respondido en el link)</p><p class="small">${resp.length ? `${resp.length} ${resp.length === 1 ? "cuestionario respondido" : "cuestionarios respondidos"}; las instituciones nos califican con <b>${num1(resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length)} de 5</b>.` : "Aún no hay cuestionarios respondidos."}</p></div>`, true)}`;
+      <p class="card-title" style="margin-top:14px">Feedback de instituciones (respondido en el link)</p><p class="small">${resp.length ? `${resp.length} ${resp.length === 1 ? "cuestionario respondido" : "cuestionarios respondidos"}; las instituciones nos califican con <b>${num1(resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length)} de 5</b>.` : "Aún no hay cuestionarios respondidos."}</p></div>`, true)}
+  ${detalleHTML}`;
 }
 
 /* ============================ Metas ============================ */
@@ -812,7 +848,7 @@ function vAdmin(tab) {
     body = `<div class="card"><p class="card-title">Respaldo</p><p class="small">Descarga todos los datos en JSON, por ejemplo para compartirlos o pasarlos a una base de datos.</p><button class="btn-outline" id="dlJson">Descargar respaldo JSON</button></div>
       <div class="card"><p class="card-title">Restablecer</p><p class="small">${esEspacioVacio() ? "Deja la página de prueba vacía otra vez. Se pierde lo que registraste en ella." : "Vuelve a los datos de ejemplo del mapeo. Se pierden los cambios hechos en este navegador."}</p>${adminConfirm ? `<div class="form-actions"><button class="btn-accent" id="resetOk">Sí, restablecer</button><button class="btn-outline" id="resetNo">Cancelar</button></div>` : `<button class="btn-outline" id="reset">${esEspacioVacio() ? "Vaciar la página de prueba" : "Restablecer datos de ejemplo"}</button>`}</div>`;
   }
-  return `<h1>Administración</h1><p class="sub">Configura las áreas, los tipos de vínculo (con sus criterios de calificación), las metas y las instituciones disponibles para todos.</p>
+  return `<h1>Configuración</h1><p class="sub">Configura las áreas, los tipos de vínculo (con sus criterios de calificación), las metas y las instituciones disponibles para todos.</p>
   <div class="tabs">${tabs.map(([k, t]) => `<a class="tab ${tab === k ? "on" : ""}" href="${k === "metas" ? "#/metas" : "#/admin/" + k}">${t}</a>`).join("")}</div><div class="stack">${body}</div>`;
 }
 
@@ -957,13 +993,13 @@ function render() {
     $$("[data-login]").forEach(b => b.onclick = () => { iniciarSesion(b.dataset.login); loginAbierto = false; filtro.comp = ""; location.hash = inicioDe(ME); });
     return;
   }
-  const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", "editar-convocatoria": "mis", metas: ME.admin ? "admin" : "metas" }[ruta];
-  const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, "editar-convocatoria": p => { const c = convocatoria(+p); return c ? vNuevaConv(c.vinculo, c) : `<div class="card empty">Esa convocatoria no existe.</div>`; }, metas: vMetas };
+  const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", "editar-convocatoria": "mis", metas: ME.admin ? "admin" : "metas", estudiantes: "estudiantes", "correo-aceptados": "estudiantes", ayuda: "ayuda" }[ruta];
+  const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, "editar-convocatoria": p => { const c = convocatoria(+p); return c ? vNuevaConv(c.vinculo, c) : `<div class="card empty">Esa convocatoria no existe.</div>`; }, metas: vMetas, estudiantes: vEstudiantes, "correo-aceptados": vCorreoAceptados, ayuda: vAyuda };
   let body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
   // Indicador de ubicación: las páginas sin migas muestran igual en qué sección estás.
-  const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", admin: "Administración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria" };
+  const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", admin: "Configuración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria", estudiantes: "Estudiantes", ayuda: "Ayuda" };
   if (!body.includes('class="crumbs"') && SECCION[ruta]) body = `<div class="crumbs"><b>${esc(SECCION[ruta])}</b></div>` + body;
-  app.innerHTML = shell(activo) + `<main>${body}</main>${pie()}
+  app.innerHTML = shell(activo) + `<main class="${body.includes('class="hero') ? "has-hero" : ""}">${body}</main>${pie()}
     <button class="fab" id="fab" aria-label="Abrir asistente"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente</span></button>
     <div class="drawer-bg" id="drawerBg"></div>
     <aside class="drawer" id="drawer" aria-label="Asistente"><div class="drawer-h"><div><b>Asistente</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>
@@ -975,21 +1011,25 @@ function render() {
 }
 
 function wireContactLinks() {
-  $$("[data-contact-v]").forEach(b => b.onclick = e => { e.stopPropagation(); abrirFormContacto(+b.dataset.contactV); });
+  $$("[data-contact-v]").forEach(b => b.onclick = e => { e.stopPropagation(); e.preventDefault(); abrirFormContacto(+b.dataset.contactV, b.dataset.contactC || b.dataset.contactN ? { nombre: b.dataset.contactN || "", correo: b.dataset.contactC || "" } : null); });
 }
 function wireVista(ruta, p) {
   $$("[data-ficha]").forEach(tr => { const go = () => location.hash = "#/ficha/" + tr.dataset.ficha; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
   wireContactLinks();
+  if (ruta === "estudiantes") wireEstudiantes();
+  if (ruta === "correo-aceptados") wireCorreoAceptados(p);
   $$("main [data-aviso]").forEach(b => b.onclick = () => abrirAviso(b.dataset.aviso, b.dataset.ir));
   const ca = $("[data-cambiar-admin]"); if (ca) ca.onclick = () => { iniciarSesion("admin", true); render(); };
 
   const sv = $("#sinVinc"); if (sv) sv.onclick = () => { S.sinVinculos = [...new Set([...(S.sinVinculos || []), ME.id])]; guardar(); render(); toast("Anotado. No tienes que registrar nada más."); };
   if (ruta === "mis" && $("#fq")) {
-    const pinta = () => { $("#tablaMis").innerHTML = filasVinculos(listaFiltrada(), { area: ME.admin || hijos(ME.area).length, vacio: "No hay vínculos con estos filtros." }); wireVista("_tabla"); };
+    const pinta = () => { $("#tablaMisCuerpo").innerHTML = filasVinculos(listaFiltrada(), opcionesTabla()); wireVista("_tabla"); };
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
     $("#fo").onchange = e => { filtro.orden = e.target.value; pinta(); };
+    $("#fa").onchange = e => { filtro.anio = e.target.value; pinta(); };
+    $("#fag").onchange = e => { filtro.agrupar = e.target.checked; pinta(); };
     const sm = $("#semMail"); if (sm) sm.onclick = () => { abrirOutlookWeb(ME.correo, "Tu resumen de la semana en SIVA", textoSemana(misVinculos())); toast("Se abrió Outlook con tu resumen"); };
     $("#fc").onchange = e => { filtro.comp = e.target.value; pinta(); };
     $("#finc").onchange = e => { filtro.inc = e.target.checked; if (!filtro.inc && p === "incompletos") location.hash = "#/mis"; else pinta(); };
@@ -1214,9 +1254,6 @@ function wireVista(ruta, p) {
 
 $("#toastUndo").onclick = () => { if (undoFn) { undoFn(); undoFn = null; } $("#toast").classList.remove("show"); };
 document.addEventListener("ai-listo", () => { const m = $("#aiModo"); if (m) m.textContent = AI.etiqueta(); $$("[data-ai-tag]").forEach(t => t.textContent = AI.etiqueta()); });
-window.addEventListener("hashchange", render);
-render();
-AI.iniciar();
 
 /* ============================ Traspaso de vínculo ============================
    Cuando cambia el encargado/a, SIVA arma una hoja con lo que hay que saber.
@@ -1331,3 +1368,9 @@ function wireResponder(p) {
     guardar(); respEnviado = p; render();
   };
 }
+
+// Arranque: al final del archivo, cuando ya existen todas las variables de las vistas
+// (si no, abrir directo un link como #/ficha/3 fallaba).
+window.addEventListener("hashchange", render);
+render();
+AI.iniciar();

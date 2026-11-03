@@ -86,6 +86,7 @@ const convInst = c => c.institucion != null ? c.institucion : (vinculo(c.vinculo
 const convComps = c => c.companias || (c.compania ? [c.compania] : compsDe(vinculo(c.vinculo) || {}));
 const puedeEditarConv = c => ME && (ME.admin || (ME.rol === "gestor" && descendientes(ME.area).includes(convArea(c))));
 const instTxt = c => convInst(c) ? contraparte(convInst(c)).nombre : "Abierta a todas las universidades";
+const convVisibles = () => S.convocatorias.filter(c => ME && (ME.admin || descendientes(ME.area).includes(convArea(c))));
 const convDe = vid => S.convocatorias.filter(c => c.vinculo === vid);
 const urlPostular = c => location.href.split("#")[0] + "#/postular/" + c.id;
 const quedaron = c => c.postulantes.filter(p => ACEPTADOS.includes(p.estado));
@@ -152,12 +153,14 @@ function convFichaHTML(v, ed) {
 }
 
 function convMisHTML() {
-  const todas = S.convocatorias.filter(c => ME.admin || descendientes(ME.area).includes(convArea(c))).sort((a, b) => (b.cierre || "").localeCompare(a.cierre || ""));
-  if (!todas.length) return "";
+  const todas = convVisibles().sort((a, b) => (b.cierre || "").localeCompare(a.cierre || ""));
   const ab = todas.filter(c => c.estado === "Abierta"), ce = todas.filter(c => c.estado !== "Abierta");
-  const fila = c => `<a class="mini-row" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${c.postulantes.length} postulantes${c.estado === "Abierta" && sinRevisar(c).length ? `, ${sinRevisar(c).length} sin revisar` : ""} · ${c.estado === "Abierta" ? "cierra" : "cerró"} el ${fechaTxt(c.cierre)}</span></a>`;
-  return fold("Convocatorias", todas.length, `${ab.length ? `<p class="lbl2">Abiertas</p>${ab.map(fila).join("")}` : `<p class="muted small">No hay convocatorias abiertas.</p>`}
-    ${ce.length ? `<details class="mas"><summary>Ver ${ce.length} ${ce.length === 1 ? "cerrada" : "cerradas"}</summary>${ce.map(fila).join("")}</details>` : ""}`, true, ab.length ? ab.length + (ab.length === 1 ? " abierta" : " abiertas") : "");
+  if (!todas.length) return puedeCrear() ? `<div class="card conv-card"><p class="conv-t">Convocatorias abiertas</p><p class="muted small">Aún no hay convocatorias. <a class="lnk" href="#/nueva-convocatoria">Crea una</a> para recibir postulaciones.</p></div>` : "";
+  const fila = c => `<a class="mini-row" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${c.postulantes.length} postulantes · cerró el ${fechaTxt(c.cierre)}</span></a>`;
+  return `<div class="card conv-card"><p class="conv-t">Convocatorias abiertas <span class="fold-n">${ab.length}</span></p>
+    ${ab.length ? ab.map(c => `<a class="conv-open" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${c.postulantes.length} postulantes${sinRevisar(c).length ? ` · ${sinRevisar(c).length} sin revisar` : ""}</span><span>Cierra el ${fechaTxt(c.cierre)}</span></a>`).join("") : `<p class="muted small">No hay convocatorias abiertas.</p>`}
+    ${ce.length ? `<details class="mas"><summary>Ver ${ce.length} ${ce.length === 1 ? "cerrada" : "cerradas"}</summary>${ce.map(fila).join("")}</details>` : ""}
+    ${puedeCrear() ? `<a class="lnk small conv-nueva" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</div>`;
 }
 
 /* ---------- Crear convocatoria ---------- */
@@ -181,6 +184,7 @@ function vNuevaConv(vid, ce) {
         <input class="input" id="cCarOtra" placeholder="Otras carreras, separadas por coma" aria-label="Otras carreras" style="margin-top:8px"><p class="help">Marca todas las carreras que sirven para el cargo.</p></div>
       <div><label class="f" for="cLugar">Lugar</label><input class="input" id="cLugar" placeholder="Ej.: Faena Centinela, turno 4x4"></div>
       <div><label class="f" for="cCierre">Postulaciones hasta *</label><input class="input" id="cCierre" type="date"><div class="err" id="eCierre">Elige la fecha de cierre.</div></div>
+      <div class="full"><label class="f" for="cPortal">Link del portal de postulación de AMSA (opcional)</label><input class="input" id="cPortal" type="url" placeholder="https://…"><p class="help">SIVA no reemplaza el portal de AMSA. Si la convocatoria ya está en el portal, pega su link: los estudiantes postulan allá y tú registras aquí a quienes postularon para darles seguimiento.</p></div>
       <div class="full"><label class="f" for="cCond">Condiciones</label><input class="input" id="cCond" placeholder="Duración, jornada, si hay pago o beneficios"><p class="help">Lo que más piden los estudiantes antes de postular: sueldo o apoyo, turnos, lugar y fechas.</p></div>
       <div class="full"><label class="f" for="cDesc">Descripción general del cargo</label><textarea class="input" id="cDesc" rows="3" placeholder="En qué equipo estará, qué tipo de trabajo hará y con quién"></textarea></div>
       <div class="full"><label class="f" for="cReq">Requisitos</label><textarea class="input" id="cReq" rows="2"></textarea></div>
@@ -198,7 +202,8 @@ function leerConv(v) {
     vinculo: v ? v.id : null, area: v ? v.area : sel("cArea"), companias: $$("#cComps input:checked").map(i => i.value), institucion: v ? v.contraparte : (sel("cInst") || ""), titulo: $("#cTit").value.trim(), tipo: $("#cTipo").value,
     carreras: [...$$("#cCars input:checked").map(i => i.value), ...$("#cCarOtra").value.split(",").map(x => x.trim()).filter(Boolean)].join(", "), cupos: Math.max(1, +$("#cCupos").value || 1),
     cierre: $("#cCierre").value, lugar: $("#cLugar").value.trim(), condiciones: $("#cCond").value.trim(),
-    descripcion: $("#cDesc").value.trim(), requisitos: $("#cReq").value.trim()
+    descripcion: $("#cDesc").value.trim(), requisitos: $("#cReq").value.trim(),
+    portal: (x => /^https?:\/\//i.test(x) ? x : x ? "https://" + x : "")((sel("cPortal") || "").trim())
   };
 }
 
@@ -208,7 +213,7 @@ function wireNuevaConv(vid, ce) {
   if (ce) {
     const set = (id, val) => { const el = $("#" + id); if (el && val != null) el.value = val; };
     set("cInst", ce.institucion); set("cArea", ce.area); set("cTit", ce.titulo); set("cTipo", ce.tipo); set("cCupos", ce.cupos);
-    set("cLugar", ce.lugar); set("cCierre", ce.cierre); set("cCond", ce.condiciones); set("cDesc", ce.descripcion); set("cReq", ce.requisitos);
+    set("cLugar", ce.lugar); set("cCierre", ce.cierre); set("cCond", ce.condiciones); set("cDesc", ce.descripcion); set("cReq", ce.requisitos); set("cPortal", ce.portal);
     const cs = convComps(ce); $$("#cComps input").forEach(i => i.checked = cs.includes(i.value));
     const cars = (ce.carreras || "").split(",").map(x => x.trim()).filter(Boolean);
     $$("#cCars input").forEach(i => i.checked = cars.includes(i.value));
@@ -256,7 +261,7 @@ function vConvocatoria(id) {
   <div class="statbar">
     <div><span class="lbl">Postulantes</span><b class="statnum">${c.postulantes.length}</b></div>
     <div><span class="lbl">Cupos llenos</span><span class="pcell">${barra(Math.min(100, Math.round(q.length / c.cupos * 100)))}<b>${q.length} de ${c.cupos}</b></span></div>
-    <div class="actions">${ed ? `<a class="btn-outline" href="#/editar-convocatoria/${c.id}">Editar o eliminar</a><button class="btn-outline" id="convEstado">${c.estado === "Abierta" ? "Cerrar convocatoria" : "Reabrir"}</button>` : ""}<a class="btn-outline" href="#/postular/${c.id}" target="_blank" rel="noopener">Ver página de postulación</a></div>
+    <div class="actions">${ed && q.length ? `<a class="btn-accent" href="#/correo-aceptados/${c.id}">Correo para aceptados${c.postulantes.filter(p => p.estado === "Aceptado").length ? " (" + c.postulantes.filter(p => p.estado === "Aceptado").length + ")" : ""}</a>` : ""}${ed ? `<a class="btn-outline" href="#/editar-convocatoria/${c.id}">Editar o eliminar</a><button class="btn-outline" id="convEstado">${c.estado === "Abierta" ? "Cerrar convocatoria" : "Reabrir"}</button>` : ""}<a class="btn-outline" href="#/postular/${c.id}" target="_blank" rel="noopener">Ver página de postulación</a></div>
   </div>
   <div class="card"><p class="card-title">Ciclo de las y los estudiantes</p>${cicloHTML(cicloDe(c.postulantes))}</div>
   <div class="grid-main"><div class="stack">
@@ -264,6 +269,7 @@ function vConvocatoria(id) {
       ${c.postulantes.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Postuló</th><th>Estado</th><th>Aviso y seguimiento</th></tr></thead><tbody>${c.postulantes.map((p, i) => `<tr><td><span class="t">${esc(p.nombre)}</span><small><a class="lnk" href="mailto:${esc(p.correo)}">${esc(p.correo)}</a></small></td><td>${esc(p.universidad)}<small>${esc(p.carrera)}</small></td><td><small style="color:var(--ink)">${fechaTxt(p.fecha)}</small></td><td><select class="input sm est-${POST_ESTADOS.indexOf(p.estado)}" data-post="${i}" ${ed ? "" : "disabled"} aria-label="Estado de ${esc(p.nombre)}">${POST_ESTADOS.map(e => `<option ${p.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></td><td>${correoEstudiante(c, p) ? (p.avisado === p.estado ? `<span class="aviso-ok">Avisado</span>${ed ? ` <button class="link-btn" data-avisar="${i}">Ver correo</button>` : ""}` : ed ? `<button class="link-btn" data-avisar="${i}">Avisar por correo</button>` : `<span class="muted small">Pendiente</span>`) : `<span class="muted small">No aplica</span>`}${ACEPTADOS.includes(p.estado) ? `<button class="link-btn seg-btn" data-seg="${i}" aria-expanded="${segAbierto === i}">${segAbierto === i ? "Cerrar seguimiento" : "Seguimiento" + ((p.feedbackTutor || []).length ? ` (${p.feedbackTutor.length})` : "")}</button>` : ""}</td></tr>${segAbierto === i && ACEPTADOS.includes(p.estado) ? `<tr class="seg-row"><td colspan="5">${segHTML(c, p, i, ed)}</td></tr>` : ""}`).join("")}</tbody></table></div>`
         : `<div class="empty">Aún no hay postulaciones. Comparte el link de postulación o publícala en LinkedIn.</div>`}
     </div>
+    ${ed ? fold("Registrar un postulante a mano", null, `<p class="help">${c.portal ? "Si el estudiante postuló en el portal de AMSA, regístralo aquí para seguirlo en SIVA." : "Para quien postuló por correo u otra vía."}</p><div class="g2"><div><label class="f" for="mNom">Nombre *</label><input class="input" id="mNom"></div><div><label class="f" for="mCor">Correo *</label><input class="input" id="mCor" type="email"></div><div><label class="f" for="mUni">Universidad *</label><input class="input" id="mUni"></div><div><label class="f" for="mCar">Carrera *</label><input class="input" id="mCar"></div></div><div class="err" id="eMan">Completa todos los campos y un correo válido.</div><div class="form-actions"><button class="btn-outline" id="mAgregar">Agregar postulante</button></div>`, false, c.portal ? "postulaciones del portal" : "") : ""}
     ${fold("Detalle de la oferta", null, `<dl class="kv">
       <dt>Carreras</dt><dd class="${c.carreras ? "" : "ph"}">${esc(c.carreras || "No definido")}</dd>
       <dt>Lugar</dt><dd class="${c.lugar ? "" : "ph"}">${esc(c.lugar || "No definido")}</dd>
@@ -282,10 +288,11 @@ function vConvocatoria(id) {
         <p class="help">Se abre LinkedIn con el texto listo. Revísalo, publícalo y vuelve para marcarla como publicada.</p>
         <button class="link-btn" id="liMarcar">Ya la publiqué</button>
       </div></div>
+    ${c.portal ? `<div class="card side"><p class="card-title">Portal de AMSA</p><p class="small">Las postulaciones se hacen en el portal de AMSA.</p><a class="btn-outline wide" href="${esc(c.portal)}" target="_blank" rel="noopener">Abrir en el portal</a></div>` : ""}
     <div class="card side"><p class="card-title">Link de postulación</p>
       <div class="inline-form"><input class="input" id="linkPost" value="${esc(urlPostular(c))}" readonly aria-label="Link de postulación"><button class="btn-outline" id="copiarLink">Copiar</button></div>
       ${local ? `<p class="help">Estás viendo la página desde tu computador: este link solo le funcionará a otras personas cuando la página esté publicada (por ejemplo, en GitHub Pages).</p>` : ""}</div>
-    <div class="card side"><p class="card-title">Aceptados</p>${q.length ? q.map(p => `<div class="person"><b>${esc(p.nombre)}</b><span>${esc(p.universidad)} · ${esc(p.estado)}</span></div>`).join("") : `<p class="muted small">Todavía nadie. Marca "Aceptado" en la lista de postulantes.</p>`}</div>
+    <div class="card side"><p class="card-title">Aceptados</p>${q.length ? q.map(p => `<div class="person"><b>${esc(p.nombre)}</b><span>${esc(p.universidad)} · ${esc(p.estado)}</span></div>`).join("") : `<p class="muted small">Todavía nadie. Marca "Aceptado" en la lista de postulantes.</p>`}${ed && q.length ? `<a class="btn-accent wide" style="margin-top:10px;text-decoration:none;text-align:center;display:block" href="#/correo-aceptados/${c.id}">Enviar correo a los aceptados</a>` : ""}</div>
   </aside></div>`;
 }
 
@@ -355,6 +362,13 @@ function wireConv(id) {
     abrirOutlookWeb(p.correo, m.asunto, m.cuerpo); p.avisado = p.estado; guardar(); render();
     toast(`Se abrió Outlook con el correo para ${p.nombre}. Revísalo y envíalo.`);
   });
+  const ma = $("#mAgregar"); if (ma) ma.onclick = () => {
+    const d = { nombre: $("#mNom").value.trim(), correo: $("#mCor").value.trim(), universidad: $("#mUni").value.trim(), carrera: $("#mCar").value.trim() };
+    const ok = d.nombre && d.universidad && d.carrera && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.correo);
+    $("#eMan").classList.toggle("show", !ok); if (!ok) return;
+    c.postulantes.push(Object.assign(d, { fecha: hoy(), estado: "Postuló", via: c.portal ? "portal" : "manual" })); guardar(); render();
+    toast(`${d.nombre} quedó registrado/a como postulante`);
+  };
   const ce = $("#convEstado"); if (ce) ce.onclick = () => { c.estado = c.estado === "Abierta" ? "Cerrada" : "Abierta"; guardar(); render(); toast(c.estado === "Cerrada" ? "Convocatoria cerrada: ya no recibe postulaciones" : "Convocatoria abierta"); };
   const lt = $("#liToggle"); if (lt) lt.onclick = () => { const p = $("#liPanel"); p.hidden = !p.hidden; if (!p.hidden) $("#liTxt").focus(); };
   const la = $("#liAbrir"); if (la) la.onclick = () => window.open("https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent($("#liTxt").value), "_blank", "noopener");
@@ -376,7 +390,7 @@ function vPostular(id) {
     ? `<div class="card ok-box"><h2>¡Recibimos tu postulación!</h2><p>Te escribiremos al correo que dejaste cuando revisemos las postulaciones. La convocatoria cierra el ${fechaTxt(c.cierre)}.</p><p>Puedes ver en qué va tu postulación cuando quieras con tu correo.</p><div class="form-actions"><a class="btn-accent" href="#/mi-postulacion">Ver el estado de mi postulación</a><button class="btn-outline" id="otra">Enviar otra postulación</button></div></div>`
     : c.estado !== "Abierta"
       ? `<div class="card empty">Esta convocatoria ya cerró y no está recibiendo postulaciones.</div>`
-      : `<div class="card"><p class="card-title">Postula</p><div class="g2">
+      : `<div class="card"><p class="card-title">${c.portal ? "Ya postulé en el portal: seguir mi proceso aquí" : "Postula"}</p><div class="g2">
           <div class="full"><label class="f" for="pNom">Nombre completo *</label><input class="input" id="pNom" autocomplete="name"></div>
           <div class="full"><label class="f" for="pCor">Correo *</label><input class="input" id="pCor" type="email" autocomplete="email"></div>
           <div><label class="f" for="pUni">Universidad o institución *</label><select class="input" id="pUni"><option value=""></option>${unis.map(u => `<option>${esc(u)}</option>`).join("")}<option>Otra</option></select></div>
@@ -384,13 +398,14 @@ function vPostular(id) {
           <div class="full"><label class="f" for="pCv">Link a tu CV o LinkedIn (opcional)</label><input class="input" id="pCv" type="url"></div></div>
           <div class="err" id="ePost">Completa los campos con asterisco y un correo válido.</div>
           <div class="form-actions"><button class="btn-accent" id="pEnviar">Enviar postulación</button></div></div>`;
+  const portalBox = c.portal && c.estado === "Abierta" ? `<div class="card portal-box"><p class="card-title">Postula en el portal de AMSA</p><p>Esta convocatoria recibe postulaciones en el portal de empleo de Antofagasta Minerals. Postula allá y después deja tus datos más abajo para seguir tu proceso en esta página.</p><a class="btn-accent" href="${esc(c.portal)}" target="_blank" rel="noopener">Ir al portal de AMSA</a></div>` : "";
   return head + `<main class="pub">
     <a class="lnk small" href="#/convocatorias">← Todas las convocatorias</a>
     <p class="sub">${esc(c.tipo)}${cp.tipoOrg === "Universidad" ? " · en alianza con " + esc(cp.nombre) : ""}</p>
     <h1>${esc(c.titulo)}</h1>
     <div class="card"><dl class="kv">${det("Carreras", c.carreras)}${det("Lugar", c.lugar)}${det("Condiciones", c.condiciones)}${det("Descripción del cargo", c.descripcion)}${det("Requisitos", c.requisitos)}<dt>Cupos</dt><dd>${c.cupos}</dd><dt>Postulaciones hasta</dt><dd>${fechaTxt(c.cierre)}</dd></dl></div>
     <div class="card"><p class="card-title">Cómo sigue el proceso</p>${pasosProceso(null)}</div>
-    ${cuerpo}
+    ${portalBox}${cuerpo}
     <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p></main>${pie()}`;
 }
 
