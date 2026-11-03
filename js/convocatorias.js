@@ -4,7 +4,12 @@
 
 const CONV_TIPOS_VINCULO = ["tal", "emp"];           // Prácticas y memorias, Empleo y oficios
 const CONV_TIPOS = ["Práctica profesional", "Memoria", "Práctica de verano"];
-const POST_ESTADOS = ["Postuló", "En revisión", "Quedó", "No quedó"];
+// Etapas de la postulación. Después de "Aceptado" la persona sigue en el sistema
+// mientras hace su práctica o memoria, hasta que termina (postula → mientras → sale).
+const POST_ESTADOS = ["Postuló", "En revisión", "Aceptado", "No aceptado", "En práctica", "Terminó"];
+const ACEPTADOS = ["Aceptado", "En práctica", "Terminó"];
+// Datos guardados con las etiquetas anteriores ("Quedó" / "No quedó").
+const ESTADO_ANTIGUO = { "Quedó": "Aceptado", "No quedó": "No aceptado" };
 
 function convSemilla(s) {
   const v = s.vinculos.find(x => x.nombre === "Búsqueda y difusión de memoristas");
@@ -19,10 +24,24 @@ function convSemilla(s) {
     estado: "Abierta", creada: "2026-10-01",
     linkedin: { publicada: true, fecha: "2026-10-02" },
     postulantes: [
-      { nombre: "Camila Rojas", correo: "camila.rojas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-03", estado: "Quedó" },
+      { nombre: "Camila Rojas", correo: "camila.rojas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-03", estado: "En práctica", avisado: "En práctica" },
       { nombre: "Diego Fuentes", correo: "diego.fuentes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-04", estado: "En revisión" },
       { nombre: "Valentina Muñoz", correo: "valentina.munoz@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil Industrial", fecha: "2026-10-06", estado: "Postuló" },
       { nombre: "Tomás Herrera", correo: "tomas.herrera@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-07", estado: "Postuló" }
+    ]
+  }, {
+    id: 2, vinculo: v.id, area: v.area, companias: ["cen"], institucion: v.contraparte, titulo: "Práctica de verano 2026",
+    tipo: "Práctica de verano", carreras: "Ingeniería Civil de Minas, Geología",
+    cupos: 4, cierre: "2025-11-30", lugar: "Antofagasta", condiciones: "Ocho semanas en enero y febrero.",
+    descripcion: "Práctica en las áreas de planificación y geología de la operación.", requisitos: "Estar en cuarto o quinto año.",
+    estado: "Cerrada", creada: "2025-10-15", linkedin: { publicada: true, fecha: "2025-10-16" },
+    postulantes: [
+      { nombre: "Sofía Pizarro", correo: "sofia.pizarro@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Geología", fecha: "2025-10-20", estado: "Terminó", avisado: "Terminó" },
+      { nombre: "Matías Contreras", correo: "matias.contreras@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-21", estado: "Terminó", avisado: "Terminó" },
+      { nombre: "Javiera Castillo", correo: "javiera.castillo@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-22", estado: "Terminó", avisado: "Terminó" },
+      { nombre: "Lucas Morales", correo: "lucas.morales@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Geología", fecha: "2025-10-24", estado: "No aceptado", avisado: "No aceptado" },
+      { nombre: "Catalina Reyes", correo: "catalina.reyes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Geología", fecha: "2025-10-25", estado: "No aceptado", avisado: "No aceptado" },
+      { nombre: "Nicolás Vargas", correo: "nicolas.vargas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-27", estado: "No aceptado", avisado: "No aceptado" }
     ]
   }];
 }
@@ -31,6 +50,12 @@ function convSemilla(s) {
 const _estadoInicialBase = estadoInicial;
 estadoInicial = function () { const s = _estadoInicialBase(); s.convocatorias = convSemilla(s); return s; };
 if (!S.convocatorias) { S.convocatorias = esEspacioVacio() ? [] : convSemilla(S); guardar(); }
+function migrarEstados() {
+  let cambio = false;
+  (S.convocatorias || []).forEach(c => c.postulantes.forEach(p => { if (ESTADO_ANTIGUO[p.estado]) { p.estado = ESTADO_ANTIGUO[p.estado]; cambio = true; } }));
+  if (cambio) guardar();
+}
+migrarEstados();
 
 const convocatoria = id => S.convocatorias.find(c => c.id === id);
 const convArea = c => c.area || (vinculo(c.vinculo) || {}).area;
@@ -40,7 +65,38 @@ const puedeEditarConv = c => ME && (ME.admin || (ME.rol === "gestor" && descendi
 const instTxt = c => convInst(c) ? contraparte(convInst(c)).nombre : "Abierta a todas las universidades";
 const convDe = vid => S.convocatorias.filter(c => c.vinculo === vid);
 const urlPostular = c => location.href.split("#")[0] + "#/postular/" + c.id;
-const quedaron = c => c.postulantes.filter(p => p.estado === "Quedó");
+const quedaron = c => c.postulantes.filter(p => ACEPTADOS.includes(p.estado));
+const pct = (n, d) => d ? Math.round(n / d * 100) : 0;
+
+// Ciclo del estudiante: cuántos postulan, cuántos son aceptados, cuántos están
+// haciendo su práctica o memoria y cuántos ya terminaron.
+function cicloDe(postulantes) {
+  const n = estados => postulantes.filter(p => estados.includes(p.estado)).length;
+  return { post: postulantes.length, acept: n(ACEPTADOS), mientras: n(["En práctica"]), sale: n(["Terminó"]), no: n(["No aceptado"]), rev: n(["Postuló", "En revisión"]) };
+}
+function cicloHTML(k, nota) {
+  const paso = (num, t, sub, extra = "") => `<div class="ciclo-paso ${extra}"><b>${num}</b><span>${t}</span><small>${sub}</small></div>`;
+  return `<div class="ciclo">
+    ${paso(k.post, "Postula", k.rev ? k.rev + " por revisar" : "todas revisadas")}<i class="ciclo-flecha" aria-hidden="true">→</i>
+    ${paso(k.acept, "Aceptados", pct(k.acept, k.post) + "% de quienes postulan", "ok")}<i class="ciclo-flecha" aria-hidden="true">→</i>
+    ${paso(k.mientras, "Mientras", "en práctica o memoria")}<i class="ciclo-flecha" aria-hidden="true">→</i>
+    ${paso(k.sale, "Sale", pct(k.sale, k.acept) + "% de los aceptados terminó")}
+  </div>${nota ? `<p class="help">${nota}</p>` : ""}`;
+}
+
+// Correo que le llega al estudiante cuando cambia su estado.
+function correoEstudiante(c, p) {
+  const nombre = p.nombre.split(" ")[0];
+  const firma = `\n\nSaludos,\n${nombreArea(convArea(c))}\nAntofagasta Minerals`;
+  const txt = {
+    "En revisión": [`Tu postulación está en revisión · ${c.titulo}`, `Hola ${nombre}:\n\nRecibimos tu postulación a "${c.titulo}" y la estamos revisando. Puede que te contactemos para una entrevista.\n\nPuedes ver en qué va tu postulación aquí: ${location.href.split("#")[0]}#/mi-postulacion`],
+    "Aceptado": [`¡Fuiste aceptado/a! · ${c.titulo}`, `Hola ${nombre}:\n\nTe contamos que fuiste aceptado/a en "${c.titulo}". En los próximos días te escribiremos con tu fecha de ingreso, quién será tu tutor o tutora y qué necesitas para el primer día.`],
+    "No aceptado": [`Resultado de tu postulación · ${c.titulo}`, `Hola ${nombre}:\n\nGracias por postular a "${c.titulo}". Esta vez no fuiste seleccionado/a. Te invitamos a revisar las otras convocatorias abiertas: ${location.href.split("#")[0]}#/convocatorias`],
+    "En práctica": [`Bienvenida/o a Antofagasta Minerals · ${c.titulo}`, `Hola ${nombre}:\n\nTe damos la bienvenida. Desde hoy quedas registrado/a en tu ${c.tipo.toLowerCase()}. Ante cualquier duda puedes escribirnos a este correo.`],
+    "Terminó": [`Cierre de tu ${c.tipo.toLowerCase()} · ${c.titulo}`, `Hola ${nombre}:\n\nTerminaste tu ${c.tipo.toLowerCase()}. Gracias por tu trabajo. Pronto te enviaremos una encuesta corta sobre tu experiencia para mejorar el programa.`]
+  }[p.estado];
+  return txt ? { asunto: txt[0], cuerpo: txt[1] + firma } : null;
+}
 const sinRevisar = c => c.postulantes.filter(p => p.estado === "Postuló");
 const convPill = c => `<span class="pill ${c.estado === "Abierta" ? "p2" : "p3"}">${c.estado}</span>`;
 
@@ -158,12 +214,13 @@ function vConvocatoria(id) {
   <div class="head-row"><div><h1>${esc(c.titulo)}</h1><p class="sub">${esc(c.tipo)} · ${esc(instTxt(c))} · ${compTag(convComps(c))} · cierra el ${fechaTxt(c.cierre)}</p></div>${convPill(c)}</div>
   <div class="statbar">
     <div><span class="lbl">Postulantes</span><b class="statnum">${c.postulantes.length}</b></div>
-    <div><span class="lbl">Cupos llenos</span><span class="pcell">${barra(Math.round(q.length / c.cupos * 100))}<b>${q.length} de ${c.cupos}</b></span></div>
+    <div><span class="lbl">Cupos llenos</span><span class="pcell">${barra(Math.min(100, Math.round(q.length / c.cupos * 100)))}<b>${q.length} de ${c.cupos}</b></span></div>
     <div class="actions">${ed ? `<button class="btn-outline" id="convEstado">${c.estado === "Abierta" ? "Cerrar convocatoria" : "Reabrir"}</button>` : ""}<a class="btn-outline" href="#/postular/${c.id}" target="_blank" rel="noopener">Ver página de postulación</a></div>
   </div>
+  <div class="card"><p class="card-title">Ciclo de las y los estudiantes</p>${cicloHTML(cicloDe(c.postulantes))}</div>
   <div class="grid-main"><div class="stack">
-    <div class="card"><div class="head-row"><p class="card-title">Postulantes</p><span class="muted small">Cambia el estado a medida que revisas. Quienes quedan se registran en el vínculo.</span></div>
-      ${c.postulantes.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Postuló</th><th>Estado</th></tr></thead><tbody>${c.postulantes.map((p, i) => `<tr><td><span class="t">${esc(p.nombre)}</span><small><a class="lnk" href="mailto:${esc(p.correo)}">${esc(p.correo)}</a></small></td><td>${esc(p.universidad)}<small>${esc(p.carrera)}</small></td><td><small style="color:var(--ink)">${fechaTxt(p.fecha)}</small></td><td><select class="input sm est-${POST_ESTADOS.indexOf(p.estado)}" data-post="${i}" ${ed ? "" : "disabled"} aria-label="Estado de ${esc(p.nombre)}">${POST_ESTADOS.map(e => `<option ${p.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div>`
+    <div class="card"><div class="head-row"><p class="card-title">Postulantes</p><span class="muted small">Cambia el estado a medida que revisas. Cada cambio prepara el correo para avisarle al estudiante.</span></div>
+      ${c.postulantes.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Postuló</th><th>Estado</th><th>Aviso al estudiante</th></tr></thead><tbody>${c.postulantes.map((p, i) => `<tr><td><span class="t">${esc(p.nombre)}</span><small><a class="lnk" href="mailto:${esc(p.correo)}">${esc(p.correo)}</a></small></td><td>${esc(p.universidad)}<small>${esc(p.carrera)}</small></td><td><small style="color:var(--ink)">${fechaTxt(p.fecha)}</small></td><td><select class="input sm est-${POST_ESTADOS.indexOf(p.estado)}" data-post="${i}" ${ed ? "" : "disabled"} aria-label="Estado de ${esc(p.nombre)}">${POST_ESTADOS.map(e => `<option ${p.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></td><td>${correoEstudiante(c, p) ? (p.avisado === p.estado ? `<span class="aviso-ok">Avisado</span>${ed ? ` <button class="link-btn" data-avisar="${i}">Ver correo</button>` : ""}` : ed ? `<button class="link-btn" data-avisar="${i}">Avisar por correo</button>` : `<span class="muted small">Pendiente</span>`) : `<span class="muted small">No aplica</span>`}</td></tr>`).join("")}</tbody></table></div>`
         : `<div class="empty">Aún no hay postulaciones. Comparte el link de postulación o publícala en LinkedIn.</div>`}
     </div>
     <div class="card"><p class="card-title">Detalle de la oferta</p><dl class="kv">
@@ -187,16 +244,16 @@ function vConvocatoria(id) {
     <div class="card side"><p class="card-title">Link de postulación</p>
       <div class="inline-form"><input class="input" id="linkPost" value="${esc(urlPostular(c))}" readonly aria-label="Link de postulación"><button class="btn-outline" id="copiarLink">Copiar</button></div>
       ${local ? `<p class="help">Estás viendo la página desde tu computador: este link solo le funcionará a otras personas cuando la página esté publicada (por ejemplo, en GitHub Pages).</p>` : ""}</div>
-    <div class="card side"><p class="card-title">Quedaron</p>${q.length ? q.map(p => `<div class="person"><b>${esc(p.nombre)}</b><span>${esc(p.universidad)}</span></div>`).join("") : `<p class="muted small">Todavía nadie. Marca "Quedó" en la lista de postulantes.</p>`}</div>
+    <div class="card side"><p class="card-title">Aceptados</p>${q.length ? q.map(p => `<div class="person"><b>${esc(p.nombre)}</b><span>${esc(p.universidad)} · ${esc(p.estado)}</span></div>`).join("") : `<p class="muted small">Todavía nadie. Marca "Aceptado" en la lista de postulantes.</p>`}</div>
   </aside></div>`;
 }
 
 // Quien queda en una convocatoria pasa a la lista de estudiantes en práctica o memoria.
 function sincEstudiante(c, p) {
   S.estudiantes = S.estudiantes.filter(e => !(e.conv === c.id && e.nombre === p.nombre));
-  if (p.estado === "Quedó") {
+  if (ACEPTADOS.includes(p.estado)) {
     const inst = S.contrapartes.find(x => x.nombre === p.universidad);
-    S.estudiantes.push({ nombre: p.nombre, tipo: c.tipo, contraparte: inst ? inst.id : "", area: convArea(c), compania: convComps(c)[0] || "", nota: null, conv: c.id });
+    S.estudiantes.push({ nombre: p.nombre, tipo: c.tipo, contraparte: inst ? inst.id : "", area: convArea(c), compania: convComps(c)[0] || "", nota: null, conv: c.id, etapa: p.estado });
   }
 }
 
@@ -212,8 +269,13 @@ function wireConv(id) {
   $$("[data-post]").forEach(s => s.onchange = e => {
     const p = c.postulantes[+s.dataset.post], antes = p.estado;
     p.estado = e.target.value; sincEstudiante(c, p); guardar(); render();
-    const msg = p.estado === "Quedó" ? `${p.nombre} quedó. Se le avisó por correo y pasa a Estudiantes.` : p.estado === "No quedó" ? `Se le avisó por correo a ${p.nombre}.` : "Estado actualizado";
+    const msg = p.estado === "Aceptado" ? `${p.nombre} fue aceptado/a y pasa a Estudiantes. Falta avisarle por correo.` : correoEstudiante(c, p) ? `Estado actualizado. Falta avisarle a ${p.nombre} por correo.` : "Estado actualizado";
     toast(msg, () => { p.estado = antes; sincEstudiante(c, p); guardar(); render(); });
+  });
+  $$("[data-avisar]").forEach(b => b.onclick = () => {
+    const p = c.postulantes[+b.dataset.avisar], m = correoEstudiante(c, p); if (!m) return;
+    abrirOutlookWeb(p.correo, m.asunto, m.cuerpo); p.avisado = p.estado; guardar(); render();
+    toast(`Se abrió Outlook con el correo para ${p.nombre}. Revísalo y envíalo.`);
   });
   const ce = $("#convEstado"); if (ce) ce.onclick = () => { c.estado = c.estado === "Abierta" ? "Cerrada" : "Abierta"; guardar(); render(); toast(c.estado === "Cerrada" ? "Convocatoria cerrada: ya no recibe postulaciones" : "Convocatoria abierta"); };
   const lt = $("#liToggle"); if (lt) lt.onclick = () => { const p = $("#liPanel"); p.hidden = !p.hidden; if (!p.hidden) $("#liTxt").focus(); };
@@ -308,16 +370,17 @@ function wireConvPub() {
 const PASOS_POST = [
   ["Postulación recibida", "Recibimos tus datos."],
   ["En revisión", "El área revisa las postulaciones. Puede que te contacten para una entrevista."],
-  ["Resultado", "Te avisamos por correo si quedaste o no."],
-  ["Inducción", "Si quedaste, recibes por correo tu fecha de ingreso, tu tutor o tutora y qué llevar el primer día."]
+  ["Resultado", "Te avisamos por correo si fuiste aceptado/a o no."],
+  ["Práctica o memoria", "Si te aceptan, recibes por correo tu fecha de ingreso, tu tutor o tutora y qué llevar el primer día."],
+  ["Cierre", "Al terminar te pedimos tu opinión con una encuesta corta."]
 ];
 function pasosProceso(estado) {
-  const idx = estado == null ? -1 : { "Postuló": 0, "En revisión": 1, "Quedó": 3, "No quedó": 2 }[estado];
+  const idx = estado == null ? -1 : { "Postuló": 0, "En revisión": 1, "Aceptado": 3, "No aceptado": 2, "En práctica": 3, "Terminó": 5 }[estado];
   return `<ol class="pasos">${PASOS_POST.map(([t, d], i) => {
     let cls = "";
-    if (estado === "No quedó") cls = i < 2 ? "hecho" : i === 2 ? "actual" : "no";
+    if (estado === "No aceptado") cls = i < 2 ? "hecho" : i === 2 ? "actual" : "no";
     else if (idx >= 0) cls = i < idx ? "hecho" : i === idx ? "actual" : "";
-    const det = estado === "Quedó" && i === 2 ? "¡Quedaste!" : estado === "No quedó" && i === 2 ? "Esta vez no quedaste. Te avisamos por correo y puedes postular a otras convocatorias." : d;
+    const det = ACEPTADOS.includes(estado) && i === 2 ? "¡Fuiste aceptado/a!" : estado === "Aceptado" && i === 3 ? "Pronto te escribimos con tu fecha de ingreso y tu tutor o tutora." : estado === "En práctica" && i === 3 ? "Estás haciendo tu práctica o memoria." : estado === "No aceptado" && i === 2 ? "Esta vez no fuiste seleccionado/a. Te avisamos por correo y puedes postular a otras convocatorias." : d;
     return `<li class="${cls}"><div><b>${t}</b><span>${det}</span></div></li>`;
   }).join("")}</ol>`;
 }

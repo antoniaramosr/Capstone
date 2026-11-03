@@ -49,6 +49,12 @@ function estadoInicial() {
       respuestas: ["5", "Sí", "4", "Más anticipación para difundir la charla.", "Sí, siguen vigentes.", "Sí"]
     });
   }
+  // Ejemplo de continuidad: un cuestionario enviado hace tres semanas que la institución no ha respondido.
+  const sr = vinculos.find(v => v.area === "rys" && v.etapa < 3 && v !== ej);
+  if (sr) {
+    const hace = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+    sr.cuestionarios.push({ id: 2, fecha: hace(23), fechaEnvio: hace(22), estado: "enviado", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: [] });
+  }
   return {
     areas, tipos,
     tiposOrg: [...CONFIG.tiposOrg],

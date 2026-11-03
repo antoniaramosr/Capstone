@@ -39,9 +39,22 @@ function calcAvisos() {
     });
   }
   mios.filter(v => v.etapa === 3 && !v.calif).forEach(v => r.push({ id: "cal-" + v.id, titulo: "Calificación pendiente", texto: `"${v.nombre}" con ${contraparte(v.contraparte).corto} está cerrado y no tiene calificación.`, ir: "#/ficha/" + v.id }));
+  mios.filter(puedeEditar).forEach(v => { const sr = sinRespuesta(v); if (sr) r.push({ id: "sr-" + v.id + "-" + sr.dias, titulo: sr.titulo, texto: `"${v.nombre}" con ${contraparte(v.contraparte).corto}: ${sr.texto.charAt(0).toLowerCase() + sr.texto.slice(1)}`, ir: "#/ficha/" + v.id }); });
   const inc = mios.filter(v => completitud(v).pct < 50);
   if (inc.length) r.push({ id: "inc-" + inc.length, titulo: "Datos por completar", texto: `A ${inc.length} ${inc.length === 1 ? "vínculo le faltan" : "vínculos les faltan"} datos importantes de la ficha.`, ir: "#/mis/incompletos" });
-  return r.slice(0, 8);
+  return r.sort((a, b) => (b.id.startsWith("sr-") ? 1 : 0) - (a.id.startsWith("sr-") ? 1 : 0)).slice(0, 8);
+}
+
+// Continuidad del vínculo: si la institución no responde, se avisa para que no
+// dependa de una sola persona (un cuestionario sin respuesta por más de 14 días).
+const DIAS_SIN_RESPUESTA = 14;
+const diasDesde = f => Math.floor((Date.now() - new Date(f + "T12:00:00")) / 86400000);
+function sinRespuesta(v) {
+  if (v.etapa === 3) return null;
+  const pend = v.cuestionarios.filter(q => q.estado === "enviado" && diasDesde(q.fechaEnvio || q.fecha) > DIAS_SIN_RESPUESTA);
+  if (!pend.length) return null;
+  const dias = Math.max(...pend.map(q => diasDesde(q.fechaEnvio || q.fecha)));
+  return { dias, titulo: "Contacto sin respuesta", texto: `${v.contacto.nombre || "La institución"} no ha respondido el cuestionario hace ${dias} días.` };
 }
 
 /* ============================ Shell ============================ */
@@ -78,7 +91,7 @@ const compTag = ids => {
   return t + (ids.length > 2 ? ` <span class="comp" title="${esc(compsTxt(ids))}">+${ids.length - 2}</span>` : "");
 };
 const inicioDe = u => u && u.rol === "gestor" ? "#/mis" : "#/dashboard";
-const perfilTxt = u => u.admin ? "Administración" : (u.rol === "jefatura" ? "Jefatura · " : "") + nombreArea(u.area) + (u.compania ? " · " + compania(u.compania).nombre : "");
+const perfilTxt = u => u.admin ? "Administración" : (u.rol === "jefatura" ? "Gestor/a de metas · " : "") + nombreArea(u.area) + (u.compania ? " · " + compania(u.compania).nombre : "");
 const etiquetaEspacioVacio = () => (ESPACIO === "vacio2" ? "Página vacía · Perfil 2" : "Página vacía · Perfil 0");
 const usuarioEspacioVacio = u => u.espacio && esEspacioVacio(u.espacio);
 // Logo de AMSA; si la imagen no carga, se muestra el nombre en texto.
@@ -365,6 +378,7 @@ function vFicha(id) {
   const satis = resp.length ? resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length : null;
   const crits = criteriosDe(v.tipo), cv = v.criterios || {};
   const otrosCont = contactosDe(v.contraparte).filter(k => k.nombre !== v.contacto.nombre).slice(0, 3);
+  const sinResp = sinRespuesta(v);
   return `<div class="crumbs"><a href="#/mis">${ME.admin ? "Vínculos" : "Mis vínculos"}</a> / ${rutaArea(v.area).map(a => `<a href="#/area/${a.id}">${esc(a.nombre)}</a>`).join(" / ")} / ${esc(v.nombre)}</div>
   <div class="head-row"><div><h1>${esc(v.nombre)}</h1><p class="sub"><a href="#/contraparte/${c.id}" class="lnk">${esc(c.nombre)}</a>${v.sede ? ", " + esc(v.sede) : ""} · ${esc(tipo(v.tipo).nombre)} · ${compTag(compsDe(v))}</p></div>
     <div><div class="stepper">${CONFIG.etapas.map((e, i) => `${i ? '<i class="bar"></i>' : ""}<button class="step ${i === v.etapa ? "cur" : i < v.etapa ? "done" : ""}" data-etapa="${i}" ${ed ? "" : "disabled"} title="${esc(e + ": " + etapaAyuda(i, v.tipo))}"><span>${i < v.etapa ? "✓" : i + 1}</span>${e}</button>`).join("")}</div>
@@ -391,13 +405,14 @@ function vFicha(id) {
     <div class="card"><div class="head-row"><p class="card-title">Reuniones</p>${ed ? `<button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button>` : ""}</div>
       ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones registradas. Pega la transcripción o tus notas en el asistente y se agregan aquí con un resumen.</p>`}</div>
     <div class="card"><div class="head-row"><p class="card-title">Feedback de la institución</p>${ed ? `<button class="link-btn" onclick="abrirAsistente(${v.id},'cuestionario')">+ Nuevo cuestionario</button>` : ""}</div>
-      <p class="help" style="margin:-4px 0 10px">El cuestionario se prepara aquí y se envía desde Outlook. Cuando la institución responda, registra sus respuestas o pega su correo.</p>
+      <p class="help" style="margin:-4px 0 10px">La institución responde en un link, sin cuenta y sin correos de ida y vuelta. Sus respuestas llegan solas a esta ficha.</p>
       ${v.cuestionarios.length ? v.cuestionarios.slice().reverse().map(q => cuestionarioHTML(v, q, ed)).join("") : `<p class="muted small">Aún no se ha preparado un cuestionario para la institución.</p>`}</div>
     <details class="card"><summary class="card-title sum">Historial de cambios (${v.versiones.length})</summary>
       ${v.versiones.slice().reverse().map(x => `<div class="ver"><span class="vn">v${x.v}</span><div><b>${fechaTxt(x.fecha)}</b> · <span class="muted">${esc(x.autor)}</span><br>${esc(x.resumen)}</div></div>`).join("")}</details>
   </div>
   <aside class="stack">
     <div class="card side"><p class="card-title">Con quién</p><h4><a class="lnk" href="#/contraparte/${c.id}">${esc(c.nombre)}</a></h4><p>${esc(c.tipoOrg)}${v.sede ? ", " + esc(v.sede) : ""}</p>
+      ${sinResp ? `<div class="alerta-cont"><b>${esc(sinResp.titulo)}</b><span>${esc(sinResp.texto)}</span>${otrosCont.length ? `<span>Puedes escribirle a otro contacto de la institución (abajo) para que el vínculo no dependa de una sola persona.</span>` : ed ? `<span>Agrega un segundo contacto en la ficha para que el vínculo no dependa de una sola persona.</span>` : ""}</div>` : ""}
       <div class="person">${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? `<b>${esc(v.contacto.nombre || "Contacto")}</b>${v.contacto.cargo ? `<span>${esc(v.contacto.cargo)}</span>` : ""}${v.contacto.correo ? `<a class="mail" href="mailto:${esc(v.contacto.correo)}">${esc(v.contacto.correo)}</a>` : ""}${v.contacto.telefono ? `<a class="mail" href="tel:${esc(v.contacto.telefono.replace(/\s/g, ""))}">${esc(v.contacto.telefono)}</a>` : ""}` : `<span class="muted">Contacto no definido</span>`}</div>
       ${otrosCont.length ? `<p class="lbl2" style="margin-top:12px!important">Otros contactos registrados</p>${otrosCont.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}` : ""}
       ${otras.length ? `<details class="note dd"><summary><b>${[...new Set(otras.map(x => x.area))].length} ${[...new Set(otras.map(x => x.area))].length === 1 ? "otra área trabaja" : "otras áreas trabajan"} con esta institución</b></summary>${otras.slice(0, 6).map(x => `<a href="#/ficha/${x.id}"><b>${esc(nombreArea(x.area))}</b>${esc(x.nombre)} · ${CONFIG.etapas[x.etapa]}${x.responsable ? `<br><span class="muted">Lo lleva: ${esc(x.responsable)}</span>` : ""}</a>`).join("")}</details>` : ""}</div>
@@ -415,13 +430,14 @@ function vFicha(id) {
   </aside></div>`;
 }
 function cuestionarioHTML(v, q, ed) {
-  if (q.estado === "respondido") return `<details class="cq"><summary><b>${fechaTxt(q.fecha)}</b> <span class="pill p2">Respondido</span></summary>${q.preguntas.map((p, i) => q.respuestas[i] ? `<div class="qa"><span>${esc(p)}</span><b>${esc(q.respuestas[i])}</b></div>` : "").join("")}${q.comentario ? `<div class="fb" style="margin-top:8px"><b>Respuesta o comentario</b><br>${esc(q.comentario).replace(/\n/g, "<br>")}</div>` : ""}</details>`;
+  if (q.estado === "respondido") return `<details class="cq"><summary><b>${fechaTxt(q.fechaResp || q.fecha)}</b> <span class="pill p2">Respondido${q.via === "link" ? " en el link" : ""}</span></summary>${q.preguntas.map((p, i) => q.respuestas[i] ? `<div class="qa"><span>${esc(p)}</span><b>${esc(q.respuestas[i])}</b></div>` : "").join("")}${q.comentario ? `<div class="fb" style="margin-top:8px"><b>Respuesta o comentario</b><br>${esc(q.comentario).replace(/\n/g, "<br>")}</div>` : ""}</details>`;
   const preparado = q.estado === "preparado";
   return `<div class="cq"><div class="head-row"><span><b>${fechaTxt(q.fecha)}</b> <span class="pill ${preparado ? "p0" : "p1"}">${preparado ? "Preparado, falta confirmar el envío" : "Enviado, esperando respuesta"}</span></span>
-    ${ed ? `<span class="cq-acts">${preparado ? `<button class="link-btn" data-enviado="${q.id}">Ya lo envié</button>` : ""}<button class="link-btn" data-registrar="${q.id}">Registrar respuestas</button></span>` : ""}</div>
-    ${preparado ? `<p class="help">Se abrió Outlook con el texto listo. La página no puede saber si lo enviaste: confírmalo con "Ya lo envié".</p>` : ""}
+    ${ed ? `<span class="cq-acts">${preparado ? `<button class="link-btn" data-enviado="${q.id}">Ya lo envié</button>` : ""}<button class="link-btn" data-registrar="${q.id}">Registrar a mano</button></span>` : ""}</div>
+    ${preparado ? `<p class="help">Se abrió Outlook con el link listo. La página no puede saber si lo enviaste: confírmalo con "Ya lo envié".</p>` : `<p class="help">Enviado el ${fechaTxt(q.fechaEnvio || q.fecha)}. Cuando la institución responda en el link, sus respuestas aparecen aquí.</p>`}
+    <div class="inline-form link-cq"><input class="input" value="${esc(urlResponder(v, q))}" readonly aria-label="Link del cuestionario"><button class="btn-outline" data-copiar-cq="${q.id}">Copiar link</button><a class="btn-outline" href="#/responder/${v.id}.${q.id}" target="_blank" rel="noopener">Ver como la institución</a></div>
     <div id="reg-${q.id}" hidden>
-      <label class="f" for="com-${q.id}">Pega aquí la respuesta del correo o un comentario general</label><textarea class="input" id="com-${q.id}" rows="3" placeholder="Ej.: Respondieron que la charla fue muy útil y piden repetirla en marzo."></textarea>
+      <p class="help">¿Te respondieron por otra vía (correo, teléfono o en una reunión)? Regístralo aquí.</p><label class="f" for="com-${q.id}">Respuesta o comentario general</label><textarea class="input" id="com-${q.id}" rows="3" placeholder="Ej.: Respondieron que la charla fue muy útil y piden repetirla en marzo."></textarea>
       <details class="more"><summary>Registrar pregunta por pregunta (opcional)</summary>
       ${q.preguntas.map((p, i) => { const base = PREGUNTAS_BASE.find(b => b.texto === p); const campo = base && base.tipo === "escala" ? `<select class="input" data-resp="${i}"><option></option>${[1, 2, 3, 4, 5].map(n => `<option>${n}</option>`).join("")}</select>` : base && base.tipo === "opciones" ? `<select class="input" data-resp="${i}"><option></option>${base.opciones.map(o => `<option>${o}</option>`).join("")}</select>` : `<input class="input" data-resp="${i}">`; return `<label class="f">${esc(p)}</label>${campo}`; }).join("")}</details>
     <div class="form-actions"><button class="btn-accent" data-guardar-resp="${q.id}">Guardar respuestas</button></div></div></div>`;
@@ -632,6 +648,7 @@ function vDashboard() {
   const porZona = CONFIG.zonas.map(z => ({ n: z, v: cps.filter(id => contraparte(id).zona === z).length }));
   const porFin = [...new Set(base.map(v => v.financiamiento.tipo))].map(f => ({ n: f, v: base.filter(v => v.financiamiento.tipo === f).length })).sort((a, b) => b.v - a.v);
   const resp = base.flatMap(v => v.cuestionarios.filter(q => q.estado === "respondido" && +q.respuestas[0]));
+  const ciclo = cicloDe(S.convocatorias.filter(c => (!raiz || descendientes(raiz).includes(convArea(c))) && (!dashComp || convComps(c).includes(dashComp))).flatMap(c => c.postulantes));
   const mx = (rows) => Math.max(1, ...rows.map(r => r.v));
   const mejor = porTipo.find(r => r.p);
   const frases = [
@@ -665,10 +682,11 @@ function vDashboard() {
     <div class="card"><p class="card-title">Instituciones por zona</p>${torta(porZona, "Instituciones por zona")}<p class="help"><a class="lnk" href="#/contrapartes">Ver instituciones por zona</a></p></div></div>`)}
   ${sec("Coordinación entre áreas", `${compartidas.length} instituciones compartidas`, `<div class="card"><p class="small muted" style="margin-top:0">Donde conviene coordinarse para no duplicar contactos.</p>${compartidas.length ? compartidas.slice(0, 8).map(r => `<a class="rank" href="#/contraparte/${r.id}"><span class="pos">${r.as.length}</span><span class="nm">${esc(contraparte(r.id).nombre)}<small>${r.as.map(a => esc(nombreArea(a))).join(", ")}</small></span></a>`).join("") : `<p class="muted small">Ninguna institución se comparte entre áreas.</p>`}</div>`, false)}
   ${sec("Financiamiento", "Quién financia los vínculos", `<div class="card">${torta(porFin, "Financiamiento")}</div>`, false)}
-  ${sec("Estudiantes y feedback de instituciones", `${est.length} estudiantes en práctica o memoria`, `<div class="card"><div class="est-grid"><div class="kpi flat"><b>${est.length}</b><span>estudiantes hoy · nota promedio ${num1(notaProm(est))} (de 1 a 7, la pone la o el tutor)</span></div>
+  ${sec("Estudiantes: postula, mientras, sale", `${ciclo.post} postulaciones · ${ciclo.acept} aceptados · ${ciclo.sale} terminaron`, `<div class="card"><p class="card-title">Ciclo en las convocatorias</p>${cicloHTML(ciclo, "Cuenta las postulaciones recibidas en SIVA. Los porcentajes ayudan a ver cuántos estudiantes llegan y cuántos terminan su práctica o memoria.")}</div>
+    <div class="card"><div class="est-grid"><div class="kpi flat"><b>${est.length}</b><span>estudiantes hoy · nota promedio ${num1(notaProm(est))} (de 1 a 7, la pone la o el tutor)</span></div>
       <div>${barras(estTipo, mx(estTipo), false)}</div></div>
       ${estUni.length ? `<div class="table-wrap"><table><thead><tr><th>Universidad o institución</th><th>Estudiantes</th><th>Nota promedio</th></tr></thead><tbody>${estUni.map(r => `<tr><td class="t">${esc(contraparte(r.id).nombre)}</td><td>${r.n}</td><td>${r.p == null ? '<span class="muted">Sin evaluar</span>' : num1(r.p)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No hay estudiantes con este filtro.</p>`}
-      <p class="card-title" style="margin-top:14px">Feedback de instituciones</p><p class="small">${resp.length ? `${resp.length} ${resp.length === 1 ? "cuestionario respondido" : "cuestionarios respondidos"}; las instituciones nos califican con <b>${num1(resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length)} de 5</b>.` : "Aún no hay cuestionarios respondidos."}</p></div>`, false)}`;
+      <p class="card-title" style="margin-top:14px">Feedback de instituciones (respondido en el link)</p><p class="small">${resp.length ? `${resp.length} ${resp.length === 1 ? "cuestionario respondido" : "cuestionarios respondidos"}; las instituciones nos califican con <b>${num1(resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length)} de 5</b>.` : "Aún no hay cuestionarios respondidos."}</p></div>`, true)}`;
 }
 
 /* ============================ Metas ============================ */
@@ -724,8 +742,10 @@ function abrirAsistente(vid, tab) {
   $("#drawer").classList.add("show"); $("#drawerBg").classList.add("show"); renderAsistente();
 }
 function cerrarAsistente() { const d = $("#drawer"); if (!d) return; d.classList.remove("show"); $("#drawerBg").classList.remove("show"); if (reco) { try { reco.stop(); } catch (e) {} } }
-function textoCuestionario(v, preguntas) {
-  return `Hola${v.contacto.nombre ? " " + v.contacto.nombre : ""}:\n\nDesde ${nombreArea(v.area)} de Antofagasta Minerals queremos saber cómo va "${v.nombre}". ¿Nos ayudas respondiendo estas preguntas? Toma menos de 5 minutos.\n\n${preguntas.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\nMuchas gracias,\n${v.responsable || ME.nombre}\nAntofagasta Minerals`;
+const urlResponder = (v, q) => location.href.split("#")[0] + "#/responder/" + v.id + "." + q.id;
+function textoCuestionario(v, preguntas, q) {
+  const link = q ? urlResponder(v, q) : "[el link se genera al abrir Outlook]";
+  return `Hola${v.contacto.nombre ? " " + v.contacto.nombre : ""}:\n\nDesde ${nombreArea(v.area)} de Antofagasta Minerals queremos saber cómo va "${v.nombre}". ¿Nos ayudas respondiendo ${preguntas.length} preguntas cortas? Toma menos de 5 minutos y no necesitas crear una cuenta:\n\n${link}\n\nMuchas gracias,\n${v.responsable || ME.nombre}\nAntofagasta Minerals`;
 }
 function renderAsistente() {
   const d = $("#drawerBody"); if (!d) return;
@@ -753,7 +773,7 @@ function renderAsistente() {
     }
   } else {
     const preguntas = PREGUNTAS_BASE.filter((_, i) => asis.base[i]).map(p => p.texto).concat(asis.extra);
-    html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Se abre Outlook en la web con el texto listo para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución (agrega su correo en la ficha)"}. Tú lo envías.</li><li>Cuando respondan, pegas su respuesta en la ficha, en "Feedback de la institución".</li></ol></div>
+    html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Se abre Outlook en la web con un link listo para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución (agrega su correo en la ficha)"}. Tú lo envías.</li><li>La institución responde en el link, sin cuenta. Sus respuestas llegan solas a la ficha.</li><li>Si no responde en ${DIAS_SIN_RESPUESTA} días, SIVA te avisa.</li></ol></div>
       <p class="card-title">Preguntas generales</p>${PREGUNTAS_BASE.map((p, i) => `<label class="diff"><input type="checkbox" data-base="${i}" ${asis.base[i] ? "checked" : ""}><span>${esc(p.texto)}</span></label>`).join("")}
       <p class="card-title">Preguntas específicas de este vínculo</p>${asis.extra.map((p, i) => `<div class="diff"><span style="flex:1">${esc(p)}</span><button class="link-btn danger" data-quitar="${i}">Quitar</button></div>`).join("") || `<p class="small muted">Puedes sugerirlas con el asistente o escribirlas.</p>`}
       <div class="form-actions"><button class="btn-outline sm" id="asSug" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Pensando…" : "Sugerir con el asistente"}</button></div>
@@ -827,7 +847,7 @@ function wireAsistente(v) {
       v.cuestionarios.push(q); guardar();
       const to = (v.contacto.correo || "").trim();
       if (!to) { toast("Agrega el correo del contacto en la ficha."); location.hash = "#/editar/" + v.id; render(); return; }
-      abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, ps));
+      abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, ps, q));
       asis.extra = []; cerrarAsistente(); toast("Se abrió Outlook. Cuando envíes el cuestionario, márcalo en la ficha."); if (location.hash !== "#/ficha/" + v.id) location.hash = "#/ficha/" + v.id; else render();
     };
   }
@@ -840,6 +860,8 @@ function render() {
   if (ruta === "convocatorias") { app.innerHTML = vConvPub(); wireConvPub(); window.scrollTo(0, 0); return; }
   if (ruta === "postular") { app.innerHTML = vPostular(p); wirePostular(p); window.scrollTo(0, 0); return; }
   if (ruta === "mi-postulacion") { app.innerHTML = vMiPostulacion(); wireMiPostulacion(); window.scrollTo(0, 0); return; }
+  if (ruta === "responder") { app.innerHTML = vResponder(p); wireResponder(p); window.scrollTo(0, 0); return; }
+  migrarEstados();
   if (ruta === "reiniciar") { restablecerTodo(); cerrarSesion(); location.hash = "#/login"; setTimeout(() => toast("Listo: datos de ejemplo restablecidos y páginas vacías del Perfil 0 y Perfil 2"), 50); return; }
   if (!ME && ruta !== "login") { location.hash = "#/login"; return; }
   if (ruta === "login" || !ruta) {
@@ -851,7 +873,10 @@ function render() {
   }
   const activo = { mis: "mis", ficha: "mis", nuevo: "", editar: "mis", areas: "areas", area: "areas", contrapartes: "contrapartes", contraparte: "contrapartes", dashboard: "dashboard", admin: "admin", convocatoria: "mis", "nueva-convocatoria": "", metas: ME.admin ? "admin" : "metas" }[ruta];
   const vistas = { mis: vMis, ficha: vFicha, nuevo: p => vForm(null, p), editar: p => vForm(p), areas: vAreas, area: vArea, contrapartes: vContrapartes, contraparte: vContraparte, dashboard: vDashboard, admin: vAdmin, convocatoria: vConvocatoria, "nueva-convocatoria": vNuevaConv, metas: vMetas };
-  const body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
+  let body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
+  // Indicador de ubicación: las páginas sin migas muestran igual en qué sección estás.
+  const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", admin: "Administración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria" };
+  if (!body.includes('class="crumbs"') && SECCION[ruta]) body = `<div class="crumbs"><b>${esc(SECCION[ruta])}</b></div>` + body;
   app.innerHTML = shell(activo) + `<main>${body}</main>${pie()}
     <button class="fab" id="fab" aria-label="Abrir asistente"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente</span></button>
     <div class="drawer-bg" id="drawerBg"></div>
@@ -903,13 +928,14 @@ function wireVista(ruta, p) {
     });
     $$("[data-aporta]").forEach(b => b.onclick = () => { v.aporta = v.aporta === b.dataset.aporta ? null : b.dataset.aporta; guardar(); render(); });
     $$("[data-registrar]").forEach(b => b.onclick = () => { const box = $("#reg-" + b.dataset.registrar); box.hidden = !box.hidden; if (!box.hidden) box.querySelector("textarea").focus(); });
-    $$("[data-enviado]").forEach(b => b.onclick = () => { const q = v.cuestionarios.find(x => x.id === +b.dataset.enviado); q.estado = "enviado"; guardar(); render(); toast("Marcado como enviado"); });
+    $$("[data-enviado]").forEach(b => b.onclick = () => { const q = v.cuestionarios.find(x => x.id === +b.dataset.enviado); q.estado = "enviado"; q.fechaEnvio = hoy(); guardar(); render(); toast("Marcado como enviado"); });
+    $$("[data-copiar-cq]").forEach(b => b.onclick = () => { const q = v.cuestionarios.find(x => x.id === +b.dataset.copiarCq); copiar(urlResponder(v, q), "Link copiado. Puedes pegarlo en un correo o en WhatsApp."); });
     $$("[data-guardar-resp]").forEach(b => b.onclick = () => {
       const q = v.cuestionarios.find(x => x.id === +b.dataset.guardarResp);
       q.respuestas = q.preguntas.map((_, i) => ($(`#reg-${q.id} [data-resp="${i}"]`) || {}).value || "");
       q.comentario = $("#com-" + q.id).value.trim();
       if (!q.comentario && !q.respuestas.some(Boolean)) { toast("Pega la respuesta o completa al menos una pregunta"); return; }
-      q.estado = "respondido";
+      q.estado = "respondido"; q.fechaResp = hoy(); q.via = "manual";
       nuevaVersion(v, ME.nombre, "Se registraron las respuestas del cuestionario de la institución.");
       guardar(); render(); toast("Respuestas guardadas");
     });
@@ -1084,3 +1110,46 @@ document.addEventListener("ai-listo", () => { const m = $("#aiModo"); if (m) m.t
 window.addEventListener("hashchange", render);
 render();
 AI.iniciar();
+
+/* ============================ Feedback de la institución (página pública) ============================
+   La contraparte responde en un link, sin cuenta y sin correos de ida y vuelta.
+   En el prototipo las respuestas se guardan en el navegador; en la versión real
+   llegarían al servidor de SIVA. Ruta: #/responder/<vínculo>.<cuestionario> */
+let respEnviado = null;
+function buscarCuestionario(p) {
+  const [vid, qid] = String(p || "").split(".").map(Number);
+  const v = vinculo(vid), q = v && v.cuestionarios.find(x => x.id === qid);
+  return { v, q };
+}
+function vResponder(p) {
+  const { v, q } = buscarCuestionario(p);
+  const head = `<header class="pub-top"><div class="pub-inner">${logoAmsa()}<span class="prod"><b>Feedback</b><span>Para instituciones que trabajan con Antofagasta Minerals</span></span></div></header>`;
+  if (!v || !q) return head + `<main class="pub"><div class="card empty">Este link no es válido o el cuestionario fue eliminado.</div></main>${pie()}`;
+  const c = contraparte(v.contraparte);
+  const intro = `<p class="sub">${esc(c.nombre)} · ${esc(tipo(v.tipo).nombre)}</p><h1>¿Cómo va "${esc(v.nombre)}"?</h1>
+    <p class="small">${esc(nombreArea(v.area))} de Antofagasta Minerals quiere saber cómo ha funcionado este trabajo conjunto. Son ${q.preguntas.length} preguntas y toma menos de 5 minutos. No necesitas crear una cuenta.</p>`;
+  if (q.estado === "respondido" || respEnviado === p) return head + `<main class="pub">${intro}<div class="card ok-box"><h2>¡Gracias por responder!</h2><p>Tus respuestas le llegaron a ${esc(v.responsable || nombreArea(v.area))}. Si necesitas algo más, puedes responder el correo con que te llegó este link.</p></div></main>${pie()}`;
+  const campo = (txt, i) => {
+    const b = PREGUNTAS_BASE.find(x => x.texto === txt);
+    if (b && b.tipo === "escala") return `<div class="escala" role="radiogroup" aria-label="${esc(txt)}">${[1, 2, 3, 4, 5].map(n => `<label><input type="radio" name="r${i}" value="${n}" data-r="${i}"><span>${n}</span></label>`).join("")}</div><div class="escala-lbl"><span>Muy mal</span><span>Muy bien</span></div>`;
+    if (b && b.tipo === "opciones") return `<div class="resp-seg">${b.opciones.map(o => `<label><input type="radio" name="r${i}" value="${esc(o)}" data-r="${i}"><span>${esc(o)}</span></label>`).join("")}</div>`;
+    return `<textarea class="input" rows="2" data-r="${i}"></textarea>`;
+  };
+  return head + `<main class="pub">${intro}
+    <div class="card">${q.preguntas.map((t, i) => `<div class="preg"><p class="f"><b>${i + 1}.</b> ${esc(t)}</p>${campo(t, i)}</div>`).join("")}
+      <div class="preg"><label class="f" for="rCom">¿Algo más que quieras contarnos? (opcional)</label><textarea class="input" id="rCom" rows="3"></textarea></div>
+      <div class="err" id="eResp">Responde al menos una pregunta.</div>
+      <div class="form-actions"><button class="btn-accent" id="rEnviar">Enviar respuestas</button></div></div>
+    <p class="help" style="text-align:center">Tus respuestas solo las ve el equipo de Antofagasta Minerals que lleva este vínculo.</p></main>${pie()}`;
+}
+function wireResponder(p) {
+  const { v, q } = buscarCuestionario(p); const b = $("#rEnviar"); if (!b) return;
+  b.onclick = () => {
+    const r = q.preguntas.map((_, i) => { const sel = $(`input[data-r="${i}"]:checked`); const ta = $(`textarea[data-r="${i}"]`); return sel ? sel.value : ta ? ta.value.trim() : ""; });
+    const com = $("#rCom").value.trim();
+    if (!r.some(Boolean) && !com) { $("#eResp").classList.add("show"); return; }
+    Object.assign(q, { respuestas: r, comentario: com, estado: "respondido", fechaResp: hoy(), via: "link" });
+    nuevaVersion(v, contraparte(v.contraparte).corto + " (respondió en el link)", "La institución respondió el cuestionario de feedback.");
+    guardar(); respEnviado = p; render();
+  };
+}

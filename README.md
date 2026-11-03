@@ -20,12 +20,24 @@ Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Gru
 - **Instituciones por zona** (norte, centro, sur, nacional).
 - **Administración** (solo administradores): agregar áreas, tipos de vínculo, tipos de institución y contrapartes.
 
+## Cambios en la rama `Anto` (después del feedback de la GE2)
+
+Propuesta individual de Antonia para el Ejercicio Individual 2. Si al equipo le gustan, se pasan a `main`.
+
+- **Etiquetas**: "Quedó / No quedó" pasa a "Aceptado / No aceptado".
+- **Ciclo del estudiante (postula → mientras → sale)**: después de "Aceptado" vienen "En práctica" y "Terminó". La convocatoria y Estadísticas muestran cuántos postulan, cuántos son aceptados, cuántos están en práctica y cuántos terminaron, con porcentajes.
+- **Aviso al estudiante**: cada cambio de estado prepara el correo que le llega al estudiante (botón "Avisar por correo"). Queda marcado como "Avisado". La página de estado del estudiante suma las etapas "Práctica o memoria" y "Cierre".
+- **Feedback de la institución por link, sin correos de ida y vuelta**: el cuestionario se responde en `#/responder/<vínculo>.<cuestionario>`, sin cuenta. Las respuestas llegan solas a la ficha. Sigue existiendo "Registrar a mano" para respuestas por otra vía.
+- **Contacto sin respuesta**: si la institución no responde el cuestionario en 14 días, la ficha y los avisos lo muestran y sugieren escribirle a otro contacto, para que el vínculo no dependa de una sola persona.
+- **Indicador de ubicación**: barra "Estás en" más grande en todas las páginas.
+- **Roles**: "Jefatura" se muestra como "Gestor/a de metas (jefatura)".
+
 ## Perfiles
 
 | Perfil | Ejemplo en el prototipo | Qué hace | Qué ve al entrar |
 | --- | --- | --- | --- |
 | Gestor/a de vinculación | Eduardo; Daniela (sin vínculos aún) | Registra y actualiza los vínculos de su área, crea convocatorias | Mis vínculos |
-| Jefatura | Carolina | Revisa resultados de su gerencia y define metas; no registra | Estadísticas de su gerencia |
+| Gestor/a de metas (jefatura) | Carolina | Revisa resultados de su gerencia y define metas; no registra | Estadísticas de su gerencia |
 | Administración | Administración | Configura compañías, áreas, tipos, metas e instituciones; ve todo | Estadísticas de toda la empresa |
 | Perfil 0 / Perfil 2 (sandbox) | Perfil 0; Perfil 2 | Misma experiencia que un gestor, en una página vacía guardada aparte | Mis vínculos (sin datos) |
 | Estudiante (externo) | Página pública | Ve convocatorias abiertas y postula sin cuenta | Convocatorias (`#/convocatorias`) |

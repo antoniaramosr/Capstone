@@ -70,7 +70,7 @@ const CONFIG = {
   // Perfiles de uso. El estudiante no inicia sesión: usa la página pública de convocatorias.
   roles: {
     gestor: { nombre: "Gestor/a de vinculación", desc: "Registra y actualiza los vínculos de su área y crea convocatorias para estudiantes." },
-    jefatura: { nombre: "Jefatura", desc: "Revisa los resultados de su gerencia y define las metas. No registra vínculos." },
+    jefatura: { nombre: "Gestor/a de metas (jefatura)", desc: "Define las metas de su gerencia y revisa si los vínculos aportan a ellas. No registra vínculos." },
     admin: { nombre: "Administración", desc: "Configura compañías, áreas, tipos de vínculo y metas. Ve todos los vínculos." }
   },
 
