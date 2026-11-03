@@ -1223,3 +1223,14 @@ main.has-hero .hero + .tabs{margin-top:var(--gap)}
   .top-right{margin-left:auto}
   .logo .prod{display:none}
 }
+
+/* Barra de arriba: nunca se corta ni hace scroll; si no caben las secciones, pasan a una segunda fila */
+.top-inner{height:auto;min-height:68px;flex-wrap:wrap;row-gap:6px;padding-top:8px;padding-bottom:8px}
+.nav{flex:1 1 auto;width:auto;order:0;flex-wrap:wrap;justify-content:flex-start;overflow:visible;min-width:0}
+.nav-item{flex:0 0 auto}
+.nav-btn{font-size:13.5px;padding:0 10px}
+.nav-item[data-mega] .nav-btn{padding:0 2px 0 10px}
+.top-right{margin-left:auto;order:1}
+.user > div{display:none}
+.logo .prod span{display:none}
+@media (max-width:900px){.nav{order:3;flex:1 0 100%}}
