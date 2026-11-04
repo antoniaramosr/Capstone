@@ -1,83 +1,85 @@
-# SIVA · Sistema de Vínculos AMSA
+# SIVA · rama `nuevo`
 
-**Ver el prototipo:** https://antoniaramosr.github.io/Capstone/ (siempre muestra la última versión de `main`)
+Esta rama es la versión limpia del prototipo. Borramos los datos de ejemplo que venían del mapeo (eran muchos y estaban a medias) y armamos a mano un set corto: **8 vínculos, 7 instituciones, 2 convocatorias y 3 estudiantes**. Todo parte de una historia completa, para que cada flujo se pueda probar de principio a fin.
 
-Prototipo de la plataforma interna donde las áreas de Antofagasta Minerals registran y coordinan sus vínculos con universidades, centros de formación, OTEC y otras instituciones.
-Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Grupo 2): Francisca López Vallejos, Antonia Ramos Rodríguez y Allison Zapata Inostroza.
+Para verla: `index.html` con un servidor local (por ejemplo `python3 -m http.server`) y, la primera vez, entrar por `#/reiniciar` para cargar los datos de partida. Si cambias algo en los datos, vuelve a entrar por `#/reiniciar`, porque la página guarda lo que haces en el navegador.
 
-## Qué hace
+## Cómo funcionan los correos
 
-- **Ficha de cada vínculo**: objetivo, metas a las que busca aportar (varias), compañías (varias o todas), alcance, contacto de la institución (sugiere los contactos ya registrados), líder de la iniciativa y encargado/a, financiamiento con monto aproximado, fechas, plan de trabajo como lista de tareas y comentarios adicionales. Avisa qué datos importantes faltan.
-- **Calificación por criterios**: cada tipo de vínculo tiene tres criterios que se califican de 1 a 5 (administración los edita). La nota del vínculo es el promedio.
-- **Asistente**: completa la plantilla a partir de un correo o notas, actualiza el README con la transcripción de una reunión (pegada, en archivo .txt/.vtt o dictada) proponiendo cambios que la persona aprueba, y arma un cuestionario de feedback para la contraparte.
-- **Historial de versiones** del README, reuniones registradas y respuestas de la contraparte.
-- **Convocatorias para estudiantes**: desde un vínculo de prácticas y memorias o de empleo se crea una convocatoria, se publica en LinkedIn (abre LinkedIn con el texto listo), los estudiantes postulan en una página pública (`#/postular/<id>`, sin iniciar sesión) y se marca quién quedó.
-- **Estado de la postulación** para estudiantes (`#/mi-postulacion`): con su correo ven en qué etapa va (recibida, en revisión, resultado, inducción). La página de cada convocatoria explica cómo sigue el proceso.
-- **Instituciones por tipo de vínculo**: en Instituciones se filtra, por ejemplo, con qué universidades se han hecho Capstone y qué áreas los llevan.
-- **Aviso de contacto existente** cuando otra área ya trabaja con la misma institución.
-- **Estadísticas**: resumen en palabras arriba, gráficos de torta y barras, y secciones que se abren y cierran.
-- **Metas**: se desactivan en vez de eliminarse, así siguen en los gráficos.
-- **Instituciones por zona** (norte, centro, sur, nacional).
-- **Administración** (solo administradores): agregar áreas, tipos de vínculo, tipos de institución y contrapartes.
+Los correos que terminan en `@gmail.com` con un `+algo` (por ejemplo `antonia.sramosrodriguez+ucn@gmail.com`) llegan a la bandeja de Antonia. Gmail ignora lo que va después del `+`, pero a la página le sirven como direcciones distintas. Así Outlook se abre con un destinatario real y el correo llega de verdad.
 
-## Perfiles
+Los que terminan en `@ejemplo.cl` o `@amsa.ejemplo.cl` son inventados y no reciben nada. Sirven para ver cómo se ve la página con más gente, sin escribirle a nadie por error.
 
-| Perfil | Ejemplo en el prototipo | Qué hace | Qué ve al entrar |
-| --- | --- | --- | --- |
-| Gestor/a de vinculación | Eduardo; Daniela (sin vínculos aún) | Registra y actualiza los vínculos de su área, crea convocatorias | Mis vínculos |
-| Jefatura | Carolina | Revisa resultados de su gerencia y define metas; no registra | Estadísticas de su gerencia |
-| Administración | Administración | Configura compañías, áreas, tipos, metas e instituciones; ve todo | Estadísticas de toda la empresa |
-| Perfil 0 / Perfil 2 (sandbox) | Perfil 0; Perfil 2 | Misma experiencia que un gestor, en una página vacía guardada aparte | Mis vínculos (sin datos) |
-| Estudiante (externo) | Página pública | Ve convocatorias abiertas y postula sin cuenta | Convocatorias (`#/convocatorias`) |
+## Perfiles de AMSA (los que usa quien prueba)
 
-La compañía de cada vínculo (Corporativo, Los Pelambres, Centinela, Antucoya, Zaldívar) es una asignación propuesta para la demo.
+Se cambian desde el avatar de arriba a la derecha. Ninguno pide clave.
 
-## Cómo verlo
+| Perfil | Correo | Qué rol tiene | Qué se puede probar con él |
+|---|---|---|---|
+| Eduardo | antonia.sramosrodriguez+eduardo@gmail.com | Responsable de vínculos, Reclutamiento y selección | Es el perfil principal. Ve 5 vínculos, crea convocatorias, contacta instituciones, pide feedback y se manda el resumen semanal (llega a su correo). |
+| Matías | matias@amsa.ejemplo.cl | Responsable de vínculos, mismo equipo que Eduardo | Recibir un vínculo traspasado por Eduardo, o pasarle uno. Lleva el Capstone PUC y la pasantía INACAP, que son del área de Aprendizaje y academia. |
+| Daniela | daniela@amsa.ejemplo.cl | Responsable de vínculos, Asuntos Corporativos y Desarrollo Social | No tiene vínculos. Sirve para ver la bienvenida y registrar su primer vínculo desde cero. |
+| Carolina | carolina@amsa.ejemplo.cl | Revisión y metas, Desarrollo Organizacional y Compensaciones | Ve los vínculos de su gerencia, las estadísticas y las metas. No registra vínculos. |
+| Administración | admin@amsa.ejemplo.cl | Configuración | Ve todo (incluye el convenio con la U. de Antofagasta, que ningún otro perfil ve) y edita áreas, tipos de vínculo, compañías y metas. |
+| Perfil 0 y Perfil 2 | perfil0@amsa.ejemplo.cl, perfil2@amsa.ejemplo.cl | Responsable de vínculos | Entran a una página vacía e independiente, para crear todo a mano. Perfil 2 es para una segunda persona probando al mismo tiempo. |
 
-Abre `index.html` en el navegador y aprieta "Iniciar sesión" para elegir una cuenta (o publícalo con GitHub Pages: Settings → Pages → rama `main`, carpeta raíz).
-Puedes entrar como **Eduardo** (usuario de Reclutamiento y selección) o como **Administración**.
-Para probar desde cero están el **Perfil 0** y el **Perfil 2**: cada uno entra a su propia página vacía (sin vínculos, contactos ni convocatorias), independiente de los datos de ejemplo y del otro perfil vacío. Desde el menú de tu perfil puedes cambiar a jefatura o administración sin salir de la página vacía, y vaciarla otra vez cuando quieras.
-Si después de un push la página se ve igual, es el caché del navegador: sube el número `?v=` de los archivos en `index.html` (por ejemplo de `?v=2` a `?v=3`) y vuelve a hacer push.
-Los cambios se guardan en el navegador de cada persona; Administración → Datos permite restablecer los datos de ejemplo.
+## Personas de las instituciones (contactos)
 
-### Para las sesiones de testeo
+Son las personas a las que se les escribe desde el botón "Contactar" o a las que les llega el cuestionario.
 
-- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar` (o el link "Restablecer todo" en el ingreso): borra lo que registró la persona anterior y reinicia los sandboxes del Perfil 0 y del Perfil 2.
-- Dos testeadores en paralelo: uno entra como **Perfil 0** y otro como **Perfil 2** (cada uno con su página vacía separada).
-- Testeo AMSA: entrar como **Eduardo**. Testeo estudiantes: abrir `#/convocatorias` (sin iniciar sesión).
-- Funciona en celular: las tablas pasan a tarjetas.
+| Persona | Institución | Cargo | Correo | Para qué sirve |
+|---|---|---|---|---|
+| Paula Herrera | UCN | Vinculación con el medio | antonia.sramosrodriguez+ucn@gmail.com | Contacto del vínculo "Memorias y prácticas UCN". Para probar "Contactar" y el cuestionario de feedback con un correo que sí llega. |
+| Rodrigo Castillo | UCN | Jefe de carrera, Ing. Civil de Minas | rcastillo@ucn.ejemplo.cl | Segundo contacto de la UCN, para ver cómo se elige a quién escribirle. |
+| Josefina Larraín | PUC | Coordinación de prácticas | antonia.sramosrodriguez+puc@gmail.com | Contacto de la charla PUC (cerrada, con nota 5). Para probar "Contactar" y reutilizar un cuestionario ya respondido. |
+| Tomás Vial | PUC | Profesor Capstone | tvial@ing.ejemplo.cl | Contacto del Capstone PUC. |
+| Carla Núñez | U. de Chile | Unidad de empleabilidad, FCFM | cnunez@uchile.ejemplo.cl | Contacto de "Meet the Office", el vínculo que lleva 75 días sin movimiento. |
+| Marcela Bravo | USACH | Centro de empleabilidad | mbravo@usach.ejemplo.cl | Contacto de la charla USACH, que tiene un cuestionario enviado hace 22 días sin respuesta. |
+| Ignacio Ramírez | UTFSM | Dirección de vinculación | iramirez@usm.ejemplo.cl | Contacto de la charla UTFSM, cerrada, donde el área y la institución califican distinto. |
+| Marcelo Pizarro | INACAP | Vicerrectoría | mpizarro@inacap.ejemplo.cl | Contacto de la pasantía docente, cerrada y sin calificar. |
+| Felipe Ortiz | U. de Antofagasta | Vinculación con el medio | fortiz@uantof.ejemplo.cl | Contacto de la institución del convenio marco (el vínculo aún no tiene contacto cargado). |
 
-### Sobre el asistente
+## Estudiantes y postulantes
 
-- Publicado como artifact en claude.ai, usa IA real (Claude).
-- Abierto desde GitHub Pages o el computador, funciona en **modo demo**: reglas simples para mostrar el flujo.
-- Para IA real fuera de claude.ai, se puede montar un servidor (por ejemplo en Flask) que reciba `POST {prompt}` y responda JSON, y poner su URL en `CONFIG.aiEndpoint` (`js/config.js`).
-- Transcribir audios todavía no está implementado: se pega la transcripción de Teams/Meet/Zoom o se usa el botón Dictar (Chrome).
+Postulan desde la página pública de convocatorias (menú del avatar, "Ver la página de estudiantes") o los agrega a mano quien gestiona.
 
-## Estructura
+| Persona | Correo | Dónde está | Para qué sirve |
+|---|---|---|---|
+| Valentina Muñoz | antonia.sramosrodriguez+postulante@gmail.com | Convocatoria "Memorias 2027", estado *Postuló* | Es la que se acepta o rechaza para ver llegar el correo de verdad. |
+| Diego Fuentes | diego.fuentes@ejemplo.cl | Misma convocatoria, *En revisión* | Para probar el paso de revisión a aceptado. También sirve para entrar a "Mi postulación". |
+| Tomás Herrera | tomas.herrera@ejemplo.cl | Misma convocatoria, *Postuló* | Postulante extra, para aceptar a varias personas a la vez. |
+| Camila Rojas | camila.rojas@ejemplo.cl | Misma convocatoria, *En práctica* | Ya tiene dos feedbacks del tutor. Sirve para ver cómo se ve una práctica en curso y la nota. |
+| Sofía Pizarro | sofia.pizarro@ejemplo.cl | "Práctica de verano 2026" (cerrada), *Terminó* | Práctica terminada, con feedback del tutor, del estudiante, informe y nota de la universidad. |
+| Lucas Morales | lucas.morales@ejemplo.cl | "Práctica de verano 2026", *No aceptado* | Para ver cómo queda alguien que no quedó. |
 
-```
-index.html        Página base
-css/styles.css    Estilos; colores y tipografía de AMSA en variables de :root (siempre fondo blanco)
-js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usuarios de prueba
-js/data.js        Vínculos de partida (mapeo ANF-COQ) e instituciones
-js/store.js       Estado, guardado en el navegador, cálculos (progreso, completitud, README en Markdown)
-js/ai.js          Asistente: prompts, conexión con IA y modo demo
-js/convocatorias.js Convocatorias, publicación en LinkedIn y página pública para postular
-js/app.js         Pantallas, navegación y eventos
-```
+## Los 8 vínculos y qué muestran
 
-| Quiero cambiar…                    | Dónde                                             |
-| ---------------------------------- | ------------------------------------------------- |
-| Áreas o tipos de vínculo iniciales | `js/config.js`                                    |
-| Vínculos de ejemplo                | `js/data.js` (lista `filas`)                      |
-| Campos del README                  | `vForm` en `app.js` y `CAMPOS_README` en `store.js` |
-| Preguntas base del cuestionario    | `PREGUNTAS_BASE` en `js/store.js`                 |
-| Lo que se le pide a la IA          | `js/ai.js`                                        |
-| Una pantalla                       | `js/app.js`: `vMis`, `vFicha`, `vForm`, `vAreas`, `vContrapartes`, `vDashboard`, `vAdmin` |
+| Vínculo | Área | Etapa | Qué se ve con él |
+|---|---|---|---|
+| Memorias y prácticas UCN | Reclutamiento y selección | En ejecución | El vínculo "sano": movimiento reciente, dos convocatorias y un cuestionario enviado hace pocos días. |
+| Charla de prácticas y memorias PUC | Reclutamiento y selección | Cerrado | Cerrado y bien evaluado: reunión, historial de cambios y cuestionario respondido. |
+| Meet the Office (U. de Chile) | Reclutamiento y selección | En ejecución | Semáforo en rojo por 75 días sin movimiento, y aparece como urgente en el resumen. |
+| Charla de prácticas y memorias USACH | Reclutamiento y selección | Formalización | Cuestionario sin respuesta hace 22 días, para probar el recordatorio. |
+| Charla de prácticas y memorias UTFSM | Reclutamiento y selección | Cerrado | "Dos miradas": el área pone nota 4 y la institución responde bajo. |
+| Capstone Ingeniería PUC | Aprendizaje y academia | En ejecución | Un vínculo de otra área del mismo equipo (lo lleva Matías). |
+| Pasantía docente INACAP | Aprendizaje y academia | Cerrado | Cerrado y sin calificar, para probar la calificación. |
+| Convenio marco con la U. de Antofagasta | Relaciones institucionales (norte) | Exploración | Ficha casi vacía: sin objetivo, contacto ni fechas. Sirve para probar el filtro "con datos por completar". |
 
-Datos: los vínculos vienen del *Mapeo instituciones formativas ANF - COQ*. La subárea de las actividades de VP Personas es una asignación propuesta. Calificaciones, avances y financiamiento son de ejemplo.
+## Paso a paso para probar cada cosa
 
-## Para trabajar las tres sin pisarnos
+1. **Contactar a una institución.** Entra como Eduardo, ve a Mis vínculos y presiona "Contactar" en la fila de Memorias y prácticas UCN. Se abre Outlook con el correo para Paula Herrera. Si hay otra área trabajando con la misma institución, la ventana lo avisa antes.
+2. **Pedir feedback con cuestionario.** Abre la ficha de la charla USACH o de la UCN y presiona "Pedir feedback". El link del cuestionario aparece en la misma página y también al abrir Outlook. Ábrelo en otra pestaña, respóndelo como si fueras la institución y vuelve a la ficha para ver la respuesta.
+3. **Aceptar a una postulante.** Entra a la convocatoria "Memorias 2027", pasa a Valentina Muñoz a *En revisión* y luego a *Aceptado*. Después usa "Correo para aceptados": elige el área, ajusta la plantilla y se abre Outlook con los correos de los aceptados en copia oculta. Llega a antonia.sramosrodriguez+postulante@gmail.com.
+4. **Postular como estudiante.** Desde el avatar, "Ver la página de estudiantes". Postula con un correo inventado y luego, como Eduardo, revisa que aparezca en la convocatoria.
+5. **Seguir una práctica.** Con el correo de Camila Rojas o de Sofía Pizarro, entra a "Mi postulación" y mira el feedback del tutor.
+6. **Traspasar un vínculo.** Como Eduardo, en la ficha de un vínculo usa "Cambiar encargado/a" y pásaselo a Matías. Cambia de perfil a Matías para verlo llegar.
+7. **Empezar de cero.** Entra como Daniela (sin vínculos) o como Perfil 0 (página vacía) y registra el primer vínculo con "+ Añadir".
+8. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
 
-`git pull` antes de empezar, una rama por cambio y avisar qué pantalla está tocando cada una.
+## Qué queda por hacer en esta rama
+
+- Cargar a mano más vínculos y convocatorias a medida que aparezcan casos que no cubre este set.
+- Revisar que el resumen semanal y los avisos tengan sentido con tan pocos datos.
+- Decidir qué instituciones reales se agregan después, y con qué correos.
+
+La versión anterior, con todos los datos del mapeo, sigue en la rama `Anto`.

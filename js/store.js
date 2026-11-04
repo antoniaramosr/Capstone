@@ -37,33 +37,26 @@ function estadoInicial() {
   const areas = JSON.parse(JSON.stringify(CONFIG.areas));
   const tipos = JSON.parse(JSON.stringify(CONFIG.tipos));
   const vinculos = construirVinculosSemilla(areas, tipos);
-  // Ejemplo de historial: una reunión y un cuestionario respondido.
-  const ej = vinculos.find(v => v.contraparte === "puc" && v.tipo === "char");
+  const hace = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const buscar = nombre => vinculos.find(v => v.nombre === nombre);
+  const preguntas = PREGUNTAS_BASE.map(p => p.texto);
+  // Charla ya cerrada, con una reunión de evaluación y el cuestionario respondido por la institución.
+  const ej = buscar("Charla de prácticas y memorias PUC");
   if (ej) {
     ej.reuniones.push({ fecha: "2026-09-02", fuente: "Notas de reunión", resumen: "Se evaluó la charla de agosto: asistieron 85 estudiantes y 22 postularon a prácticas. La universidad pide repetirla en marzo y sumar a ex alumnos de AMSA como expositores." });
     ej.versiones.push({ v: 2, fecha: "2026-09-02", autor: "Asistente (revisado por Eduardo)", resumen: "Actualizado con la reunión de evaluación: resultados de asistencia y próximos pasos." });
     ej.comentarios = "Agendar la charla de marzo y confirmar dos ex alumnos expositores.";
-    ej.cuestionarios.push({
-      id: 1, fecha: "2026-09-05", estado: "respondido",
-      preguntas: PREGUNTAS_BASE.map(p => p.texto),
-      respuestas: ["5", "Sí", "4", "Más anticipación para difundir la charla.", "Sí, siguen vigentes.", "Sí"]
-    });
+    ej.cuestionarios.push({ id: 1, fecha: "2026-09-05", fechaEnvio: "2026-09-05", fechaResp: "2026-09-08", via: "link", estado: "respondido", preguntas, respuestas: ["5", "Sí", "4", "Más anticipación para difundir la charla.", "Sí, siguen vigentes.", "Sí"] });
   }
-  // Ejemplo de continuidad: un cuestionario enviado hace tres semanas que la institución no ha respondido.
-  const sr = vinculos.find(v => v.area === "rys" && v.etapa < 3 && v !== ej);
-  if (sr) {
-    const hace = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
-    sr.cuestionarios.push({ id: 2, fecha: hace(23), fechaEnvio: hace(22), estado: "enviado", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: [] });
-  }
+  // Cuestionario enviado hace tres semanas y sin respuesta (para probar el recordatorio).
+  const sr = buscar("Charla de prácticas y memorias USACH");
+  if (sr) sr.cuestionarios.push({ id: 2, fecha: hace(23), fechaEnvio: hace(22), estado: "enviado", preguntas, respuestas: [] });
   // Dos miradas que no calzan: el área pone buena nota y la institución no.
-  const dif = vinculos.find(v => v.contraparte === "uch" && v.tipo === "char" && v.calif >= 4);
-  if (dif) dif.cuestionarios.push({ id: 4, fecha: "2026-08-20", fechaEnvio: "2026-08-20", fechaResp: "2026-08-26", via: "link", estado: "respondido", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: ["2", "Parcialmente", "2", "Que nos avisen antes de cambiar la fecha de la charla.", "Sí", "Tal vez"], comentario: "La charla se movió dos veces y bajó la asistencia." });
-  // Un vínculo activo sin movimiento hace más de dos meses, para ver el semáforo en rojo.
-  const quieto = vinculos.find(v => v.area === "rys" && v.etapa > 0 && v.etapa < 3 && v !== ej && v !== sr && v.nombre === "Meet the Office");
-  if (quieto) quieto.versiones[0].fecha = new Date(Date.now() - 75 * 86400000).toISOString().slice(0, 10);
-  // Cuestionario reciente (sin vencer) en el vínculo de memoristas, para probar la vista de la institución.
-  const mem = vinculos.find(v => v.nombre === "Búsqueda y difusión de memoristas");
-  if (mem) mem.cuestionarios.push({ id: 3, fecha: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10), fechaEnvio: new Date(Date.now() - 4 * 86400000).toISOString().slice(0, 10), estado: "enviado", preguntas: PREGUNTAS_BASE.map(p => p.texto), respuestas: [] });
+  const dif = buscar("Charla de prácticas y memorias UTFSM");
+  if (dif) dif.cuestionarios.push({ id: 4, fecha: "2026-07-05", fechaEnvio: "2026-07-05", fechaResp: "2026-07-11", via: "link", estado: "respondido", preguntas, respuestas: ["2", "Parcialmente", "2", "Que nos avisen antes de cambiar la fecha de la charla.", "Sí", "Tal vez"], comentario: "La charla se movió dos veces y bajó la asistencia." });
+  // Cuestionario reciente (sin vencer) en el vínculo de memorias, para probar la vista de la institución.
+  const mem = buscar("Memorias y prácticas UCN");
+  if (mem) mem.cuestionarios.push({ id: 3, fecha: hace(5), fechaEnvio: hace(4), estado: "enviado", preguntas, respuestas: [] });
   return {
     areas, tipos,
     tiposOrg: [...CONFIG.tiposOrg],

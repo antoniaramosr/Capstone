@@ -19,31 +19,31 @@ const linkEstudiante = p => location.href.split("#")[0] + "#/mi-postulacion/" + 
 const ESTADO_ANTIGUO = { "Quedó": "Aceptado", "No quedó": "No aceptado" };
 
 function convSemilla(s) {
-  const v = s.vinculos.find(x => x.nombre === "Búsqueda y difusión de memoristas");
+  const v = s.vinculos.find(x => x.nombre === "Memorias y prácticas UCN");
   if (!v) return [];
   return [{
     id: 1, vinculo: v.id, area: v.area, companias: ["cen"], institucion: v.contraparte, titulo: "Memorias 2027: Ingeniería Civil de Minas",
     tipo: "Memoria", carreras: "Ingeniería Civil de Minas, Ingeniería Civil Industrial",
-    cupos: 3, cierre: "2026-11-15", lugar: "Antofagasta, con visitas a faena",
+    cupos: 3, cierre: "2026-12-15", lugar: "Antofagasta, con visitas a faena",
     condiciones: "Seis meses desde marzo, jornada completa, con apoyo económico mensual.",
     descripcion: "Memorias en temas definidos con las gerencias de operación, con un tutor o tutora de la compañía.",
     requisitos: "Haber terminado los cursos del último año y tener tema de memoria aprobado por la universidad.",
-    estado: "Abierta", creada: "2026-10-01",
-    linkedin: { publicada: true, fecha: "2026-10-02" },
+    estado: "Abierta", creada: haceDias(30),
+    linkedin: { publicada: true, fecha: haceDias(29) },
     postulantes: [
-      { nombre: "Camila Rojas", correo: "camila.rojas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-03", estado: "En práctica", avisado: "En práctica",
+      { nombre: "Camila Rojas", correo: "camila.rojas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: haceDias(28), estado: "En práctica", avisado: "En práctica",
         feedbackTutor: [
           { fecha: haceDias(20), autor: "Rodrigo Salinas (tutor)", texto: "Buena primera semana. Entendió rápido el proceso de planificación de corto plazo y pregunta cuando tiene dudas.", nota: null, propuestas: ["Anotar en una bitácora lo que aprende en cada reunión de turno", "Agendar una visita a la mina con el equipo de geotecnia"] },
           { fecha: haceDias(6), autor: "Rodrigo Salinas (tutor)", texto: "Revisión de mitad de periodo: el modelo de su memoria va bien encaminado. Le falta ordenar los datos de producción antes de seguir.", nota: 6.0, propuestas: ["Limpiar la base de producción de 2025 antes del próximo avance", "Presentar un avance corto al equipo el viernes"] }
         ] },
-      { nombre: "Diego Fuentes", correo: "diego.fuentes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-04", estado: "En revisión" },
-      { nombre: "Valentina Muñoz", correo: "valentina.munoz@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil Industrial", fecha: "2026-10-06", estado: "Postuló" },
-      { nombre: "Tomás Herrera", correo: "tomas.herrera@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Ingeniería Civil de Minas", fecha: "2026-10-07", estado: "Postuló" }
+      { nombre: "Diego Fuentes", correo: "diego.fuentes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: haceDias(14), estado: "En revisión" },
+      { nombre: "Valentina Muñoz", correo: CORREO_PRUEBA("postulante"), universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil Industrial", fecha: haceDias(10), estado: "Postuló" },
+      { nombre: "Tomás Herrera", correo: "tomas.herrera@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Ingeniería Civil de Minas", fecha: haceDias(6), estado: "Postuló" }
     ]
   }, {
     id: 2, vinculo: v.id, area: v.area, companias: ["cen"], institucion: v.contraparte, titulo: "Práctica de verano 2026",
     tipo: "Práctica de verano", carreras: "Ingeniería Civil de Minas, Geología",
-    cupos: 4, cierre: "2025-11-30", lugar: "Antofagasta", condiciones: "Ocho semanas en enero y febrero.",
+    cupos: 2, cierre: "2025-11-30", lugar: "Antofagasta", condiciones: "Ocho semanas en enero y febrero.",
     descripcion: "Práctica en las áreas de planificación y geología de la operación.", requisitos: "Estar en cuarto o quinto año.",
     estado: "Cerrada", creada: "2025-10-15", linkedin: { publicada: true, fecha: "2025-10-16" },
     postulantes: [
@@ -54,14 +54,7 @@ function convSemilla(s) {
         ],
         feedbackEstudiante: { respuestas: [5, 4, 4, 5], comentario: "Aprendí mucho en terreno. Me habría servido una inducción más larga en seguridad.", fecha: "2026-03-02" },
         informe: { nombre: "Informe_practica_Sofia_Pizarro.pdf", fecha: "2026-03-05" }, notaUniversidad: 6.6, autorizaVerNota: true },
-      { nombre: "Matías Contreras", correo: "matias.contreras@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-21", estado: "Terminó", avisado: "Terminó",
-        feedbackTutor: [{ fecha: "2026-02-27", autor: "Jorge Rivera (tutor)", texto: "Cierre: buen trabajo en el análisis de tiempos de ciclo. Le costó cumplir los plazos de las primeras entregas.", nota: 5.8, propuestas: ["Planificar las entregas con hitos semanales"], final: true }],
-        feedbackEstudiante: { respuestas: [4, 3, 3, 4], comentario: "El tutor tenía poco tiempo para reuniones.", fecha: "2026-03-01" },
-        informe: { nombre: "Informe_Matias_Contreras.pdf", fecha: "2026-03-03" }, notaUniversidad: 5.9, autorizaVerNota: false },
-      { nombre: "Javiera Castillo", correo: "javiera.castillo@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-22", estado: "Terminó", avisado: "Terminó" },
-      { nombre: "Lucas Morales", correo: "lucas.morales@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Geología", fecha: "2025-10-24", estado: "No aceptado", avisado: "No aceptado" },
-      { nombre: "Catalina Reyes", correo: "catalina.reyes@ejemplo.cl", universidad: "Universidad de Antofagasta", carrera: "Geología", fecha: "2025-10-25", estado: "No aceptado", avisado: "No aceptado" },
-      { nombre: "Nicolás Vargas", correo: "nicolas.vargas@ejemplo.cl", universidad: "Universidad Católica del Norte", carrera: "Ingeniería Civil de Minas", fecha: "2025-10-27", estado: "No aceptado", avisado: "No aceptado" }
+      { nombre: "Lucas Morales", correo: "lucas.morales@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Geología", fecha: "2025-10-24", estado: "No aceptado", avisado: "No aceptado" }
     ]
   }];
 }
