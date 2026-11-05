@@ -301,6 +301,7 @@ document.addEventListener("click", e => {
   if (ic) { e.preventDefault(); const enMis = /^#\/mis(\/convocatorias)?$/.test(location.hash) || location.hash === ""; if (enMis && $("#tablaConv")) $("#tablaConv").scrollIntoView({ behavior: "smooth", block: "start" }); else { irConv = true; if (location.hash === "#/mis") render(); else location.hash = "#/mis"; } }
 });
 document.addEventListener("click", e => { if (!e.target.closest(".pop")) closePops(); if (!e.target.closest(".mega, .nav-more")) cerrarMega(); });
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.classList && d.classList.contains("f-sec")) { d.open ? fCerradas.delete(d.id) : fCerradas.add(d.id); } }, true);
 document.addEventListener("keydown", e => { if (e.key === "Escape") { closePops(); cerrarMega(); cerrarAsistente(); } });
 
 /* ============================ Login ============================ */
@@ -486,6 +487,16 @@ function vBienvenida() {
 // Campos opcionales vacíos: "No definido" (no "por completar", que suena a error).
 const contactarBtn = (vid, nombre, correo) => vid && (nombre || correo) ? `<button type="button" class="link-btn contactar" data-contact-v="${vid}" data-contact-n="${esc(nombre)}" data-contact-c="${esc(correo)}">Contactar${nombre ? " a " + esc(nombre.split(" ")[0]) : ""}</button>` : "";
 const kv = (k, val, html) => `<dt>${k}</dt><dd class="${val ? "" : "ph"}">${val ? (html ? val : esc(val).replace(/\n/g, "<br>")) : "No definido"}</dd>`;
+const fCerradas = new Set();
+const fAb = id => fCerradas.has(id) ? "" : "open";
+function contactoCard(k, vid, principal) {
+  const ini = ((k.nombre || "?").trim()[0] || "?").toUpperCase();
+  return `<div class="cc ${principal ? "main" : ""}"><span class="cc-av" aria-hidden="true">${esc(ini)}</span><div class="cc-b">
+    <div class="cc-top"><b>${esc(k.nombre || "Contacto")}</b>${principal ? `<span class="cc-badge">Contacto principal</span>` : ""}</div>
+    ${k.cargo ? `<span class="cc-role">${esc(k.cargo)}</span>` : ""}
+    <div class="cc-lines">${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}"><i>Correo</i>${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}"><i>Teléfono</i>${esc(k.telefono)}</a>` : ""}</div>
+    ${contactarBtn(vid, k.nombre, k.correo)}</div></div>`;
+}
 function vFicha(id) {
   const v = vinculo(+id);
   if (!v) return `<div class="card empty">Ese vínculo no existe.<br><button class="btn-outline" onclick="location.hash='#/mis'">Volver</button></div>`;
@@ -509,8 +520,8 @@ function vFicha(id) {
     ${comp.faltan.length ? `<div><span class="lbl">Datos por completar</span><span class="faltan" style="margin-top:0">${comp.faltan.join(", ")}</span></div>` : `<div><span class="lbl">Ficha</span><span class="faltan" style="margin-top:0">Todos los datos importantes están completos</span></div>`}
     <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar o eliminar</button><button class="btn-accent" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con IA</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>${evalVisible ? "" : `<button class="btn-outline" onclick="abrirEvaluacion(${v.id})">Evaluar vínculo</button>`}<button class="btn-outline" onclick="abrirTraspaso(${v.id})">Cambiar encargado/a</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
   </div>
-  <nav class="ficha-nav" aria-label="Secciones de la ficha"><button type="button" data-scroll="f-vinculo">El vínculo</button><button type="button" data-scroll="f-personas">Personas</button><button type="button" data-scroll="f-seg">Seguimiento</button>${evalVisible ? `<button type="button" data-scroll="f-eval">Evaluación</button>` : ""}</nav>
-  <section class="f-sec" id="f-vinculo"><h2 class="f-h"><span>1</span><div>El vínculo<small>Qué se busca lograr y cómo va el trabajo</small></div></h2>
+  <nav class="ficha-nav" aria-label="Secciones de la ficha"><button type="button" data-scroll="f-vinculo">El vínculo</button><button type="button" data-scroll="f-personas">Personas</button><button type="button" data-scroll="f-seg">Seguimiento</button>${evalVisible ? `<button type="button" data-scroll="f-eval">Evaluación</button>` : ""}<span class="ficha-nav-r"><button type="button" class="link-btn" data-fsec-todo="1">Abrir todo</button><button type="button" class="link-btn" data-fsec-todo="0">Plegar todo</button></span></nav>
+  <details class="f-sec" id="f-vinculo" ${fAb("f-vinculo")}><summary class="f-h"><span>1</span><div>El vínculo<small>Qué se busca lograr y cómo va el trabajo</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
     <div class="f-grid2">
     <div class="card"><p class="card-title">Ficha del vínculo</p><dl class="kv">
       ${kv("Objetivo", v.objetivo)}
@@ -524,23 +535,23 @@ function vFicha(id) {
       ${v.hitos.map((h, i) => `<label class="hito ${h.ok ? "ok" : ""}"><input type="checkbox" data-hito="${i}" ${h.ok ? "checked" : ""} ${ed ? "" : "disabled"}><span>${esc(h.t)}</span></label>`).join("") || `<p class="muted small">Sin tareas.</p>`}
       ${ed ? `<div class="inline-form"><input class="input" id="nuevoHito" placeholder="Agregar una tarea" aria-label="Nueva tarea"><button class="btn-outline" id="addHito">Agregar</button></div>` : ""}</div>
     </div>
-    ${convFichaHTML(v, ed)}
-  </section>
-  <section class="f-sec" id="f-personas"><h2 class="f-h"><span>2</span><div>Personas<small>Quién está de cada lado: la institución y Antofagasta Minerals</small></div></h2>
+  </div></details>
+  <details class="f-sec" id="f-personas" ${fAb("f-personas")}><summary class="f-h"><span>2</span><div>Personas<small>Quién está de cada lado: la institución y Antofagasta Minerals</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
     <div class="f-grid3">
     <div class="card side"><p class="card-title">La institución</p><h4><a class="lnk" href="#/contraparte/${c.id}">${esc(c.nombre)}</a></h4><p>${esc(c.tipoOrg)}${v.sede ? ", " + esc(v.sede) : ""}</p>
       ${sinResp ? `<div class="alerta-cont"><b>${esc(sinResp.titulo)}</b><span>${esc(sinResp.texto)}</span>${otrosCont.length ? `<span>Puedes escribirle a otro contacto de la institución (abajo) para que el vínculo no dependa de una sola persona.</span>` : ed ? `<span>Agrega un segundo contacto en la ficha para que el vínculo no dependa de una sola persona.</span>` : ""}</div>` : ""}
       ${otras.length ? `<details class="note dd"><summary><b>${[...new Set(otras.map(x => x.area))].length} ${[...new Set(otras.map(x => x.area))].length === 1 ? "otra área trabaja" : "otras áreas trabajan"} con esta institución</b></summary>${otras.slice(0, 6).map(x => `<a href="#/ficha/${x.id}"><b>${esc(nombreArea(x.area))}</b>${esc(x.nombre)} · ${CONFIG.etapas[x.etapa]}${x.responsable ? `<br><span class="muted">Lo lleva: ${esc(x.responsable)}</span>` : ""}</a>`).join("")}</details>` : ""}</div>
     <div class="card side"><p class="card-title">Contactos en la institución</p>
-      <p class="sub-h">Contacto principal del vínculo</p><div class="person">${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? `<b>${esc(v.contacto.nombre || "Contacto")}</b>${v.contacto.cargo ? `<span>${esc(v.contacto.cargo)}</span>` : ""}${contactarBtn(ed ? v.id : 0, v.contacto.nombre, v.contacto.correo)}${v.contacto.correo ? `<a class="mail" href="mailto:${esc(v.contacto.correo)}">${esc(v.contacto.correo)}</a>` : ""}${v.contacto.telefono ? `<a class="mail" href="tel:${esc(v.contacto.telefono.replace(/\s/g, ""))}">${esc(v.contacto.telefono)}</a>` : ""}` : `<span class="muted">Contacto no definido</span>`}</div>
-      ${otrosCont.length ? `<p class="sub-h">Otros contactos de la institución</p>${otrosCont.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${contactarBtn(ed ? v.id : 0, k.nombre, k.correo)}${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}` : ""}</div>
+      <p class="help" style="margin:0 0 12px">Personas de ${esc(c.corto || c.nombre)} con quienes se trabaja este vínculo.</p>
+      ${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? contactoCard(v.contacto, ed ? v.id : 0, true) : `<div class="cc main empty"><span class="muted">Contacto principal no definido</span></div>`}
+      ${otrosCont.length ? `<p class="sub-h">Otros contactos</p>${otrosCont.map(k => contactoCard(k, ed ? v.id : 0, false)).join("")}` : ""}</div>
     <div class="card side"><p class="card-title">En Antofagasta Minerals</p>
       <p class="lbl2">Líder de la iniciativa</p><h4>${esc(v.lider || "No definido")}</h4>
       <p class="lbl2">Encargado/a del día a día</p><h4>${esc(v.responsable || "No definido")}</h4><p>${rutaTxt(v.area)}</p>
       ${ed ? (traspasoAbierto === v.id ? traspasoFormHTML(v) : `<button class="btn-outline wide" id="tpAbrir" style="margin-top:12px">Cambiar encargado/a</button>`) : ""}</div>
     </div>
-  </section>
-  <section class="f-sec" id="f-seg"><h2 class="f-h"><span>3</span><div>Seguimiento<small>Reuniones, respuestas de la institución y cambios</small></div></h2>
+  </div></details>
+  <details class="f-sec" id="f-seg" ${fAb("f-seg")}><summary class="f-h"><span>3</span><div>Seguimiento<small>Reuniones, respuestas de la institución y cambios</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
     <div class="stack">
     ${fold("Reuniones", v.reuniones.length, `${ed ? `<div class="fold-acts"><button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button></div>` : ""}
       ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones registradas. Pega la transcripción o tus notas en el asistente y se agregan aquí con un resumen.</p>`}`, false, v.reuniones.length ? "última: " + fechaTxt(v.reuniones[v.reuniones.length - 1].fecha) : "")}
@@ -550,8 +561,8 @@ function vFicha(id) {
     ${v.traspaso && v.traspaso.leido ? fold("Hoja de traspaso", null, hojaTraspasoHTML(v, false), false, `${esc(v.traspaso.de)} → ${esc(v.traspaso.para)}, ${fechaTxt(v.traspaso.fecha)}`) : ""}
     ${fold("Historial de cambios", v.versiones.length, v.versiones.slice().reverse().map(x => `<div class="ver"><span class="vn">v${x.v}</span><div><b>${fechaTxt(x.fecha)}</b> · <span class="muted">${esc(x.autor)}</span><br>${esc(x.resumen)}</div></div>`).join(""))}
     </div>
-  </section>
-  ${evalVisible ? `<section class="f-sec" id="f-eval"><h2 class="f-h"><span>4</span><div>Evaluación<small>Cómo resultó el vínculo, de 1 a 5</small></div></h2>
+  </div></details>
+  ${evalVisible ? `<details class="f-sec" id="f-eval" ${fAb("f-eval")}><summary class="f-h"><span>4</span><div>Evaluación<small>Cómo resultó el vínculo, de 1 a 5</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
     <div class="card eval-card"><div class="eval-izq"><p class="card-title">Criterios</p>
       <div class="calif-big"><b>${v.calif ? num1(v.calif) : "–"}</b><span>${v.calif ? "de 5, promedio de los criterios" : "Sin calificar"}</span></div>
       <p class="help" style="margin:2px 0 10px">Se califica de 1 (muy mal) a 5 (muy bien). Los criterios dependen del tipo de vínculo.</p>
@@ -563,7 +574,7 @@ function vFicha(id) {
         <div class="dm"><div><b>${v.calif ? num1(v.calif) : "–"}</b><span>Nota del área</span></div><div><b>${satis ? num1(satis) : "–"}</b><span>Nota de la institución${resp.length ? ` (${resp.length} ${resp.length === 1 ? "cuestionario" : "cuestionarios"})` : ""}</span></div></div>
         ${v.calif && satis && Math.abs(v.calif - satis) >= 2 ? `<p class="conversar">Las notas difieren en ${num1(Math.abs(v.calif - satis))} puntos. Vale la pena conversarlo con la institución.</p>` : !satis ? `<p class="help">La nota de la institución sale de la primera pregunta de su cuestionario de feedback.</p>` : ""}</div>
     </div></div>
-  </section>` : ""}`;
+  </div></details>` : ""}`;
 }
 function cuestionarioHTML(v, q, ed) {
   if (q.estado === "respondido") return `<details class="cq"><summary><b>${fechaTxt(q.fechaResp || q.fecha)}</b> <span class="pill p2">Respondido${q.via === "link" ? " en el link" : ""}</span></summary>${q.preguntas.map((p, i) => q.respuestas[i] ? `<div class="qa"><span>${esc(p)}</span><b>${esc(q.respuestas[i])}</b></div>` : "").join("")}${q.comentario ? `<div class="fb" style="margin-top:8px"><b>Respuesta o comentario</b><br>${esc(q.comentario).replace(/\n/g, "<br>")}</div>` : ""}</details>`;
@@ -1181,7 +1192,8 @@ function wireVista(ruta, p) {
     $$("[data-crit]").forEach(b => { const box = b.parentElement.nextElementSibling, orig = box.innerHTML, k = criteriosDe(v.tipo, v.contraparte)[+b.dataset.crit], rb = CONFIG.rubrica[k] || [];
       b.onmouseenter = b.onfocus = () => { if (rb[b.dataset.rate - 1]) box.innerHTML = `<b>${b.dataset.rate}:</b> ${esc(rb[b.dataset.rate - 1])}`; };
       b.onmouseleave = b.onblur = () => { box.innerHTML = orig; }; });
-    $$("[data-scroll]").forEach(b => b.onclick = () => { const e = document.getElementById(b.dataset.scroll); if (e) e.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    $$("[data-fsec-todo]").forEach(b => b.onclick = () => { const ab = b.dataset.fsecTodo === "1"; $$("details.f-sec").forEach(d => { d.open = ab; }); });
+    $$("[data-scroll]").forEach(b => b.onclick = () => { const e = document.getElementById(b.dataset.scroll); if (e && e.tagName === "DETAILS") e.open = true; if (e) e.scrollIntoView({ behavior: "smooth", block: "start" }); });
     $$("[data-aporta]").forEach(b => b.onclick = () => { v.aporta = v.aporta === b.dataset.aporta ? null : b.dataset.aporta; guardar(); render(); });
     $$("[data-registrar]").forEach(b => b.onclick = () => { const box = $("#reg-" + b.dataset.registrar); box.hidden = !box.hidden; if (!box.hidden) box.querySelector("textarea").focus(); });
     $$("[data-enviado]").forEach(b => b.onclick = () => { const q = v.cuestionarios.find(x => x.id === +b.dataset.enviado); q.estado = "enviado"; q.fechaEnvio = hoy(); guardar(); render(); toast("Marcado como enviado"); });
