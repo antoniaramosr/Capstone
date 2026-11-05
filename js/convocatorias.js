@@ -236,7 +236,7 @@ function convTiraHTML() {
     const sr = sinRevisar(c).length, dias = c.cierre ? Math.ceil((new Date(c.cierre) - new Date(hoy())) / 86400000) : null;
     return `<a class="conv-strip-card" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${esc(contraparte(c.institucion).corto)} · ${c.postulantes.length} postulantes${sr ? ` (${sr} por revisar)` : ""}</span><span class="conv-cierre ${dias != null && dias <= 14 ? "pronto" : ""}">${c.cierre ? (dias != null && dias >= 0 ? `Cierra en ${dias} ${dias === 1 ? "día" : "días"} · ` : "") + fechaTxt(c.cierre) : "Sin fecha de cierre"}</span></a>`;
   };
-  return `<section class="conv-strip" aria-label="Convocatorias abiertas"><div class="conv-strip-h"><h2>Convocatorias abiertas <span class="count">${ab.length}</span></h2><span class="conv-strip-acts"><a class="lnk" href="#/mis/convocatorias">Ver todas</a>${puedeCrear() ? `<a class="btn-accent sm" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</span></div>
+  return `<section class="conv-strip" aria-label="Convocatorias abiertas"><div class="conv-strip-h"><h2>Convocatorias abiertas <span class="count">${ab.length}</span></h2><span class="conv-strip-acts"><a class="lnk" href="#/mis" data-ir-conv>Ver todas</a>${puedeCrear() ? `<a class="btn-accent sm" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</span></div>
     ${ab.length ? `<div class="conv-strip-list">${ab.slice(0, 4).map(tarjeta).join("")}</div>` : `<p class="muted small" style="margin:0">No hay convocatorias abiertas ahora.</p>`}</section>`;
 }
 

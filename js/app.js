@@ -241,7 +241,7 @@ function shell(active) {
   </header>`;
 }
 
-// Los submenús se abren solo al presionar la flecha junto a cada sección, nunca al pasar el mouse.
+// Los submenús se abren al pasar el mouse por la flecha junto a cada sección (o al hacer clic en ella).
 // Hacer clic en el nombre de la sección lleva directo a su página.
 function cerrarMega() {
   const m = $("#mega"); if (!m) return;
@@ -252,6 +252,10 @@ function wireShell() {
   const mega = $("#mega"), inner = $("#megaInner");
   let openK = null;
   const close = () => { cerrarMega(); openK = null; };
+  let cierre = null;
+  const cierraLuego = () => { clearTimeout(cierre); cierre = setTimeout(close, 220); };
+  mega.onmouseenter = () => clearTimeout(cierre);
+  mega.onmouseleave = cierraLuego;
   const open = (k, item) => {
     close(); closePops();
     inner.innerHTML = megaHTML(k);
@@ -264,8 +268,11 @@ function wireShell() {
     const k = item.dataset.k, a = item.querySelector("a"), more = item.querySelector(".nav-more");
     if (more) {
       more.onclick = e => { e.stopPropagation(); openK === k ? close() : open(k, item); };
+      more.addEventListener("mouseenter", () => { clearTimeout(cierre); if (openK !== k) open(k, item); });
       more.addEventListener("keydown", e => { if (e.key === "ArrowDown") { e.preventDefault(); if (openK !== k) open(k, item); const f = mega.querySelector("a, input"); if (f) f.focus(); } });
     }
+    item.addEventListener("mouseleave", () => { if (openK === k) cierraLuego(); });
+    item.addEventListener("mouseenter", () => clearTimeout(cierre));
     a.addEventListener("click", e => {
       close(); if (k === "mis") { filtro.etapa = -1; filtro.inc = false; }
       if (location.hash === "#/" + k) { e.preventDefault(); filtro.etapa = -1; render(); }
@@ -289,6 +296,10 @@ function ubicarPop(p) {
 }
 function togglePop(sel) { const p = $(sel), was = p.classList.contains("show"); closePops(); if (!was) { ubicarPop(p); p.classList.add("show"); } }
 function abrirAviso(id, ir) { if (!S.leidos.includes(id)) S.leidos.push(id); if (id.startsWith("cx-")) registrarMetrica("duplicados"); guardar(); closePops(); if (location.hash === ir) render(); else location.hash = ir; }
+document.addEventListener("click", e => {
+  const ic = e.target.closest("[data-ir-conv]");
+  if (ic) { e.preventDefault(); const enMis = /^#\/mis(\/convocatorias)?$/.test(location.hash) || location.hash === ""; if (enMis && $("#tablaConv")) $("#tablaConv").scrollIntoView({ behavior: "smooth", block: "start" }); else { irConv = true; if (location.hash === "#/mis") render(); else location.hash = "#/mis"; } }
+});
 document.addEventListener("click", e => { if (!e.target.closest(".pop")) closePops(); if (!e.target.closest(".mega, .nav-more")) cerrarMega(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") { closePops(); cerrarMega(); cerrarAsistente(); } });
 
@@ -363,6 +374,7 @@ function listaFiltrada() {
     (!q || (v.nombre + " " + contraparte(v.contraparte).nombre + " " + contraparte(v.contraparte).corto + " " + v.sede).toLowerCase().includes(q))));
 }
 const opcionesTabla = () => ({ area: ME.admin || hijos(ME.area).length, agrupar: filtro.agrupar, vacio: "No hay vínculos con estos filtros." });
+let irConv = false;
 function vMis(p) {
   if (p === "incompletos") filtro.inc = true;
   if (p && p.startsWith("etapa-")) { filtro.etapa = +p.slice(6); filtro.inc = false; }
@@ -373,7 +385,8 @@ function vMis(p) {
   const activos = mios.filter(v => v.etapa < 3).length, sinCal = mios.filter(v => v.etapa === 3 && !v.calif).length;
   const incom = mios.filter(v => completitud(v).pct < 50).length, convA = S.convocatorias.filter(c => c.estado === "Abierta" && (ME.admin || descendientes(ME.area).includes(convArea(c)))).length;
   const nInst = misCp.length, comp = misCp.filter(cp => S.vinculos.some(v => v.contraparte === cp && !mios.includes(v))).length;
-  const otrasTab = p === "otras" && !ME.admin, convTab = p === "convocatorias";
+  const otrasTab = p === "otras" && !ME.admin;
+  if (p === "convocatorias") irConv = true;
   const nConv = convVisibles().length;
   const nOtras = ME.admin ? 0 : [...new Set(S.vinculos.filter(v => !mios.includes(v)).map(v => v.contraparte))].length;
   const titulo = ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos";
@@ -385,9 +398,8 @@ function vMis(p) {
     <div><b>${sinCal}</b><span>cerrados sin calificar</span></div>
     ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<a class="r-link" href="#/mis/otras"><b>${comp}</b><span>instituciones compartidas con otras áreas</span></a>`}
   </div>
-  <div class="tabs" role="tablist"><a class="tab ${otrasTab || convTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab && !convTab}">${ME.admin ? "Todos los vínculos" : "Mis vínculos"} (${mios.length})</a><a class="tab ${convTab ? "on" : ""}" href="#/mis/convocatorias" role="tab" aria-selected="${convTab}">Convocatorias para estudiantes (${nConv})</a>${ME.admin ? "" : `<a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a>`}</div>`;
+  <div class="tabs" role="tablist"><a class="tab ${otrasTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab}">${ME.admin ? "Todos los vínculos" : "Mis vínculos"} (${mios.length})</a>${ME.admin ? "" : `<a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a>`}<a class="tab tab-conv" href="#/mis" data-ir-conv role="tab" aria-selected="false">Convocatorias para estudiantes (${nConv})</a></div>`;
   if (otrasTab) return head + vOtrasAreas(mios, misCp);
-  if (convTab) return head + convTablaHTML();
   const anios = [...new Set(mios.map(anioDe))].sort().reverse();
   const avVis = av.slice(0, 3), avMas = av.slice(3);
   const avHTML = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
@@ -404,6 +416,7 @@ function vMis(p) {
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
     </div>
     <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
+    ${convTablaHTML()}
   </div>
   <aside class="stack">
     ${fold("Avisos", av.length, av.length ? avVis.map(avHTML).join("") + (avMas.length ? `<details class="mas"><summary>Ver ${avMas.length} ${avMas.length === 1 ? "aviso más" : "avisos más"}</summary>${avMas.map(avHTML).join("")}</details>` : "") : `<p class="muted small">No tienes avisos.</p>`, true)}
@@ -939,10 +952,10 @@ function renderAsistente() {
 `;
   const tit = $("#drawerTit"); if (tit) tit.textContent = asis.tab === "reunion" ? "Actualizar con IA" : "Pedir feedback";
   if (asis.tab === "reunion") {
-    html += `<p class="small muted">Cuéntale a la IA qué pasó con este vínculo: dicta, pega una transcripción o tus notas, o sube un archivo de texto. Ella propone cambios a la ficha y tú apruebas cada uno.</p>
+    html += `<p class="small muted">Cuéntale a la IA qué pasó con este vínculo: dicta, pega una transcripción o tus notas, o sube un archivo (Word, PDF o texto). Ella propone cambios a la ficha y tú apruebas cada uno.</p>
       ${SR ? `<button class="mic-big ${reco ? "on" : ""}" id="asMic"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2Z"/></svg><span>${reco ? "Detener dictado" : "Dictar notas"}</span></button>` : `<p class="help">Este navegador no permite dictar. Puedes pegar el texto o usar el dictado del teclado del celular.</p>`}
       <textarea class="input" id="asTxt" rows="6" placeholder="O pega aquí la transcripción de Teams, Meet o Zoom, o tus notas…">${esc(asis.texto)}</textarea>
-      <div class="as-tools"><label class="btn-outline sm">Subir archivo de texto<input type="file" id="asFile" accept=".txt,.vtt,.srt,.md,text/plain,audio/*" hidden></label><span class="small muted" id="asInfo"></span></div>
+      <div class="as-tools"><label class="btn-outline sm">Subir archivo (Word, PDF o texto)<input type="file" id="asFile" accept=".docx,.pdf,.md,.txt,.vtt,.srt,text/plain,audio/*" hidden></label><span class="small muted" id="asInfo"></span></div>
       <div class="form-actions"><button class="btn-accent" id="asGo" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Procesando…" : "Procesar con IA"}</button></div>
       ${asis.error ? `<div class="err show">${esc(asis.error)}</div>` : ""}`;
     const p = asis.propuesta;
@@ -975,6 +988,27 @@ function renderAsistente() {
   d.innerHTML = html;
   wireAsistente(v);
 }
+// Lee Word (.docx), PDF y texto plano (.md, .txt, .vtt, .srt) y devuelve solo el texto.
+async function leerArchivo(f) {
+  const n = f.name.toLowerCase();
+  if (n.endsWith(".docx")) {
+    const z = await JSZip.loadAsync(await f.arrayBuffer());
+    const xml = await z.file("word/document.xml").async("string");
+    return xml.replace(/<w:tab\/>/g, " ").replace(/<\/w:p>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/\n{2,}/g, "\n").trim();
+  }
+  if (n.endsWith(".pdf")) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "js/vendor/pdf.worker.min.js";
+    const doc = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
+    let out = "";
+    for (let i = 1; i <= doc.numPages; i++) {
+      const items = (await (await doc.getPage(i)).getTextContent()).items; let y = null;
+      for (const it of items) { if (y !== null && Math.abs(it.transform[5] - y) > 2) out += "\n"; else if (y !== null) out += " "; out += it.str; y = it.transform[5]; }
+      out += "\n";
+    }
+    return out.trim();
+  }
+  return (await f.text()).replace(/^WEBVTT.*$/m, "").replace(/^\d+$/gm, "").replace(/^\d{2}:\d{2}[:.,\d]* --> .*$/gm, "").replace(/\n{2,}/g, "\n").trim();
+}
 function setPath(obj, path, val) { const k = path.split("."); let o = obj; while (k.length > 1) o = o[k.shift()]; o[k[0]] = val; }
 function wireAsistente(v) {
   $("#asV").onchange = e => { asis.vid = +e.target.value; asis.propuesta = null; asis.extra = []; asis.error = ""; asis._ultimo = asis.vid; renderAsistente(); };
@@ -983,8 +1017,9 @@ function wireAsistente(v) {
     $("#asFile").onchange = async e => {
       const f = e.target.files[0]; if (!f) return;
       if (f.type.startsWith("audio/")) { $("#asInfo").textContent = "Los audios aún no se transcriben aquí. Usa la transcripción automática de Teams, Meet o Zoom y pégala, o usa Dictar."; return; }
-      let t = await f.text();
-      t = t.replace(/^WEBVTT.*$/m, "").replace(/^\d+$/gm, "").replace(/^\d{2}:\d{2}[:.,\d]* --> .*$/gm, "").replace(/\n{2,}/g, "\n").trim();
+      let t = "";
+      try { t = await leerArchivo(f); } catch (err) { $("#asInfo").textContent = "No pudimos leer ese archivo. Prueba con otro o pega el texto."; return; }
+      if (!t.trim()) { $("#asInfo").textContent = "El archivo no tiene texto que se pueda leer (¿es una imagen escaneada?). Pega el texto a mano."; return; }
       asis.texto = (asis.texto ? asis.texto + "\n" : "") + t; asis.fuente = "Archivo " + f.name; renderAsistente();
     };
     const mic = $("#asMic");
@@ -1079,6 +1114,7 @@ function render() {
   $("#fab").onclick = () => abrirAsistente(ruta === "ficha" ? +p : null, "chat");
   $("#drawerX").onclick = cerrarAsistente; $("#drawerBg").onclick = cerrarAsistente;
   window.scrollTo(0, 0);
+  if (irConv) { irConv = false; setTimeout(() => { const t = $("#tablaConv") || $("#convTira"); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60); }
 }
 
 function wireContactLinks() {

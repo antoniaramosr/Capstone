@@ -1,5 +1,7 @@
-Notas de reunión · Feria de empleo PUCV
+# Notas de reunión · Feria de empleo PUCV
+
 Fecha: 4 de noviembre de 2026
+
 Participaron: Sandra Mella (Dirección de asuntos estudiantiles, PUCV) y Eduardo (Reclutamiento y selección, AMSA).
 
 Contacto nuevo: Rodrigo Pizarro, correo rpizarro@pucv.ejemplo.cl. Él va a coordinar la feria desde la universidad.

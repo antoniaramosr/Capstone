@@ -1333,3 +1333,20 @@ main > .crumbs + .hero-row{margin-top:24px!important}
 .chat-form{display:flex;gap:10px;margin-top:4px}
 .chat-form .input{flex:1}
 .f-grid3 .contactar{display:block;text-align:left;padding:4px 0;margin:6px 0 2px}
+
+/* noviembre 6: respiros, barra "Estás en", pastilla de navegación */
+main > .crumbs{margin-bottom:0!important}
+main > .crumbs + h1,main > .crumbs + .hero-row,main > .volver-bar + .crumbs + h1{margin-top:30px!important}
+main .crumbs{background:#D3E4E9;border-left:4px solid var(--brand-2,#0E7C86);padding:10px 16px;color:var(--ink)}
+.hero .crumbs{background:rgba(255,255,255,.15);border-left:0}
+#secConQuien{margin-top:28px;padding-top:6px}
+.nav{gap:6px!important}
+.nav-item{margin-right:6px!important}
+.nav-btn:hover{background:rgba(255,255,255,.16)}
+.nav-item.on .nav-btn:hover{background:#fff}
+.nav-item[data-mega] .nav-btn:hover{border-radius:999px 0 0 999px}
+.tab-conv::after{content:" ↓";font-weight:400}
+.nav-btn:hover,.nav-item[data-mega] .nav-btn:hover,.nav-more:hover{background:transparent}
+.nav-item:not(.on):hover,.nav-item.open:not(.on){background:rgba(255,255,255,.16);border-radius:999px}
+.nav-item.on .nav-btn:hover{background:#fff}
+.nav-item.on .nav-more:hover{background:#fff}

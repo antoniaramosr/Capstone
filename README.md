@@ -89,12 +89,13 @@ Convocatorias: *Memorias 2027* (UCN, abierta), *Práctica profesional invierno 2
 
 Sirven para probar el panel "Actualizar con IA" de una ficha sin inventar una reunión cada vez. Están pensados para el vínculo **Feria de empleo PUCV** (entra como Eduardo, está en Mis vínculos, en Exploración).
 
-**Archivos para subir** (botón "Subir archivo de texto" del panel), en la carpeta `ejemplos/actualizar-con-ia/`:
+**Archivos para subir** (botón "Subir archivo (Word, PDF o texto)" del panel), en la carpeta `ejemplos/actualizar-con-ia/`. Los tres tienen las mismas notas de la reunión, en los formatos más comunes:
 
-- `nota-reunion-feria-pucv.txt`: las notas de la reunión, en texto simple.
-- `transcripcion-feria-pucv.vtt`: la misma reunión como la entrega una transcripción de Teams, con tiempos y quién habla. La página limpia los tiempos sola.
+- `nota-reunion-feria-pucv.docx`: documento de Word.
+- `nota-reunion-feria-pucv.pdf`: PDF.
+- `nota-reunion-feria-pucv.md`: texto simple (Markdown).
 
-**Texto para pegar** en el cuadro del panel (es el mismo del `.txt`):
+**Texto para pegar** en el cuadro del panel (es el mismo de los archivos):
 
 ```
 Notas de reunión · Feria de empleo PUCV
@@ -145,7 +146,7 @@ En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene ca
 7. **Empezar de cero.** Entra como Daniela (sin vínculos) o como Perfil 0 (página vacía) y registra el primer vínculo con "+ Añadir".
 8. **Actualizar con IA.** En una ficha, "Actualizar con IA" abre un panel aparte del de feedback. Se dicta, se pega una transcripción o se sube un archivo de texto, y se aprueba cada cambio propuesto. Hay un texto y archivos de ejemplo en la sección de arriba.
 9. **Descargar la ficha.** El botón "Descargar ficha" baja un PDF con todos los datos del vínculo.
-10. **Ver las convocatorias.** En Mis vínculos aparecen arriba las convocatorias abiertas, y la pestaña "Convocatorias para estudiantes" muestra todas, abiertas y cerradas.
+10. **Ver las convocatorias.** En Mis vínculos aparecen arriba las convocatorias abiertas, y la pestaña "Convocatorias para estudiantes" (junto a "Mis vínculos" y "Con otras áreas") te baja a la tabla con todas, abiertas y cerradas. Los menús de la barra de arriba se abren al pasar el mouse por la flechita.
 11. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
 12. **Evaluar un vínculo.** En la ficha de uno sin calificar, "Evaluar vínculo" abre la sección de evaluación. Después de calificar queda fija.
 13. **Preguntarle al asistente.** Botón de abajo a la derecha; hay preguntas de ejemplo más arriba.
