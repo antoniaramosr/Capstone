@@ -1,6 +1,6 @@
 # SIVA · rama `nuevo`
 
-Esta rama es la versión limpia del prototipo. Borramos los datos de ejemplo que venían del mapeo (eran muchos y estaban a medias) y armamos a mano un set corto: **27 vínculos, 13 instituciones, 5 convocatorias y 8 estudiantes**, repartidos en distintas áreas, tipos, etapas, compañías y años, para poder jugar y sacar estadísticas. Cada flujo se puede probar de principio a fin.
+Esta rama es la versión limpia del prototipo. Borramos los datos de ejemplo que venían del mapeo (eran muchos y estaban a medias) y armamos a mano un set corto: **32 vínculos, 18 instituciones, 5 convocatorias y 8 estudiantes**, repartidos en distintas áreas, tipos, etapas, compañías y años, para poder jugar y sacar estadísticas. Cada flujo se puede probar de principio a fin.
 
 ## Ver la página
 
@@ -61,14 +61,14 @@ Postulan desde la página pública de convocatorias (menú del avatar, "Ver la p
 | Felipe Guzmán | felipe.guzman@ejemplo.cl | Convocatoria "Práctica profesional invierno 2027", *Aceptado* | Ejemplo de aceptado dentro de una convocatoria abierta, para armar el correo de aceptados. |
 | Lucas Morales | lucas.morales@ejemplo.cl | "Práctica de verano 2026", *No aceptado* | Para ver cómo queda alguien que no quedó. |
 
-## Los 27 vínculos y qué muestran
+## Los 32 vínculos y qué muestran
 
 | Área | Vínculos | Qué hay |
 |---|---|---|
 | Reclutamiento y selección (Eduardo y Matías) | 11 | Charlas, Meet the Office, memorias y prácticas con UCN, U. de Antofagasta, U. de Chile, PUC, UTFSM, UAI, UdeC, ULS, USACH y PUCV, en todas las etapas. |
-| Aprendizaje y academia | 5 | Capstone PUC y UCN, diplomado con UAI y pasantías docentes (INACAP, Duoc UC). |
+| Aprendizaje y academia | 6 | Capstone PUC y UCN, diplomado con UAI, pasantías docentes (INACAP, Duoc UC) y un programa de liderazgo con Fundación Chile. |
 | Inclusión y empleo | 2 | Mentoring a ingenieras (PUC) y Beca Mujeres en Minería (UdeC). |
-| Asuntos Públicos Norte y MLP | 8 | Convenios, directorio de la Escuela de Negocios Mineros, empleo y oficios, proveedores, I+D de relaves y el acuerdo con CEDUC Los Vilos. |
+| Asuntos Públicos Norte y MLP | 12 | Convenios, directorio de la Escuela de Negocios Mineros, mesa del Consejo Minero, empleo y oficios (CEDUC, CEIM), proveedores, I+D con CICITEM y Corfo, relaves con la UCN y el acuerdo con CEDUC Los Vilos. |
 | Desarrollo Organizacional | 1 | Sesión de relaves en La Serena. |
 
 Casos puestos a propósito para ver cada cosa de la página:
@@ -114,6 +114,26 @@ Qué debería proponer la IA: cambiar el contacto a Rodrigo Pizarro, agregar a l
 
 Los archivos de audio todavía no se transcriben dentro de la página. Para audio, hay que usar la transcripción de Teams o Meet, o el botón "Dictar notas".
 
+## Asistente de IA (preguntas sobre los vínculos)
+
+El botón de abajo a la derecha, "Asistente de IA", abre un chat donde se le puede preguntar por lo que hay registrado en SIVA. Algunas preguntas para probar:
+
+- ¿Cuántos vínculos están abiertos?
+- ¿Cómo va la convocatoria de memorias 2027?
+- ¿Cuántos vínculos hay con la UCN? (también con U. de Chile, PUC, Corfo, etc.)
+- ¿Qué vínculos piden atención?
+- ¿Cuántos postulantes hay en total?
+- ¿Cuántas convocatorias están abiertas?
+- Cómo va el vínculo Meet the Office
+- ¿Cuántas charlas hay? / ¿Cuántos vínculos hay con Centinela?
+- ¿Cuántos vínculos hay sin calificar? / ¿Cuáles son los mejor calificados?
+
+Por defecto cuenta los vínculos del perfil con el que se entró, y avisa cuántos hay en todo SIVA. Si la pregunta incluye "en total" o "todos", cuenta todos. Sin IA conectada ("Modo demo, sin IA" arriba del panel) entiende estas preguntas por reglas simples; con IA de verdad entiende preguntas más libres, porque recibe los mismos datos y responde solo con ellos. Para actualizar un vínculo hay que ir a su ficha y usar "Actualizar con IA".
+
+## Evaluación de un vínculo
+
+En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene calificación. Si no la tiene, arriba aparece el botón "Evaluar vínculo", que abre la sección. Los criterios dependen del tipo de vínculo y de la institución: con universidades, institutos y centros de formación se habla de estudiantes; con una OTEC, una fundación, un gremio, un centro de investigación o un organismo público se habla de "personas participantes" o "personas invitadas". Para ver la diferencia, compara una charla con la PUC y el programa de liderazgo con Fundación Chile.
+
 ## Paso a paso para probar cada cosa
 
 1. **Contactar a una institución.** Entra como Eduardo, ve a Mis vínculos y presiona "Contactar" en la fila de Memorias y prácticas UCN. Se abre Outlook con el correo para Paula Herrera. Si hay otra área trabajando con la misma institución, la ventana lo avisa antes.
@@ -127,6 +147,8 @@ Los archivos de audio todavía no se transcriben dentro de la página. Para audi
 9. **Descargar la ficha.** El botón "Descargar ficha" baja un PDF con todos los datos del vínculo.
 10. **Ver las convocatorias.** En Mis vínculos aparecen arriba las convocatorias abiertas, y la pestaña "Convocatorias para estudiantes" muestra todas, abiertas y cerradas.
 11. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
+12. **Evaluar un vínculo.** En la ficha de uno sin calificar, "Evaluar vínculo" abre la sección de evaluación. Después de calificar queda fija.
+13. **Preguntarle al asistente.** Botón de abajo a la derecha; hay preguntas de ejemplo más arriba.
 
 ## Qué queda por hacer en esta rama
 

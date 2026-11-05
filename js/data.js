@@ -5,6 +5,18 @@
 
 const CORREO_PRUEBA = (alias) => "antonia.ramos+" + alias + "@uc.cl";
 
+// Criterios de evaluación: los que hablan de estudiantes solo van con instituciones educativas.
+const ORG_EDUCATIVAS = ["Universidad", "Centro de formación técnica", "Instituto profesional"];
+const CRITERIO_SIN_ESTUDIANTES = {
+  "Asistencia e interés de estudiantes": "Asistencia e interés de las personas invitadas",
+  "Calidad de las y los estudiantes": "Calidad de las personas participantes",
+  "Compromiso de estudiantes y profesores": "Compromiso de las personas participantes"
+};
+function criteriosPara(criterios, tipoOrg) {
+  if (!tipoOrg || ORG_EDUCATIVAS.includes(tipoOrg)) return criterios;
+  return criterios.map(c => CRITERIO_SIN_ESTUDIANTES[c] || c);
+}
+
 const SEED = {
   contrapartes: [
     { id: "ucn",    nombre: "Universidad Católica del Norte", corto: "UCN", tipoOrg: "Universidad", locacion: "Antofagasta", zona: "Norte", contactos: [
@@ -31,6 +43,16 @@ const SEED = {
       { nombre: "Daniela Soto", cargo: "Educación ejecutiva", correo: "dsoto@uai.ejemplo.cl", telefono: "+56 9 5871 2230" }] },
     { id: "udec",   nombre: "Universidad de Concepción", corto: "UdeC", tipoOrg: "Universidad", locacion: "Biobío", zona: "Sur", contactos: [
       { nombre: "Pablo Vera", cargo: "Dirección de egresados y empleabilidad", correo: "pvera@udec.ejemplo.cl", telefono: "+56 9 5412 6677" }] },
+    { id: "ceim",   nombre: "Centro de Entrenamiento Industrial y Minero (CEIM)", corto: "CEIM", tipoOrg: "OTEC", locacion: "Antofagasta", zona: "Norte", contactos: [
+      { nombre: "Raúl Contreras", cargo: "Gerencia de formación", correo: "rcontreras@ceim.ejemplo.cl", telefono: "+56 9 5512 7740" }] },
+    { id: "cicitem", nombre: "Centro de Investigación Científica y Tecnológica para la Minería (CICITEM)", corto: "CICITEM", tipoOrg: "Centro de investigación", locacion: "Antofagasta", zona: "Norte", contactos: [
+      { nombre: "Valeria Campos", cargo: "Dirección de proyectos", correo: "vcampos@cicitem.ejemplo.cl", telefono: "+56 9 5598 3321" }] },
+    { id: "fch",    nombre: "Fundación Chile", corto: "Fundación Chile", tipoOrg: "Fundación", locacion: "Santiago", zona: "Centro", contactos: [
+      { nombre: "Camilo Urrutia", cargo: "Líder de capital humano", correo: "currutia@fch.ejemplo.cl", telefono: "+56 9 5733 1904" }] },
+    { id: "cm",     nombre: "Consejo Minero", corto: "Consejo Minero", tipoOrg: "Gremio o asociación", locacion: "Santiago", zona: "Centro", contactos: [
+      { nombre: "Lorena Aguirre", cargo: "Gerencia de capital humano", correo: "laguirre@consejominero.ejemplo.cl", telefono: "+56 9 5600 4412" }] },
+    { id: "corfo",  nombre: "Corfo", corto: "Corfo", tipoOrg: "Organismo público", locacion: "Santiago", zona: "Centro", contactos: [
+      { nombre: "Mauricio Peña", cargo: "Gerencia de capacidades tecnológicas", correo: "mpena@corfo.ejemplo.cl", telefono: "+56 9 5870 6623" }] },
     { id: "inacap", nombre: "INACAP", corto: "INACAP", tipoOrg: "Instituto profesional", locacion: "Nacional", zona: "Nacional", contactos: [
       { nombre: "Marcelo Pizarro", cargo: "Vicerrectoría INACAP", correo: "mpizarro@inacap.ejemplo.cl", telefono: "+56 9 5920 6150" }] },
     { id: "duoc",   nombre: "Duoc UC", corto: "Duoc UC", tipoOrg: "Instituto profesional", locacion: "Nacional", zona: "Nacional", contactos: [
@@ -88,6 +110,11 @@ const SEED = {
     ["ceduc", "Antofagasta", "iln", "emp", "Pre contratos oficios mineros (aprendices)", "Empleo y proveedores", 1, { i: "2026-09-21", d: 16, co: ["ant"] }],
     ["ceduc", "Los Vilos", "rimlp", "conv", "Acuerdo de colaboración CEDUC UCN Los Vilos", "Formación", 2, { c: 3, a: "parcial", i: "2026-02-02", d: 52, n: "En evaluación la continuidad del acuerdo." }],
     ["ucn", "Antofagasta", "rin", "inn", "Proyecto de relaves con la UCN", "Vinculación sectorial", 2, { f: "Fondo externo (CORFO, ANID u otro)", i: "2026-07-06", d: 7, co: ["cen"], al: "Prueba piloto de recuperación de agua en relaves, con tesistas de la UCN." }],
+    ["ceim", "Antofagasta", "iln", "emp", "Pre contratos oficios mineros CEIM", "Empleo y proveedores", 2, { c: 4, a: "si", i: "2026-04-14", d: 15, co: ["cen"] }],
+    ["cicitem", "Antofagasta", "rin", "inn", "Laboratorio de biolixiviación CICITEM", "Vinculación sectorial", 3, { c: 5, a: "si", f: "Fondo externo (CORFO, ANID u otro)", i: "2025-11-10", t: "2026-08-31", d: 70, co: ["cen"] }],
+    ["fch", "Santiago", "aya", "prog", "Programa de liderazgo con Fundación Chile", "Desarrollo de talento", 3, { c: 3, a: "parcial", f: "Financiado por AMSA", i: "2026-02-16", t: "2026-07-24", d: 100, r: "Matías", co: ["corp"] }],
+    ["cm", "Santiago", "rin", "cons", "Mesa de capital humano del Consejo Minero", "Formación", 2, { i: "2026-03-05", d: 28 }],
+    ["corfo", "Santiago", "rin", "inn", "Piloto de relaves con Corfo", "Vinculación sectorial", 1, { f: "Fondo externo (CORFO, ANID u otro)", i: "2026-10-05", d: 9, co: ["cen"] }],
     ["uls", "Coquimbo", "doc", "char", "Sesión de relaves La Serena", "Vinculación sectorial", 3, { c: 3, a: "parcial", i: "2026-06-09", t: "2026-06-10", d: 130, co: ["mlp"] }]
   ]
 };
@@ -131,7 +158,7 @@ function construirVinculosSemilla(areas, tipos) {
     const kBase = x.nk ? {} : typeof x.k === "number" ? cpo.contactos[x.k] : x.k || cpo.contactos[0] || {};
     // Si el vínculo tiene calificación de ejemplo, cada criterio parte con esa nota (±1 para que no sean todas iguales).
     const crit = {};
-    if (x.c && t && t.criterios) t.criterios.forEach((c, j) => { crit[c] = Math.max(1, Math.min(5, x.c + [0, 1, -1][j % 3] * (x.c === 5 || x.c === 1 ? 0 : 1) * (i % 2))); });
+    if (x.c && t && t.criterios) criteriosPara(t.criterios, cpo.tipoOrg).forEach((c, j) => { crit[c] = Math.max(1, Math.min(5, x.c + [0, 1, -1][j % 3] * (x.c === 5 || x.c === 1 ? 0 : 1) * (i % 2))); });
     return {
       id: i + 1,
       nombre, contraparte, sede, area, tipo, etapa, tema,

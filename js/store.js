@@ -144,7 +144,11 @@ const metasDe = v => v.metas || (v.meta ? [v.meta] : []);
 const compsTxt = ids => ids.length && ids.length === S.companias.length ? "Todas las compañías" : ids.map(id => compania(id).nombre).join(", ");
 const metasActivas = () => S.metas.filter(m => m.activa).map(m => m.nombre);
 const etapaAyuda = (i, tipoId) => (tipo(tipoId).etapas || CONFIG.etapasAyuda)[i];
-const criteriosDe = tipoId => tipo(tipoId).criterios || ["Cumplimiento de lo acordado", "Rapidez de respuesta de la institución", "Calidad del resultado"];
+const criteriosDe = (tipoId, cpId) => {
+  const base = tipo(tipoId).criterios || ["Cumplimiento de lo acordado", "Rapidez de respuesta de la institución", "Calidad del resultado"];
+  const cp = cpId ? contraparte(cpId) : null;
+  return cp ? criteriosPara(base, cp.tipoOrg) : base;
+};
 // Calificación del vínculo: promedio de los criterios calificados (1 a 5).
 function califDe(crit) { const n = Object.values(crit || {}).filter(x => x); return n.length ? +(n.reduce((a, b) => a + b, 0) / n.length).toFixed(1) : null; }
 // Contactos conocidos de una institución: los registrados en ella y los de sus vínculos.
