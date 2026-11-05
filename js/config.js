@@ -113,7 +113,7 @@ const CONFIG = {
 
   // Usuarios de prueba del prototipo.
   usuarios: {
-    eduardo:  { id: "eduardo", nombre: "Eduardo", correo: "antonia.sramosrodriguez+eduardo@gmail.com", inicial: "E", rol: "gestor", area: "rys", compania: "corp", admin: false },
+    eduardo:  { id: "eduardo", nombre: "Eduardo", correo: "antonia.ramos+eduardo@uc.cl", inicial: "E", rol: "gestor", area: "rys", compania: "corp", admin: false },
     matias:   { id: "matias", nombre: "Matías", correo: "matias@amsa.ejemplo.cl", inicial: "M", rol: "gestor", area: "rys", compania: "corp", admin: false, nota: "Del mismo equipo que Eduardo: para probar el traspaso de un vínculo" },
     daniela:  { id: "daniela", nombre: "Daniela", correo: "daniela@amsa.ejemplo.cl", inicial: "D", rol: "gestor", area: "acds", compania: "cen", admin: false, nota: "Recién llega: aún no tiene vínculos" },
     carolina: { id: "carolina", nombre: "Carolina", correo: "carolina@amsa.ejemplo.cl", inicial: "C", rol: "jefatura", area: "doc", compania: "corp", admin: false },

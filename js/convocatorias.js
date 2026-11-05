@@ -56,7 +56,62 @@ function convSemilla(s) {
         informe: { nombre: "Informe_practica_Sofia_Pizarro.pdf", fecha: "2026-03-05" }, notaUniversidad: 6.6, autorizaVerNota: true },
       { nombre: "Lucas Morales", correo: "lucas.morales@ejemplo.cl", universidad: "Universidad de Chile", carrera: "Geología", fecha: "2025-10-24", estado: "No aceptado", avisado: "No aceptado" }
     ]
-  }];
+  }].concat(convSemillaExtra(s));
+}
+
+// Más convocatorias, de distintas áreas y estados, para poder sacar estadísticas.
+function convSemillaExtra(s) {
+  const por = n => s.vinculos.find(x => x.nombre === n);
+  const post = (nombre, correo, universidad, carrera, dias, estado, extra) => Object.assign({ nombre, correo, universidad, carrera, fecha: haceDias(dias), estado }, estado === "Aceptado" || estado === "No aceptado" || estado === "En práctica" || estado === "Terminó" ? { avisado: estado } : {}, extra || {});
+  const out = [];
+  const ua = por("Práctica profesional U. de Antofagasta");
+  if (ua) out.push({
+    id: 3, vinculo: ua.id, area: ua.area, companias: ["ant"], institucion: ua.contraparte, titulo: "Práctica profesional invierno 2027",
+    tipo: "Práctica profesional", carreras: "Ingeniería Civil de Minas, Ingeniería Civil Industrial",
+    cupos: 4, cierre: haceDias(-12), lugar: "Antucoya, con transporte desde Antofagasta",
+    condiciones: "Ocho semanas en julio y agosto, con alimentación y traslado.", descripcion: "Práctica en planificación mina y en mantenimiento, con tutor o tutora de la operación.",
+    requisitos: "Haber aprobado tercer año y estar inscrito en la práctica de su carrera.",
+    estado: "Abierta", creada: haceDias(18), linkedin: { publicada: true, fecha: haceDias(17) },
+    postulantes: [
+      post("Martina Alfaro", "martina.alfaro@ejemplo.cl", "Universidad de Antofagasta", "Ingeniería Civil de Minas", 15, "En revisión"),
+      post("Felipe Guzmán", "felipe.guzman@ejemplo.cl", "Universidad de Antofagasta", "Ingeniería Civil Industrial", 13, "Aceptado"),
+      post("Constanza Pino", "constanza.pino@ejemplo.cl", "Universidad Católica del Norte", "Ingeniería Civil de Minas", 11, "Postuló"),
+      post("Sebastián Lagos", "sebastian.lagos@ejemplo.cl", "Universidad de Antofagasta", "Ingeniería Civil de Minas", 9, "Postuló"),
+      post("Amanda Cortés", "amanda.cortes@ejemplo.cl", "Universidad de Antofagasta", "Ingeniería Civil Industrial", 4, "Postuló")
+    ]
+  });
+  const mu = por("Mentoring a ingenieras");
+  if (mu) out.push({
+    id: 4, vinculo: mu.id, area: mu.area, companias: ["corp"], institucion: mu.contraparte, titulo: "Mentoring a ingenieras 2027",
+    tipo: "Programa", carreras: "Ingeniería Civil de Minas, Ingeniería Civil Industrial, Ingeniería Civil Eléctrica",
+    cupos: 10, cierre: haceDias(-30), lugar: "Online, con una visita a Santiago", condiciones: "Seis meses, una sesión al mes con una mentora de AMSA.",
+    descripcion: "Acompañamiento de ingenieras de AMSA a estudiantes de ingeniería.", requisitos: "Estar en tercer año o más.",
+    estado: "Abierta", creada: haceDias(10), linkedin: { publicada: true, fecha: haceDias(9) },
+    postulantes: [
+      post("Josefa Núñez", "josefa.nunez@ejemplo.cl", "Pontificia Universidad Católica de Chile", "Ingeniería Civil de Minas", 8, "Postuló"),
+      post("Renata Salas", "renata.salas@ejemplo.cl", "Pontificia Universidad Católica de Chile", "Ingeniería Civil Industrial", 7, "Postuló"),
+      post("Emilia Fuentes", "emilia.fuentes@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil Eléctrica", 6, "En revisión"),
+      post("Trinidad Mora", "trinidad.mora@ejemplo.cl", "Universidad de Concepción", "Ingeniería Civil de Minas", 5, "Postuló"),
+      post("Valeria Ibarra", "valeria.ibarra@ejemplo.cl", "Universidad Técnica Federico Santa María", "Ingeniería Civil Industrial", 3, "Postuló"),
+      post("Agustina Pérez", "agustina.perez@ejemplo.cl", "Universidad de Santiago de Chile", "Ingeniería Civil Industrial", 2, "Postuló")
+    ]
+  });
+  const mc = por("Memorias U. de Chile");
+  if (mc) out.push({
+    id: 5, vinculo: mc.id, area: mc.area, companias: ["cen"], institucion: mc.contraparte, titulo: "Memorias 2026: Ingeniería Civil Industrial",
+    tipo: "Memoria", carreras: "Ingeniería Civil Industrial, Ingeniería Civil de Minas",
+    cupos: 3, cierre: "2026-02-15", lugar: "Santiago y Antofagasta", condiciones: "Seis meses desde marzo, con apoyo económico mensual.",
+    descripcion: "Memorias en temas de planificación y productividad.", requisitos: "Tener tema de memoria aprobado por la universidad.",
+    estado: "Cerrada", creada: "2026-01-05", linkedin: { publicada: true, fecha: "2026-01-06" },
+    postulantes: [
+      post("Fernanda Díaz", "fernanda.diaz@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil Industrial", 270, "Terminó", { feedbackTutor: [{ fecha: "2026-08-28", autor: "Pamela Soto (tutora)", texto: "Cierre: su modelo de planificación quedó en uso en el área. Muy autónoma.", nota: 6.2, propuestas: ["Presentar el modelo a otras gerencias"], final: true }], feedbackEstudiante: { respuestas: [5, 5, 4, 5], comentario: "Pude trabajar con datos reales desde el primer mes.", fecha: "2026-09-02" }, notaUniversidad: 6.4, autorizaVerNota: true }),
+      post("Joaquín Torres", "joaquin.torres@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil de Minas", 268, "Terminó", { feedbackTutor: [{ fecha: "2026-08-28", autor: "Pamela Soto (tutora)", texto: "Cierre: buen análisis, pero entregó con atraso.", nota: 5.5, propuestas: ["Fijar hitos quincenales"], final: true }], feedbackEstudiante: { respuestas: [3, 4, 3, 3], comentario: "Faltó claridad sobre qué datos podía usar.", fecha: "2026-09-03" }, notaUniversidad: 5.6, autorizaVerNota: false }),
+      post("Paulina Rivas", "paulina.rivas@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil Industrial", 265, "Terminó"),
+      post("Ignacio Salazar", "ignacio.salazar@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil Industrial", 262, "No aceptado"),
+      post("Daniela Rojas", "daniela.rojas@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil de Minas", 260, "No aceptado")
+    ]
+  });
+  return out;
 }
 
 // Fecha relativa a hoy, para que los ejemplos no envejezcan.
@@ -154,6 +209,22 @@ function convMisHTML() {
     ${ab.length ? ab.map(c => `<a class="conv-open" href="#/convocatoria/${c.id}"><b>${esc(c.titulo)}</b><span>${c.postulantes.length} postulantes${sinRevisar(c).length ? ` · ${sinRevisar(c).length} sin revisar` : ""}</span><span>Cierra el ${fechaTxt(c.cierre)}</span></a>`).join("") : `<p class="muted small">No hay convocatorias abiertas.</p>`}
     ${ce.length ? `<details class="mas"><summary>Ver ${ce.length} ${ce.length === 1 ? "cerrada" : "cerradas"}</summary>${ce.map(fila).join("")}</details>` : ""}
     ${puedeCrear() ? `<a class="lnk small conv-nueva" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</div>`;
+}
+
+
+// Convocatorias en un recuadro propio, parecido al de vínculos: una fila por convocatoria.
+function convTablaHTML() {
+  const todas = convVisibles();
+  if (!todas.length && !puedeCrear()) return "";
+  const orden = [...todas].sort((x, y) => (x.estado === y.estado ? (y.creada || "").localeCompare(x.creada || "") : x.estado === "Abierta" ? -1 : 1));
+  const fila = c => {
+    const sr = sinRevisar(c).length, v = vinculo(c.vinculo), cp = contraparte(c.institucion);
+    return `<tr class="row" data-conv="${c.id}" tabindex="0"><td><span class="t">${esc(c.titulo)}</span><small>${esc(c.tipo || "")}${v ? " · " + esc(v.nombre) : ""}</small></td><td>${esc(cp.corto)}</td><td><span class="pill-estado ${c.estado === "Abierta" ? "abierta" : "cerrada"}">${esc(c.estado)}</span></td><td data-l="Postulantes"><b>${c.postulantes.length}</b>${sr ? `<small class="falta">${sr} por revisar</small>` : ""}</td><td data-l="Cupos">${c.cupos || "–"}</td><td data-l="Cierre">${c.cierre ? fechaTxt(c.cierre) : "–"}</td></tr>`;
+  };
+  const ab = todas.filter(c => c.estado === "Abierta").length;
+  return `<div class="card" id="tablaConv">
+    <div class="tabla-acts"><div><p class="card-title" style="margin:0">Convocatorias para estudiantes</p><span class="muted small">${todas.length ? `${ab} ${ab === 1 ? "abierta" : "abiertas"} de ${todas.length}. Haz clic en una fila para ver sus postulantes.` : "Aún no hay convocatorias."}</span></div>${puedeCrear() ? `<a class="btn-accent sm" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</div>
+    ${todas.length ? `<div class="table-wrap"><table><thead><tr><th>Convocatoria</th><th>Institución</th><th>Estado</th><th>Postulantes</th><th>Cupos</th><th>Cierre</th></tr></thead><tbody>${orden.map(fila).join("")}</tbody></table></div>` : `<div class="empty">Crea una para publicar la oferta, recibir postulaciones y registrar a quienes aceptas.</div>`}</div>`;
 }
 
 /* ---------- Crear convocatoria ---------- */

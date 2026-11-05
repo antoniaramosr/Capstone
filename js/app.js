@@ -180,7 +180,8 @@ function borradorCorreoInst(v, extraMsg, para) {
 }
 function outlookWebHref(to, subject, body, bcc) {
   const q = { to, subject, body }; if (bcc) q.bcc = bcc;
-  return "https://outlook.office.com/mail/deeplink/compose?" + new URLSearchParams(q).toString();
+  // encodeURIComponent deja los espacios como %20 (URLSearchParams los dejaba como "+" y Outlook los mostraba tal cual).
+  return "https://outlook.office.com/mail/deeplink/compose?" + Object.entries(q).map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
 }
 function abrirOutlookWeb(to, subject, body, bcc) {
   to = (to || "").trim();
@@ -401,9 +402,9 @@ function vMis(p) {
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
     </div>
     <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
+    ${convTablaHTML()}
   </div>
   <aside class="stack">
-    ${convMisHTML()}
     ${fold("Avisos", av.length, av.length ? avVis.map(avHTML).join("") + (avMas.length ? `<details class="mas"><summary>Ver ${avMas.length} ${avMas.length === 1 ? "aviso más" : "avisos más"}</summary>${avMas.map(avHTML).join("")}</details>` : "") : `<p class="muted small">No tienes avisos.</p>`, true)}
   </aside></div>`;
 }
@@ -491,7 +492,7 @@ function vFicha(id) {
   <div class="statbar">
     <div><span class="lbl">Avance del plan de trabajo</span><span class="pcell">${barra(pr)}<b>${pr}%</b></span><span class="faltan">${hechos} de ${v.hitos.length} tareas hechas</span></div>
     ${comp.faltan.length ? `<div><span class="lbl">Datos por completar</span><span class="faltan" style="margin-top:0">${comp.faltan.join(", ")}</span></div>` : `<div><span class="lbl">Ficha</span><span class="faltan" style="margin-top:0">Todos los datos importantes están completos</span></div>`}
-    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar o eliminar</button><button class="btn-accent" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con reunión</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
+    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar o eliminar</button><button class="btn-accent" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con IA</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button><button class="btn-outline" onclick="abrirTraspaso(${v.id})">Cambiar encargado/a</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
   </div>
   <div class="grid-main"><div class="stack">
     <div class="card"><p class="card-title">Ficha del vínculo</p><dl class="kv">
@@ -872,7 +873,7 @@ function abrirAsistente(vid, tab) {
 function cerrarAsistente() { const d = $("#drawer"); if (!d) return; asis.creado = null; d.classList.remove("show"); $("#drawerBg").classList.remove("show"); if (reco) { try { reco.stop(); } catch (e) {} } }
 const urlResponder = (v, q) => location.href.split("#")[0] + "#/responder/" + v.id + "." + q.id;
 function textoCuestionario(v, preguntas, q) {
-  const link = q ? urlResponder(v, q) : "[el link se genera al abrir Outlook]";
+  const link = urlResponder(v, q || { id: "…" });
   return `Hola${v.contacto.nombre ? " " + v.contacto.nombre : ""}:\n\nDesde ${nombreArea(v.area)} de Antofagasta Minerals queremos saber cómo va "${v.nombre}". ¿Nos ayudas respondiendo ${preguntas.length} preguntas cortas? Toma menos de 5 minutos y no necesitas crear una cuenta:\n\n${link}\n\nMuchas gracias,\n${v.responsable || ME.nombre}\nAntofagasta Minerals`;
 }
 function renderAsistente() {
@@ -883,13 +884,14 @@ function renderAsistente() {
   if (!v) { d.innerHTML = `<p class="muted">No tienes vínculos que puedas editar.</p>`; return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let html = `<label class="f" for="asV">Vínculo</label><select class="input" id="asV">${editables.map(x => `<option value="${x.id}" ${x.id === v.id ? "selected" : ""}>${esc(x.nombre)}, ${esc(contraparte(x.contraparte).corto)}</option>`).join("")}</select>
-    <div class="tabs sm"><button class="tab ${asis.tab === "reunion" ? "on" : ""}" data-astab="reunion">Actualizar con reunión</button><button class="tab ${asis.tab === "cuestionario" ? "on" : ""}" data-astab="cuestionario">Cuestionario de feedback</button></div>`;
+`;
+  const tit = $("#drawerTit"); if (tit) tit.textContent = asis.tab === "reunion" ? "Actualizar con IA" : "Pedir feedback";
   if (asis.tab === "reunion") {
-    html += `<p class="small muted">Recién saliste de una reunión: dicta tus notas o pega la transcripción. El asistente propone cambios a la ficha y tú apruebas cada uno.</p>
+    html += `<p class="small muted">Cuéntale a la IA qué pasó con este vínculo: dicta, pega una transcripción o tus notas, o sube un archivo de texto. Ella propone cambios a la ficha y tú apruebas cada uno.</p>
       ${SR ? `<button class="mic-big ${reco ? "on" : ""}" id="asMic"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2Z"/></svg><span>${reco ? "Detener dictado" : "Dictar notas"}</span></button>` : `<p class="help">Este navegador no permite dictar. Puedes pegar el texto o usar el dictado del teclado del celular.</p>`}
       <textarea class="input" id="asTxt" rows="6" placeholder="O pega aquí la transcripción de Teams, Meet o Zoom, o tus notas…">${esc(asis.texto)}</textarea>
-      <div class="as-tools"><label class="btn-outline sm">Subir archivo<input type="file" id="asFile" accept=".txt,.vtt,.srt,.md,text/plain,audio/*" hidden></label><span class="small muted" id="asInfo"></span></div>
-      <div class="form-actions"><button class="btn-accent" id="asGo" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Procesando…" : "Procesar reunión"}</button></div>
+      <div class="as-tools"><label class="btn-outline sm">Subir archivo de texto<input type="file" id="asFile" accept=".txt,.vtt,.srt,.md,text/plain,audio/*" hidden></label><span class="small muted" id="asInfo"></span></div>
+      <div class="form-actions"><button class="btn-accent" id="asGo" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Procesando…" : "Procesar con IA"}</button></div>
       ${asis.error ? `<div class="err show">${esc(asis.error)}</div>` : ""}`;
     const p = asis.propuesta;
     if (p) {
@@ -914,7 +916,7 @@ function renderAsistente() {
       <div class="form-actions"><button class="btn-outline sm" id="asSug" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Pensando…" : "Sugerir con el asistente"}</button></div>
       <div class="inline-form"><input class="input" id="asPreg" placeholder="Escribe otra pregunta"><button class="btn-outline" id="asAddP">Agregar</button></div>
       ${asis.error ? `<div class="err show">${esc(asis.error)}</div>` : ""}
-      <p class="card-title" style="margin-top:16px">Vista previa del correo</p><textarea class="input" id="asPrev" rows="8" readonly>${esc(textoCuestionario(v, preguntas))}</textarea>
+      <p class="card-title" style="margin-top:16px">Vista previa del correo</p><textarea class="input" id="asPrev" rows="10" readonly>${esc(textoCuestionario(v, preguntas, { id: asis.qId = asis.qId || Date.now() }))}</textarea>
       <div class="form-actions"><button class="btn-accent" id="asEnviar">Abrir en Outlook</button><button class="btn-outline" id="asLink">Solo crear el link</button><button class="btn-outline" id="asCopiar">Copiar texto</button></div>
       <p class="help">La página no envía el correo por ti: queda guardado como "preparado" hasta que confirmes que lo mandaste en Outlook.</p>`;
   }
@@ -924,7 +926,6 @@ function renderAsistente() {
 function setPath(obj, path, val) { const k = path.split("."); let o = obj; while (k.length > 1) o = o[k.shift()]; o[k[0]] = val; }
 function wireAsistente(v) {
   $("#asV").onchange = e => { asis.vid = +e.target.value; asis.propuesta = null; asis.extra = []; asis.error = ""; asis._ultimo = asis.vid; renderAsistente(); };
-  $$("[data-astab]").forEach(b => b.onclick = () => { asis.tab = b.dataset.astab; asis.error = ""; renderAsistente(); });
   if (asis.tab === "reunion") {
     const txt = $("#asTxt"); txt.oninput = () => asis.texto = txt.value;
     $("#asFile").onchange = async e => {
@@ -977,7 +978,7 @@ function wireAsistente(v) {
     $("#asAddP").onclick = addP; $("#asPreg").onkeydown = e => { if (e.key === "Enter") addP(); };
     const preguntas = () => PREGUNTAS_BASE.filter((_, i) => asis.base[i]).map(p => p.texto).concat(asis.extra);
     $("#asCopiar").onclick = async () => { const t = $("#asPrev"); try { await navigator.clipboard.writeText(t.value); toast("Texto copiado"); } catch (e) { t.select(); toast("Selecciona y copia el texto (Cmd + C)"); } };
-    const crear = () => { const ps = preguntas(); if (!ps.length) return null; const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] }; v.cuestionarios.push(q); guardar(); asis.creado = { v: v.id, q: q.id }; asis.extra = []; return q; };
+    const crear = () => { const ps = preguntas(); if (!ps.length) return null; const q = { id: asis.qId || Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] }; asis.qId = null; v.cuestionarios.push(q); guardar(); asis.creado = { v: v.id, q: q.id }; asis.extra = []; return q; };
     const outlookDe = q => { const to = (v.contacto.correo || "").trim(); if (!to) { toast("Agrega el correo del contacto en la ficha para abrir Outlook."); return false; } abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, q.preguntas, q)); return true; };
     $("#asEnviar").onclick = () => { const q = crear(); if (!q) return; const ok = outlookDe(q); renderAsistente(); if (ok) toast("Se abrió Outlook. El link queda aquí abajo por si lo quieres mandar por otro medio."); };
     $("#asLink").onclick = () => { if (crear()) { renderAsistente(); toast("Link creado. Cópialo y envíaselo a la institución."); } };
@@ -1015,13 +1016,15 @@ function render() {
   let body = vistas[ruta] ? vistas[ruta](p) : `<div class="card empty">No encontramos esta página.<br><button class="btn-outline" onclick="location.hash='#/mis'">Ir a Mis vínculos</button></div>`;
   // Indicador de ubicación: las páginas sin migas muestran igual en qué sección estás.
   const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", admin: "Configuración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria", estudiantes: "Estudiantes", ayuda: "Ayuda" };
+  const CON_VOLVER = { ficha: "#/mis", nuevo: "#/mis", editar: "#/mis", area: "#/areas", contraparte: "#/contrapartes", convocatoria: "#/mis", "nueva-convocatoria": "#/mis", "editar-convocatoria": "#/mis", "correo-aceptados": "#/estudiantes" };
+  if (CON_VOLVER[ruta]) body = `<div class="volver-bar"><button type="button" class="btn-back" onclick="volver('${CON_VOLVER[ruta]}')"><span aria-hidden="true">←</span> Volver</button></div>` + body;
   app.innerHTML = shell(activo) + `<main class="${body.includes('class="hero') ? "has-hero" : ""}">${body}</main>${pie()}
-    <button class="fab" id="fab" aria-label="Abrir asistente"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente</span></button>
+    <button class="fab" id="fab" aria-label="Actualizar con IA"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Actualizar con IA</span></button>
     <div class="drawer-bg" id="drawerBg"></div>
-    <aside class="drawer" id="drawer" aria-label="Asistente"><div class="drawer-h"><div><b>Asistente</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>
+    <aside class="drawer" id="drawer" aria-label="Asistente"><div class="drawer-h"><div><b id="drawerTit">Actualizar con IA</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>
 `;
   wireShell(); wireVista(ruta, p);
-  $("#fab").onclick = () => abrirAsistente(ruta === "ficha" ? +p : null);
+  $("#fab").onclick = () => abrirAsistente(ruta === "ficha" ? +p : null, "reunion");
   $("#drawerX").onclick = cerrarAsistente; $("#drawerBg").onclick = cerrarAsistente;
   window.scrollTo(0, 0);
 }
@@ -1030,6 +1033,7 @@ function wireContactLinks() {
   $$("[data-contact-v]").forEach(b => b.onclick = e => { e.stopPropagation(); e.preventDefault(); abrirFormContacto(+b.dataset.contactV, b.dataset.contactC || b.dataset.contactN ? { nombre: b.dataset.contactN || "", correo: b.dataset.contactC || "" } : null); });
 }
 function wireVista(ruta, p) {
+  $$("[data-conv]").forEach(tr => { const go = () => location.hash = "#/convocatoria/" + tr.dataset.conv; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
   $$("[data-ficha]").forEach(tr => { const go = () => location.hash = "#/ficha/" + tr.dataset.ficha; tr.onclick = go; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
   wireContactLinks();
   $$("[data-abrir-add]").forEach(b => b.onclick = e => { e.stopPropagation(); togglePop("#popAdd"); });
@@ -1277,6 +1281,7 @@ document.addEventListener("ai-listo", () => { const m = $("#aiModo"); if (m) m.t
    Cuando cambia el encargado/a, SIVA arma una hoja con lo que hay que saber.
    El nuevo encargado/a la lee y confirma con "Leí y asumo". */
 let traspasoAbierto = null;
+function abrirTraspaso(id) { traspasoAbierto = id; render(); setTimeout(() => { const e = $("#tpPara"); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } }, 0); }
 const candidatosTraspaso = v => Object.values(CONFIG.usuarios).filter(u => u.rol === "gestor" && !u.espacio && u.area && descendientes(u.area).includes(v.area) && u.nombre !== v.responsable);
 function traspasoFormHTML(v) {
   const cs = candidatosTraspaso(v);
@@ -1332,7 +1337,20 @@ function eliminarConv(c) {
   S.estudiantes = S.estudiantes.filter(e => e.conv !== c.id);
   guardar(); location.hash = c.vinculo ? "#/ficha/" + c.vinculo : "#/mis"; setTimeout(() => toast(`Se eliminó la convocatoria "${c.titulo}"`, undo), 30);
 }
-window.addEventListener("hashchange", () => { confirmarEliminar = false; traspasoAbierto = null; });
+// Pila de páginas visitadas dentro de la app, para el botón "Volver".
+const pilaNav = [];
+let volviendo = false;
+window.addEventListener("hashchange", () => {
+  confirmarEliminar = false; traspasoAbierto = null;
+  const h = location.hash;
+  if (volviendo) { volviendo = false; return; }
+  if (pilaNav[pilaNav.length - 2] === h) pilaNav.pop(); else if (pilaNav[pilaNav.length - 1] !== h) pilaNav.push(h);
+});
+pilaNav.push(location.hash);
+function volver(porDefecto) {
+  if (pilaNav.length > 1) { pilaNav.pop(); volviendo = true; location.hash = pilaNav[pilaNav.length - 1]; }
+  else location.hash = porDefecto || "#/mis";
+}
 
 /* ============================ Feedback de la institución (página pública) ============================
    La contraparte responde en un link, sin cuenta y sin correos de ida y vuelta.
