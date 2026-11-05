@@ -1350,3 +1350,14 @@ main .crumbs{background:#D3E4E9;border-left:4px solid var(--brand-2,#0E7C86);pad
 .nav-item:not(.on):hover,.nav-item.open:not(.on){background:rgba(255,255,255,.16);border-radius:999px}
 .nav-item.on .nav-btn:hover{background:#fff}
 .nav-item.on .nav-more:hover{background:#fff}
+
+/* noviembre 7: letra un poco más chica */
+body{font-size:16.5px}
+h1{font-size:28px}
+table{font-size:15px}
+td small{font-size:13px}
+.hero .sub{font-size:16px}
+.nav-btn{font-size:15.5px}
+.crumbs,.crumbs::before{font-size:15px}
+.input,select.input,textarea.input{font-size:15px}
+.msg{font-size:15px}
