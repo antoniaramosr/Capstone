@@ -85,6 +85,35 @@ Casos puestos a propósito para ver cada cosa de la página:
 
 Convocatorias: *Memorias 2027* (UCN, abierta), *Práctica profesional invierno 2027* (U. de Antofagasta, abierta, cierra pronto), *Mentoring a ingenieras 2027* (PUC, abierta), *Práctica de verano 2026* (UCN, cerrada) y *Memorias 2026* (U. de Chile, cerrada, con notas y feedback).
 
+## Texto y archivo de ejemplo para "Actualizar con IA"
+
+Sirven para probar el panel "Actualizar con IA" de una ficha sin inventar una reunión cada vez. Están pensados para el vínculo **Feria de empleo PUCV** (entra como Eduardo, está en Mis vínculos, en Exploración).
+
+**Archivos para subir** (botón "Subir archivo de texto" del panel), en la carpeta `ejemplos/actualizar-con-ia/`:
+
+- `nota-reunion-feria-pucv.txt`: las notas de la reunión, en texto simple.
+- `transcripcion-feria-pucv.vtt`: la misma reunión como la entrega una transcripción de Teams, con tiempos y quién habla. La página limpia los tiempos sola.
+
+**Texto para pegar** en el cuadro del panel (es el mismo del `.txt`):
+
+```
+Notas de reunión · Feria de empleo PUCV
+Fecha: 4 de noviembre de 2026
+Participaron: Sandra Mella (Dirección de asuntos estudiantiles, PUCV) y Eduardo (Reclutamiento y selección, AMSA).
+
+Contacto nuevo: Rodrigo Pizarro, correo rpizarro@pucv.ejemplo.cl. Él va a coordinar la feria desde la universidad.
+
+Nos juntamos para ver cómo participaría AMSA en la feria de empleo de abril. La universidad necesita que confirmemos cuántas personas iríamos al stand y qué carreras queremos atender. Piden también que llevemos información sobre prácticas de verano y memorias.
+
+Quedó listo el tema de la fecha: la feria es el 15 de abril de 2027 y ya está coordinada con el calendario de la universidad. Empezamos a coordinar el stand y el traslado del equipo.
+
+Acordamos enviar la lista de carreras y el número de personas antes del 30 de noviembre. Quedamos en agendar una nueva reunión para la primera semana de diciembre.
+```
+
+Qué debería proponer la IA: cambiar el contacto a Rodrigo Pizarro, agregar a los comentarios lo que pide la universidad, marcar "Coordinar fecha" como cumplida, sumar dos próximos pasos (enviar la lista de carreras y agendar la reunión de diciembre) y mover el vínculo de Exploración a En ejecución. Cada cambio se aprueba por separado, y lo que no se aprueba no se guarda. En "Modo demo, sin IA" se aplican reglas simples y la propuesta es más corta; con IA de verdad también completa objetivo y fechas.
+
+Los archivos de audio todavía no se transcriben dentro de la página. Para audio, hay que usar la transcripción de Teams o Meet, o el botón "Dictar notas".
+
 ## Paso a paso para probar cada cosa
 
 1. **Contactar a una institución.** Entra como Eduardo, ve a Mis vínculos y presiona "Contactar" en la fila de Memorias y prácticas UCN. Se abre Outlook con el correo para Paula Herrera. Si hay otra área trabajando con la misma institución, la ventana lo avisa antes.
@@ -94,8 +123,10 @@ Convocatorias: *Memorias 2027* (UCN, abierta), *Práctica profesional invierno 2
 5. **Seguir una práctica.** Con el correo de Camila Rojas o de Sofía Pizarro, entra a "Mi postulación" y mira el feedback del tutor.
 6. **Traspasar un vínculo.** Como Eduardo, en la ficha de un vínculo usa "Cambiar encargado/a" y pásaselo a Matías (el botón está arriba, junto a "Editar o eliminar", y también en el panel lateral). Cambia de perfil a Matías para verlo llegar.
 7. **Empezar de cero.** Entra como Daniela (sin vínculos) o como Perfil 0 (página vacía) y registra el primer vínculo con "+ Añadir".
-8. **Actualizar con IA.** En una ficha, "Actualizar con IA" abre un panel aparte del de feedback. Se dicta, se pega una transcripción o se sube un archivo de texto, y se aprueba cada cambio propuesto.
-9. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
+8. **Actualizar con IA.** En una ficha, "Actualizar con IA" abre un panel aparte del de feedback. Se dicta, se pega una transcripción o se sube un archivo de texto, y se aprueba cada cambio propuesto. Hay un texto y archivos de ejemplo en la sección de arriba.
+9. **Descargar la ficha.** El botón "Descargar ficha" baja un PDF con todos los datos del vínculo.
+10. **Ver las convocatorias.** En Mis vínculos aparecen arriba las convocatorias abiertas, y la pestaña "Convocatorias para estudiantes" muestra todas, abiertas y cerradas.
+11. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
 
 ## Qué queda por hacer en esta rama
 

@@ -373,7 +373,8 @@ function vMis(p) {
   const activos = mios.filter(v => v.etapa < 3).length, sinCal = mios.filter(v => v.etapa === 3 && !v.calif).length;
   const incom = mios.filter(v => completitud(v).pct < 50).length, convA = S.convocatorias.filter(c => c.estado === "Abierta" && (ME.admin || descendientes(ME.area).includes(convArea(c)))).length;
   const nInst = misCp.length, comp = misCp.filter(cp => S.vinculos.some(v => v.contraparte === cp && !mios.includes(v))).length;
-  const otrasTab = p === "otras" && !ME.admin;
+  const otrasTab = p === "otras" && !ME.admin, convTab = p === "convocatorias";
+  const nConv = convVisibles().length;
   const nOtras = ME.admin ? 0 : [...new Set(S.vinculos.filter(v => !mios.includes(v)).map(v => v.contraparte))].length;
   const titulo = ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos";
   const head = hero(titulo, ME.admin ? "Aquí ves todos los vínculos registrados en SIVA." : "Aquí ves y gestionas los vínculos de tu área con universidades e instituciones. <span class=\"hero-ruta\">" + rutaTxt(ME.area) + "</span>", { cards: true }) + `
@@ -384,12 +385,13 @@ function vMis(p) {
     <div><b>${sinCal}</b><span>cerrados sin calificar</span></div>
     ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<a class="r-link" href="#/mis/otras"><b>${comp}</b><span>instituciones compartidas con otras áreas</span></a>`}
   </div>
-  ${ME.admin ? "" : `<div class="tabs" role="tablist"><a class="tab ${otrasTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab}">Mis vínculos (${mios.length})</a><a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a></div>`}`;
+  <div class="tabs" role="tablist"><a class="tab ${otrasTab || convTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab && !convTab}">${ME.admin ? "Todos los vínculos" : "Mis vínculos"} (${mios.length})</a><a class="tab ${convTab ? "on" : ""}" href="#/mis/convocatorias" role="tab" aria-selected="${convTab}">Convocatorias para estudiantes (${nConv})</a>${ME.admin ? "" : `<a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a>`}</div>`;
   if (otrasTab) return head + vOtrasAreas(mios, misCp);
+  if (convTab) return head + convTablaHTML();
   const anios = [...new Set(mios.map(anioDe))].sort().reverse();
   const avVis = av.slice(0, 3), avMas = av.slice(3);
   const avHTML = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
-  return head + resumenSemanaHTML(mios) + `<div class="grid-main"><div>
+  return head + convTiraHTML() + resumenSemanaHTML(mios) + `<div class="grid-main"><div>
     <div class="filters">
       <div class="chips">${["Todos", ...CONFIG.etapas].map((t, i) => `<button class="chip-btn ${filtro.etapa === i - 1 ? "on" : ""}" data-etapa-f="${i - 1}">${t} (${i ? mios.filter(v => v.etapa === i - 1).length : mios.length})</button>`).join("")}</div>
       <div class="frow"><input class="input sm" id="fq" placeholder="Buscar vínculo o institución" value="${esc(filtro.q)}" aria-label="Buscar">
@@ -402,7 +404,6 @@ function vMis(p) {
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
     </div>
     <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
-    ${convTablaHTML()}
   </div>
   <aside class="stack">
     ${fold("Avisos", av.length, av.length ? avVis.map(avHTML).join("") + (avMas.length ? `<details class="mas"><summary>Ver ${avMas.length} ${avMas.length === 1 ? "aviso más" : "avisos más"}</summary>${avMas.map(avHTML).join("")}</details>` : "") : `<p class="muted small">No tienes avisos.</p>`, true)}
@@ -1060,7 +1061,7 @@ function wireVista(ruta, p) {
 
   if (ruta === "ficha") {
     const v = vinculo(+p); if (!v) return;
-    $("#dlReadme").onclick = () => descargar(`README-${v.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-")}.md`, readmeMarkdown(v), "text/markdown");
+    $("#dlReadme").onclick = () => descargarFichaPDF(v);
     if (!puedeEditar(v)) return;
     $$("[data-etapa]").forEach(b => b.onclick = () => {
       const n = +b.dataset.etapa, antes = v.etapa; if (n === antes) return;
