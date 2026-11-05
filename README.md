@@ -2,7 +2,15 @@
 
 Esta rama es la versión limpia del prototipo. Borramos los datos de ejemplo que venían del mapeo (eran muchos y estaban a medias) y armamos a mano un set corto: **8 vínculos, 7 instituciones, 2 convocatorias y 3 estudiantes**. Todo parte de una historia completa, para que cada flujo se pueda probar de principio a fin.
 
-Para verla: `index.html` con un servidor local (por ejemplo `python3 -m http.server`) y, la primera vez, entrar por `#/reiniciar` para cargar los datos de partida. Si cambias algo en los datos, vuelve a entrar por `#/reiniciar`, porque la página guarda lo que haces en el navegador.
+## Ver la página
+
+Abre este link en Safari o Chrome (no hace falta instalar nada):
+
+**https://raw.githack.com/antoniaramosr/Capstone/nuevo/index.html#/reiniciar**
+
+El `#/reiniciar` del final carga los datos de partida desde cero. Úsalo la primera vez y cada vez que cambien los datos, porque la página guarda lo que haces en el navegador. Si acabas de subir cambios y no los ves, espera unos minutos y recarga con Cmd+Shift+R, o prueba en una ventana privada.
+
+También se puede abrir `index.html` con un servidor local (por ejemplo `python3 -m http.server`).
 
 ## Cómo funcionan los correos
 
