@@ -552,8 +552,7 @@ function vFicha(id) {
       ${otras.length ? `<details class="note dd"><summary><b>${[...new Set(otras.map(x => x.area))].length} ${[...new Set(otras.map(x => x.area))].length === 1 ? "otra área trabaja" : "otras áreas trabajan"} con esta institución</b></summary>${otras.slice(0, 6).map(x => `<a href="#/ficha/${x.id}"><b>${esc(nombreArea(x.area))}</b>${esc(x.nombre)} · ${CONFIG.etapas[x.etapa]}${x.responsable ? `<br><span class="muted">Lo lleva: ${esc(x.responsable)}</span>` : ""}</a>`).join("")}</details>` : ""}</div>
     <div class="card side"><p class="card-title">Contactos en la institución</p>
       <p class="help" style="margin:0 0 12px">Personas de ${esc(c.corto || c.nombre)} con quienes se trabaja este vínculo.</p>
-      ${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? contactoCard(v.contacto, ed ? v.id : 0, true) : `<div class="cc main empty"><span class="muted">Contacto principal no definido</span></div>`}
-      ${otrosCont.length ? `<p class="sub-h">Otros contactos</p>${otrosCont.map(k => contactoCard(k, ed ? v.id : 0, false)).join("")}` : ""}</div>
+      <div class="cc-grid">${v.contacto.nombre || v.contacto.cargo || v.contacto.correo ? contactoCard(v.contacto, ed ? v.id : 0, true) : `<div class="cc main empty"><span class="muted">Contacto principal no definido</span></div>`}${otrosCont.map(k => contactoCard(k, ed ? v.id : 0, false)).join("")}</div></div>
     <div class="card side"><p class="card-title">En Antofagasta Minerals</p>
       <p class="lbl2">Líder de la iniciativa</p><h4>${esc(v.lider || "No definido")}</h4>
       <p class="lbl2">Encargado/a del día a día</p><h4>${esc(v.responsable || "No definido")}</h4><p>${rutaTxt(v.area)}</p>

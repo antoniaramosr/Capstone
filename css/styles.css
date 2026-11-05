@@ -1433,3 +1433,14 @@ details.f-sec > summary.f-h:hover{background:#F4F9FA}
 @media (max-width:700px){.kv,.pub .kv{grid-template-columns:1fr}.kv dt{border-bottom:0;padding-bottom:0}.kv dd{padding-top:2px}}
 .pub .kv dt{padding-top:13.5px}
 .kv dt{padding-top:12.5px}
+
+/* noviembre 10: personas en horizontal */
+.f-sec .f-grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+.f-sec .f-grid3 > .card:nth-child(2){grid-column:1/-1;order:3}
+.cc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;align-items:stretch}
+.cc-grid .cc{margin:0;display:flex;flex-direction:column}
+.cc-grid .cc .contactar{margin-top:auto!important;align-self:flex-start}
+.cc-grid .cc-lines{margin-bottom:14px}
+.cc-grid .cc.main{grid-column:auto}
+@media (max-width:1000px){.f-sec .f-grid3{grid-template-columns:1fr}}
+.f-sec .f-grid3 > .card:nth-child(3){order:2}
