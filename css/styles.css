@@ -1444,3 +1444,20 @@ details.f-sec > summary.f-h:hover{background:#F4F9FA}
 .cc-grid .cc.main{grid-column:auto}
 @media (max-width:1000px){.f-sec .f-grid3{grid-template-columns:1fr}}
 .f-sec .f-grid3 > .card:nth-child(3){order:2}
+
+/* noviembre 11: bordes redondeados, leyenda de la tabla, contactos de institución */
+.card{border-radius:14px}
+.table-wrap{border:1px solid var(--line);border-radius:12px;overflow:auto}
+.table-wrap table{margin:0}
+.table-wrap tbody tr:last-child td{border-bottom:0}
+.leyenda-tabla{margin:18px 0 0;padding:16px 18px;background:#F4F9FA;border:1px solid var(--line);border-radius:12px;line-height:1.45;color:var(--ink)}
+.leyenda-tabla .ley-t{display:block;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-2);margin-bottom:12px}
+.ley-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 24px}
+.ley-it{display:flex;gap:12px;align-items:flex-start}
+.ley-ic{flex:0 0 74px;display:flex;align-items:center;min-height:24px}
+.ley-it p{margin:0;font-size:15px;color:var(--muted)}
+.ley-it p b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.ley-fila{display:block;width:64px;height:22px;background:#FFF3C9;border:1px solid #EBD58A;border-radius:6px}
+.leyenda-tabla .dots i{width:9px;height:9px}
+.card.side .cc{margin:0 0 12px}
+.card.side .cc:last-child{margin-bottom:0}

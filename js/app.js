@@ -351,7 +351,10 @@ function ordenar(list) {
    Si la página tiene tarjetas de resumen, estas quedan montadas sobre el borde del encabezado. */
 const hero = (titulo, sub, o = {}) => `<div class="hero ${o.cards ? "hero-cards" : ""}">${o.crumbs ? `<div class="crumbs">${o.crumbs}</div>` : ""}<div class="hero-row"><div><h1>${titulo}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>${o.acciones ? `<div class="hero-acts">${o.acciones}</div>` : ""}</div></div>`;
 const anioDe = v => (v.inicio || "").slice(0, 4) || "Sin fecha";
-const LEYENDA_TABLA = `<p class="leyenda-tabla"><b>Cómo leer la tabla.</b> <span class="dots"><i></i><i></i><i></i><i class="off"></i><i class="off"></i></span> <b>Calificación</b>: qué tan bien resultó el vínculo, de 1 a 5, la pone el área. <span class="prog sm"><i style="width:60%"></i></span> <b>Avance</b>: qué parte del plan de trabajo ya se hizo. Las filas amarillas son vínculos que conviene atender.</p>`;
+const LEYENDA_TABLA = `<div class="leyenda-tabla"><b class="ley-t">Cómo leer la tabla</b><div class="ley-grid">
+  <div class="ley-it"><span class="ley-ic"><span class="dots"><i></i><i></i><i></i><i class="off"></i><i class="off"></i></span></span><p><b>Calificación</b>Qué tan bien resultó el vínculo, de 1 a 5. La pone el área.</p></div>
+  <div class="ley-it"><span class="ley-ic"><span class="prog sm"><i style="width:60%"></i></span></span><p><b>Avance</b>Qué parte del plan de trabajo ya se hizo.</p></div>
+  <div class="ley-it"><span class="ley-ic"><span class="ley-fila"></span></span><p><b>Fila amarilla</b>Vínculo que conviene atender.</p></div></div></div>`;
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
   const mailCol = opts.mail !== false && vinculosContactables().length;
@@ -756,8 +759,8 @@ function vContraparte(id) {
   <div class="grid-main"><div class="card">${filasVinculos(vs, { area: true })}</div>
   <aside class="stack"><div class="card side"><p class="card-title">Resumen</p><p style="color:var(--ink)"><b>${as.length}</b> ${as.length === 1 ? "área" : "áreas"} en contacto</p><p>Calificación promedio: <b style="color:var(--ink)">${num1(promedio(vs))}</b> de 5</p><p>${cal.length ? `Ayudó a la meta en ${si} de ${cal.length} vínculos evaluados` : "Sin vínculos evaluados"}</p><p>${S.estudiantes.filter(e => e.contraparte === id).length} estudiantes en práctica o memoria hoy</p>
     <div style="margin-top:10px">${as.map(a => `<a class="tag" href="#/area/${a}">${esc(nombreArea(a))}</a>`).join("")}</div></div>
-    ${(c.contactos || []).length ? `<div class="card side"><p class="card-title">Contactos registrados</p>${c.contactos.map(k => `<div class="person"><b>${esc(k.nombre)}</b><span>${esc(k.cargo)}</span>${contactarBtn(mio ? mio.id : 0, k.nombre, k.correo)}${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a>` : ""}</div>`).join("")}</div>` : ""}
-    ${as.length > 1 ? `<div class="note"><b>Oportunidad de coordinación</b>Varias áreas trabajan con esta institución. Conviene acordar quién lleva cada tema para no duplicar contactos.</div>` : ""}</aside></div>`;
+    ${(c.contactos || []).length ? `<div class="card side"><p class="card-title">Contactos registrados</p>${c.contactos.map(k => contactoCard(k, mio ? mio.id : 0, false)).join("")}</div>` : ""}
+  </aside></div>`;
 }
 
 /* ============================ Dashboard ============================ */
