@@ -146,7 +146,7 @@ En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene ca
 7. **Empezar de cero.** Entra como Daniela (sin vínculos) o como Perfil 0 (página vacía) y registra el primer vínculo con "+ Añadir".
 8. **Actualizar con IA.** En una ficha, "Actualizar con IA" abre un panel aparte del de feedback. Se dicta, se pega una transcripción o se sube un archivo de texto, y se aprueba cada cambio propuesto. Hay un texto y archivos de ejemplo en la sección de arriba.
 9. **Descargar la ficha.** El botón "Descargar ficha" baja un PDF con todos los datos del vínculo.
-10. **Ver las convocatorias.** En Mis vínculos aparecen arriba las convocatorias abiertas, y la pestaña "Convocatorias para estudiantes" (junto a "Mis vínculos" y "Con otras áreas") te baja a la tabla con todas, abiertas y cerradas. Los menús de la barra de arriba se abren al pasar el mouse por la flechita.
+10. **Ver las convocatorias.** En el Inicio de Mis vínculos aparecen las convocatorias abiertas, y la pestaña "Convocatorias" muestra el historial completo, abiertas y cerradas. En Mis vínculos, el "Inicio" solo muestra lo abierto; la pestaña "Vínculos" tiene el historial con filtros. Los menús de la barra de arriba se abren al pasar el mouse por la flechita.
 11. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
 12. **Evaluar un vínculo.** En la ficha de uno sin calificar, "Evaluar vínculo" abre la sección de evaluación. Después de calificar queda fija.
 13. **Preguntarle al asistente.** Botón de abajo a la derecha; hay preguntas de ejemplo más arriba.

@@ -1394,3 +1394,42 @@ summary.f-h{font-weight:700}
 summary.f-h small{font-weight:400}
 .f-grid3 .btn-outline.wide{box-sizing:border-box;width:100%}
 .cc-lines i{min-width:74px;width:74px}
+
+/* noviembre 9: inicio/historial, secciones en un solo cuadro, contactos legibles, portal */
+.tabla-btns{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.tabs{flex-wrap:wrap}
+/* cada sección de la ficha es un solo cuadro */
+details.f-sec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;margin:0 0 24px;box-shadow:0 1px 2px rgba(11,68,82,.05)}
+details.f-sec > summary.f-h{margin:0;padding:18px 24px;border-bottom:0;border-radius:14px}
+details.f-sec[open] > summary.f-h{border-bottom:1px solid var(--line);border-radius:14px 14px 0 0;background:#F4F9FA}
+details.f-sec > summary.f-h:hover{background:#F4F9FA}
+.f-body{padding:22px 24px 24px}
+.f-sec .f-grid2,.f-sec .f-grid3{align-items:stretch}
+.f-sec .card{box-shadow:none;border:1px solid var(--line);background:#fff}
+.f-sec .f-grid2 > .card,.f-sec .f-grid3 > .card{height:100%;box-sizing:border-box}
+.f-sec .stack > .card.fold{box-shadow:none}
+/* contactos */
+.cc{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:10px;margin:0 0 12px;background:#fff}
+.cc.main{background:#E7F2F4;border-color:#A9CCD3;border-left:4px solid var(--brand-2);padding:16px}
+.cc-head{display:flex;align-items:center;gap:14px}
+.cc-id{display:flex;flex-direction:column;gap:3px;min-width:0}
+.cc-id b{font-size:17px;color:var(--ink);line-height:1.25}
+.cc.main .cc-id b{font-size:19px;color:var(--brand)}
+.cc-badge{align-self:flex-start;margin-top:4px}
+.cc-lines{margin-top:14px;padding-top:12px;border-top:1px solid rgba(11,68,82,.15);display:flex;flex-direction:column;gap:12px}
+.cc-line{display:flex;flex-direction:column;gap:2px}
+.cc-l{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.cc-line a{word-break:break-word;font-size:15.5px}
+.cc .contactar{margin:14px 0 0!important}
+.f-grid3 .btn-outline.wide,#tpAbrir{display:block;box-sizing:border-box;width:100%;max-width:100%;margin-left:0;margin-right:0}
+/* pares etiqueta / valor con renglones */
+.kv{gap:0 18px;grid-template-columns:150px 1fr}
+.kv dt,.kv dd{padding:11px 0;border-bottom:1px solid var(--line)}
+.kv dt{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.kv > :nth-last-child(-n+2){border-bottom:0}
+.pub .kv{grid-template-columns:190px 1fr}
+.pub .kv dt{color:var(--brand);font-size:15px}
+.pub .kv dd{font-size:16.5px;line-height:1.55}
+@media (max-width:700px){.kv,.pub .kv{grid-template-columns:1fr}.kv dt{border-bottom:0;padding-bottom:0}.kv dd{padding-top:2px}}
+.pub .kv dt{padding-top:13.5px}
+.kv dt{padding-top:12.5px}

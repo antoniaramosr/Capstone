@@ -387,7 +387,7 @@ function vMis(p) {
   const incom = mios.filter(v => completitud(v).pct < 50).length, convA = S.convocatorias.filter(c => c.estado === "Abierta" && (ME.admin || descendientes(ME.area).includes(convArea(c)))).length;
   const nInst = misCp.length, comp = misCp.filter(cp => S.vinculos.some(v => v.contraparte === cp && !mios.includes(v))).length;
   const otrasTab = p === "otras" && !ME.admin;
-  if (p === "convocatorias") irConv = true;
+  const vista = otrasTab ? "otras" : p === "convocatorias" ? "conv" : !p || p === "inicio" ? "inicio" : "vinc";
   const nConv = convVisibles().length;
   const nOtras = ME.admin ? 0 : [...new Set(S.vinculos.filter(v => !mios.includes(v)).map(v => v.contraparte))].length;
   const titulo = ME.admin ? "Todos los vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos";
@@ -399,12 +399,24 @@ function vMis(p) {
     <div><b>${sinCal}</b><span>cerrados sin calificar</span></div>
     ${ME.admin ? `<div><b>${convA}</b><span>convocatorias abiertas</span></div>` : `<a class="r-link" href="#/mis/otras"><b>${comp}</b><span>instituciones compartidas con otras áreas</span></a>`}
   </div>
-  <div class="tabs" role="tablist"><a class="tab ${otrasTab ? "" : "on"}" href="#/mis" role="tab" aria-selected="${!otrasTab}">${ME.admin ? "Todos los vínculos" : "Mis vínculos"} (${mios.length})</a>${ME.admin ? "" : `<a class="tab ${otrasTab ? "on" : ""}" href="#/mis/otras" role="tab" aria-selected="${otrasTab}">Con otras áreas (${nOtras} instituciones)</a>`}<a class="tab tab-conv" href="#/mis" data-ir-conv role="tab" aria-selected="false">Convocatorias para estudiantes (${nConv})</a></div>`;
+  <div class="tabs" role="tablist">${[["inicio", "#/mis", "Inicio"], ["vinc", "#/mis/vinculos", (ME.admin ? "Todos los vínculos" : "Vínculos") + " (" + mios.length + ")"], ["conv", "#/mis/convocatorias", "Convocatorias (" + nConv + ")"]].concat(ME.admin ? [] : [["otras", "#/mis/otras", "Con otras áreas (" + nOtras + " instituciones)"]]).map(([k, h, t]) => `<a class="tab ${vista === k ? "on" : ""}" href="${h}" role="tab" aria-selected="${vista === k}">${t}</a>`).join("")}</div>`;
   if (otrasTab) return head + vOtrasAreas(mios, misCp);
+  if (vista === "conv") return head + convTablaHTML();
+  if (vista === "inicio") {
+    const rk = { rojo: 0, amarillo: 1, verde: 2, cerrado: 3 }, abiertos = mios.filter(v => v.etapa < 3).sort((x, y) => rk[saludDe(x).k] - rk[saludDe(y).k]), nCer = mios.length - abiertos.length;
+    const avV = av.slice(0, 3), avM = av.slice(3), avH = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
+    return head + resumenSemanaHTML(mios) + `<div class="grid-main"><div>
+      <div class="card" id="tablaMis"><div class="tabla-acts"><div><p class="card-title" style="margin:0">Vínculos abiertos</p><span class="muted small">${abiertos.length} ${abiertos.length === 1 ? "vínculo en curso" : "vínculos en curso"}. Haz clic en una fila para abrir su ficha.</span></div><span class="tabla-btns">${nCer ? `<a class="lnk" href="#/mis/vinculos">Ver historial (${nCer} ${nCer === 1 ? "cerrado" : "cerrados"}) →</a>` : ""}${puedeCrear() ? `<button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button>` : ""}</span></div>${filasVinculos(abiertos, { ...opcionesTabla(), agrupar: false, vacio: "No tienes vínculos abiertos." })}</div>
+      ${convTablaHTML(true)}
+    </div>
+    <aside class="stack">
+      ${fold("Avisos", av.length, av.length ? avV.map(avH).join("") + (avM.length ? `<details class="mas"><summary>Ver ${avM.length} ${avM.length === 1 ? "aviso más" : "avisos más"}</summary>${avM.map(avH).join("")}</details>` : "") : `<p class="muted small">No tienes avisos.</p>`, true)}
+    </aside></div>`;
+  }
   const anios = [...new Set(mios.map(anioDe))].sort().reverse();
   const avVis = av.slice(0, 3), avMas = av.slice(3);
   const avHTML = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
-  return head + resumenSemanaHTML(mios) + `<div class="grid-main"><div>
+  return head + `<div class="grid-main"><div>
     <div class="filters">
       <div class="chips">${["Todos", ...CONFIG.etapas].map((t, i) => `<button class="chip-btn ${filtro.etapa === i - 1 ? "on" : ""}" data-etapa-f="${i - 1}">${t} (${i ? mios.filter(v => v.etapa === i - 1).length : mios.length})</button>`).join("")}</div>
       <div class="frow"><input class="input sm" id="fq" placeholder="Buscar vínculo o institución" value="${esc(filtro.q)}" aria-label="Buscar">
@@ -416,8 +428,7 @@ function vMis(p) {
       <label class="chk"><input type="checkbox" id="fag" ${filtro.agrupar ? "checked" : ""}> Agrupar por año</label>
       <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Con datos por completar</label></div>
     </div>
-    <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Cada fila es un vínculo. Haz clic para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
-    ${convTablaHTML()}
+    <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Historial completo: abiertos y cerrados. Haz clic en una fila para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
   </div>
   <aside class="stack">
     ${fold("Avisos", av.length, av.length ? avVis.map(avHTML).join("") + (avMas.length ? `<details class="mas"><summary>Ver ${avMas.length} ${avMas.length === 1 ? "aviso más" : "avisos más"}</summary>${avMas.map(avHTML).join("")}</details>` : "") : `<p class="muted small">No tienes avisos.</p>`, true)}
@@ -491,11 +502,9 @@ const fCerradas = new Set();
 const fAb = id => fCerradas.has(id) ? "" : "open";
 function contactoCard(k, vid, principal) {
   const ini = ((k.nombre || "?").trim()[0] || "?").toUpperCase();
-  return `<div class="cc ${principal ? "main" : ""}"><span class="cc-av" aria-hidden="true">${esc(ini)}</span><div class="cc-b">
-    <div class="cc-top"><b>${esc(k.nombre || "Contacto")}</b>${principal ? `<span class="cc-badge">Contacto principal</span>` : ""}</div>
-    ${k.cargo ? `<span class="cc-role">${esc(k.cargo)}</span>` : ""}
-    <div class="cc-lines">${k.correo ? `<a class="mail" href="mailto:${esc(k.correo)}"><i>Correo</i>${esc(k.correo)}</a>` : ""}${k.telefono ? `<a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}"><i>Teléfono</i>${esc(k.telefono)}</a>` : ""}</div>
-    ${contactarBtn(vid, k.nombre, k.correo)}</div></div>`;
+  return `<div class="cc ${principal ? "main" : ""}"><div class="cc-head"><span class="cc-av" aria-hidden="true">${esc(ini)}</span><div class="cc-id"><b>${esc(k.nombre || "Contacto")}</b>${k.cargo ? `<span class="cc-role">${esc(k.cargo)}</span>` : ""}${principal ? `<span class="cc-badge">Contacto principal</span>` : ""}</div></div>
+    ${k.correo || k.telefono ? `<div class="cc-lines">${k.correo ? `<div class="cc-line"><span class="cc-l">Correo</span><a class="mail" href="mailto:${esc(k.correo)}">${esc(k.correo)}</a></div>` : ""}${k.telefono ? `<div class="cc-line"><span class="cc-l">Teléfono</span><a class="mail" href="tel:${esc(k.telefono.replace(/\s/g, ""))}">${esc(k.telefono)}</a></div>` : ""}</div>` : ""}
+    ${contactarBtn(vid, k.nombre, k.correo)}</div>`;
 }
 function vFicha(id) {
   const v = vinculo(+id);
@@ -986,15 +995,15 @@ function renderAsistente() {
         <div class="inline-form"><input class="input" id="asLinkIn" readonly value="${esc(urlResponder(v, q))}" aria-label="Link del cuestionario"><button class="btn-accent" id="asLinkCopiar">Copiar link</button></div>
         <div class="form-actions"><button class="btn-outline" id="asLinkOutlook">Abrir en Outlook</button><button class="btn-outline" id="asLinkFicha">Ir a la ficha</button></div></div>`;
     }
-    html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Se abre Outlook en la web con un link listo para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución (agrega su correo en la ficha)"}. Tú lo envías.</li><li>La institución responde en el link, sin cuenta. Sus respuestas llegan solas a la ficha.</li><li>Si no responde en ${DIAS_SIN_RESPUESTA} días, SIVA te avisa.</li></ol></div>
+    html += `<div class="pasos-cq"><b>Cómo funciona</b><ol><li>Eliges las preguntas.</li><li>Creas el link y se copia solo. Lo pegas en un correo, Teams o WhatsApp para ${v.contacto.correo ? esc(v.contacto.correo) : "la institución"}, o abres Outlook con el texto listo. Tú lo envías.</li><li>La institución responde en el link, sin cuenta. Sus respuestas llegan solas a la ficha.</li><li>Si no responde en ${DIAS_SIN_RESPUESTA} días, SIVA te avisa.</li></ol></div>
       <p class="card-title">Preguntas generales</p>${PREGUNTAS_BASE.map((p, i) => `<label class="diff"><input type="checkbox" data-base="${i}" ${asis.base[i] ? "checked" : ""}><span>${esc(p.texto)}</span></label>`).join("")}
       <p class="card-title">Preguntas específicas de este vínculo</p>${asis.extra.map((p, i) => `<div class="diff"><span style="flex:1">${esc(p)}</span><button class="link-btn danger" data-quitar="${i}">Quitar</button></div>`).join("") || `<p class="small muted">Puedes sugerirlas con el asistente o escribirlas.</p>`}
       <div class="form-actions"><button class="btn-outline sm" id="asSug" ${asis.cargando ? "disabled" : ""}>${asis.cargando ? "Pensando…" : "Sugerir con el asistente"}</button></div>
       <div class="inline-form"><input class="input" id="asPreg" placeholder="Escribe otra pregunta"><button class="btn-outline" id="asAddP">Agregar</button></div>
       ${asis.error ? `<div class="err show">${esc(asis.error)}</div>` : ""}
       <p class="card-title" style="margin-top:16px">Vista previa del correo</p><textarea class="input" id="asPrev" rows="10" readonly>${esc(textoCuestionario(v, preguntas))}</textarea>
-      <div class="form-actions"><button class="btn-accent" id="asEnviar">Abrir en Outlook</button><button class="btn-outline" id="asLink">Solo crear el link</button><button class="btn-outline" id="asCopiar">Copiar texto</button></div>
-      <p class="help">La página no envía el correo por ti: queda guardado como "preparado" hasta que confirmes que lo mandaste en Outlook.</p>`;
+      <div class="form-actions"><button class="btn-accent" id="asLink">Crear link y copiarlo</button><button class="btn-outline" id="asEnviar">Crear y abrir en Outlook</button><button class="btn-outline" id="asCopiar">Copiar texto del correo</button></div>
+      <p class="help">El link se copia solo: pégalo en Outlook, Teams o WhatsApp. La página no envía nada por ti; queda como "preparado" hasta que confirmes que lo mandaste.</p>`;
   }
   d.innerHTML = html;
   wireAsistente(v);
@@ -1078,8 +1087,8 @@ function wireAsistente(v) {
     $("#asCopiar").onclick = async () => { const t = $("#asPrev"); try { await navigator.clipboard.writeText(t.value); toast("Texto copiado"); } catch (e) { t.select(); toast("Selecciona y copia el texto (Cmd + C)"); } };
     const crear = () => { const ps = preguntas(); if (!ps.length) return null; const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] }; v.cuestionarios.push(q); guardar(); asis.creado = { v: v.id, q: q.id }; asis.extra = []; return q; };
     const outlookDe = q => { const to = (v.contacto.correo || "").trim(); if (!to) { toast("Agrega el correo del contacto en la ficha para abrir Outlook."); return false; } abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, q.preguntas, q)); return true; };
-    $("#asEnviar").onclick = () => { const q = crear(); if (!q) return; const ok = outlookDe(q); renderAsistente(); if (ok) toast("Se abrió Outlook. El link queda aquí abajo por si lo quieres mandar por otro medio."); };
-    $("#asLink").onclick = () => { if (crear()) { renderAsistente(); toast("Link creado. Cópialo y envíaselo a la institución."); } };
+    $("#asEnviar").onclick = () => { const q = crear(); if (!q) return; try { navigator.clipboard.writeText(urlResponder(v, q)); } catch (e) {} const ok = outlookDe(q); renderAsistente(); if (ok) toast("Se abrió Outlook. El link queda aquí abajo por si lo quieres mandar por otro medio."); };
+    $("#asLink").onclick = async () => { const q = crear(); if (!q) { toast("Elige al menos una pregunta."); return; } const url = urlResponder(v, q); let ok = true; try { await navigator.clipboard.writeText(url); } catch (e) { ok = false; } renderAsistente(); toast(ok ? "Link creado y copiado. Pégalo donde quieras enviarlo." : "Link creado. Cópialo desde el cuadro de abajo."); };
   }
   const lc = $("#asLinkCopiar");
   if (lc) {
@@ -1142,6 +1151,8 @@ function wireVista(ruta, p) {
   const ca = $("[data-cambiar-admin]"); if (ca) ca.onclick = () => { iniciarSesion("admin", true); render(); };
 
   const sv = $("#sinVinc"); if (sv) sv.onclick = () => { S.sinVinculos = [...new Set([...(S.sinVinculos || []), ME.id])]; guardar(); render(); toast("Anotado. No tienes que registrar nada más."); };
+  const sm = $("#semMail"); if (sm) sm.onclick = () => { abrirOutlookWeb(ME.correo, "Tu resumen de la semana en SIVA", textoSemana(misVinculos())); toast("Se abrió Outlook con tu resumen"); };
+  $$("[data-ir-f]").forEach(b => b.onclick = () => { filtro.inc = true; if (location.hash === "#/mis/vinculos") render(); else location.hash = "#/mis/vinculos"; });
   if (ruta === "mis" && $("#fq")) {
     const pinta = () => { $("#tablaMisCuerpo").innerHTML = filasVinculos(listaFiltrada(), opcionesTabla()); wireVista("_tabla"); };
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
@@ -1151,10 +1162,8 @@ function wireVista(ruta, p) {
     $("#fs").onchange = e => { filtro.salud = e.target.value; pinta(); };
     $("#fa").onchange = e => { filtro.anio = e.target.value; pinta(); };
     $("#fag").onchange = e => { filtro.agrupar = e.target.checked; pinta(); };
-    const sm = $("#semMail"); if (sm) sm.onclick = () => { abrirOutlookWeb(ME.correo, "Tu resumen de la semana en SIVA", textoSemana(misVinculos())); toast("Se abrió Outlook con tu resumen"); };
     $("#fc").onchange = e => { filtro.comp = e.target.value; pinta(); };
     $("#finc").onchange = e => { filtro.inc = e.target.checked; if (!filtro.inc && p === "incompletos") location.hash = "#/mis"; else pinta(); };
-    $$("[data-ir-f]").forEach(b => b.onclick = () => { filtro.inc = true; render(); });
   }
 
   if (ruta === "ficha") {

@@ -213,18 +213,18 @@ function convMisHTML() {
 
 
 // Convocatorias en un recuadro propio, parecido al de vínculos: una fila por convocatoria.
-function convTablaHTML() {
-  const todas = convVisibles();
+function convTablaHTML(soloAbiertas) {
+  const todasHist = convVisibles(), todas = soloAbiertas ? todasHist.filter(x => x.estado === "Abierta") : todasHist;
   if (!todas.length && !puedeCrear()) return "";
   const orden = [...todas].sort((x, y) => (x.estado === y.estado ? (y.creada || "").localeCompare(x.creada || "") : x.estado === "Abierta" ? -1 : 1));
   const fila = c => {
     const sr = sinRevisar(c).length, v = vinculo(c.vinculo), cp = contraparte(c.institucion);
     return `<tr class="row" data-conv="${c.id}" tabindex="0"><td><span class="t">${esc(c.titulo)}</span><small>${esc(c.tipo || "")}${v ? " · " + esc(v.nombre) : ""}</small></td><td>${esc(cp.corto)}</td><td><span class="pill-estado ${c.estado === "Abierta" ? "abierta" : "cerrada"}">${esc(c.estado)}</span></td><td data-l="Postulantes"><b>${c.postulantes.length}</b>${sr ? `<small class="falta">${sr} por revisar</small>` : ""}</td><td data-l="Cupos">${c.cupos || "–"}</td><td data-l="Cierre">${c.cierre ? fechaTxt(c.cierre) : "–"}</td></tr>`;
   };
-  const ab = todas.filter(c => c.estado === "Abierta").length;
+  const ab = todas.filter(c => c.estado === "Abierta").length, cerr = todasHist.length - todasHist.filter(x => x.estado === "Abierta").length;
   return `<div class="card" id="tablaConv">
-    <div class="tabla-acts"><div><p class="card-title" style="margin:0">Convocatorias para estudiantes</p><span class="muted small">${todas.length ? `${ab} ${ab === 1 ? "abierta" : "abiertas"} de ${todas.length}. Haz clic en una fila para ver sus postulantes.` : "Aún no hay convocatorias."}</span></div>${puedeCrear() ? `<a class="btn-accent sm" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</div>
-    ${todas.length ? `<div class="table-wrap"><table><thead><tr><th>Convocatoria</th><th>Institución</th><th>Estado</th><th>Postulantes</th><th>Cupos</th><th>Cierre</th></tr></thead><tbody>${orden.map(fila).join("")}</tbody></table></div>` : `<div class="empty">Crea una para publicar la oferta, recibir postulaciones y registrar a quienes aceptas.</div>`}</div>`;
+    <div class="tabla-acts"><div><p class="card-title" style="margin:0">${soloAbiertas ? "Convocatorias abiertas" : "Historial de convocatorias"}</p><span class="muted small">${todas.length ? (soloAbiertas ? `${ab} ${ab === 1 ? "abierta" : "abiertas"}. Haz clic en una fila para ver sus postulantes.` : `${ab} ${ab === 1 ? "abierta" : "abiertas"} y ${cerr} ${cerr === 1 ? "cerrada" : "cerradas"}. Haz clic en una fila para ver sus postulantes.`) : (soloAbiertas ? "No hay convocatorias abiertas ahora." : "Aún no hay convocatorias.")}</span></div><span class="tabla-btns">${soloAbiertas && cerr ? `<a class="lnk" href="#/mis/convocatorias">Ver historial (${cerr} ${cerr === 1 ? "cerrada" : "cerradas"}) →</a>` : ""}${puedeCrear() ? `<a class="btn-accent sm" href="#/nueva-convocatoria">+ Nueva convocatoria</a>` : ""}</span></div>
+    ${todas.length ? `<div class="table-wrap"><table><thead><tr><th>Convocatoria</th><th>Institución</th><th>Estado</th><th>Postulantes</th><th>Cupos</th><th>Cierre</th></tr></thead><tbody>${orden.map(fila).join("")}</tbody></table></div>` : `<div class="empty">${soloAbiertas ? "No hay convocatorias abiertas. " : ""}Crea una para publicar la oferta, recibir postulaciones y registrar a quienes aceptas.</div>`}</div>`;
 }
 
 
@@ -506,7 +506,7 @@ function wirePostular(id) {
 let pubTipo = "", pubQ = "";
 function vConvPub() {
   const abiertas = S.convocatorias.filter(c => c.estado === "Abierta");
-  const volver = typeof ME !== "undefined" && ME ? `<p class="pub-volver"><a class="btn-outline sm" href="${inicioDe(ME)}">← Volver a SIVA</a></p>` : "";
+  const volver = "";
   return `<header class="pub-top"><div class="pub-inner">${logoAmsa()}<span class="prod"><b>Convocatorias</b><span>Prácticas y memorias para estudiantes</span></span></div></header>
   <main class="pub">
     ${volver}
