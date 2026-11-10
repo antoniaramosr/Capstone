@@ -1,16 +1,35 @@
-# SIVA · rama `nuevo`
+# SIVA · Sistema de Vínculos AMSA
 
-Esta rama es la versión limpia del prototipo. Borramos los datos de ejemplo que venían del mapeo (eran muchos y estaban a medias) y armamos a mano un set corto: **32 vínculos, 18 instituciones, 5 convocatorias y 8 estudiantes**, repartidos en distintas áreas, tipos, etapas, compañías y años, para poder jugar y sacar estadísticas. Cada flujo se puede probar de principio a fin.
+**Ver el prototipo:** https://antoniaramosr.github.io/Capstone/ (siempre muestra la última versión de `main`)
 
-## Ver la página
+Prototipo de la plataforma interna donde las áreas de Antofagasta Minerals registran y coordinan sus vínculos con universidades, centros de formación, OTEC y otras instituciones.
+Proyecto grupal del curso **IDI2025 Tecnología, Emprendimiento y Diseño** (Grupo 2): Francisca López Vallejos, Antonia Ramos Rodríguez y Allison Zapata Inostroza.
 
-Abre este link en Safari o Chrome (no hace falta instalar nada):
+Los datos son de ejemplo, armados a mano: **32 vínculos, 18 instituciones, 5 convocatorias y 8 estudiantes**, repartidos en distintas áreas, tipos, etapas, compañías y años, para poder probar cada flujo de principio a fin. La versión anterior, con los datos del mapeo ANF-COQ, quedó en la rama `Anto`.
 
-**https://raw.githack.com/antoniaramosr/Capstone/nuevo/index.html#/reiniciar**
+## Qué hace
 
-El `#/reiniciar` del final carga los datos de partida desde cero. Úsalo la primera vez y cada vez que cambien los datos, porque la página guarda lo que haces en el navegador. Si acabas de subir cambios y no los ves, espera unos minutos y recarga con Cmd+Shift+R, o prueba en una ventana privada.
+- **Mis vínculos**: el Inicio muestra el resumen y solo lo abierto (vínculos y convocatorias). Las pestañas Vínculos y Convocatorias tienen todo el historial con filtros, y Con otras áreas muestra instituciones donde también trabajan otras áreas.
+- **Ficha de cada vínculo**, en secciones plegables (El vínculo, Personas, Seguimiento, Evaluación): objetivo, metas, compañías, alcance, financiamiento, fechas, contactos de la institución, líder y encargado/a, reuniones, feedback e historial de cambios. Avisa qué datos faltan, y se descarga en PDF.
+- **Semáforo de salud** y aviso de contacto sin respuesta.
+- **Evaluación** por criterios, distintos según el tipo de institución.
+- **Asistente de IA**: "Actualizar con IA" propone cambios a la ficha desde una reunión (texto pegado, dictado o archivo Word, PDF o texto) y tú apruebas cada uno; también arma cuestionarios de feedback y un chat responde preguntas sobre los vínculos.
+- **Feedback de la institución por link**, sin cuenta; el link se crea y se copia solo.
+- **Convocatorias para estudiantes**: se crean desde un vínculo, se publican en LinkedIn, se postula en una página pública (`#/convocatorias`) y cada estudiante ve su estado en "Mi postulación".
+- **Instituciones** por tipo, **Estadísticas**, **Metas**, **Zonas** y **Administración**.
 
-También se puede abrir `index.html` con un servidor local (por ejemplo `python3 -m http.server`).
+## Cómo verlo
+
+Abre https://antoniaramosr.github.io/Capstone/ en Safari o Chrome (no hace falta instalar nada). También se puede abrir `index.html` con un servidor local (por ejemplo `python3 -m http.server`).
+
+Para cargar los datos de partida desde cero usa **https://antoniaramosr.github.io/Capstone/#/reiniciar**. La página guarda lo que haces en el navegador, así que úsalo la primera vez y cada vez que cambien los datos. Si acabas de subir cambios y no los ves, espera unos minutos y recarga con Cmd+Shift+R, o prueba en una ventana privada. Administración → Datos también permite restablecer los datos de ejemplo.
+
+### Para las sesiones de testeo
+
+- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar`: borra lo que registró la persona anterior y reinicia los sandboxes del Perfil 0 y del Perfil 2.
+- Dos testeadores en paralelo: uno entra como **Perfil 0** y otro como **Perfil 2** (cada uno con su página vacía separada).
+- Testeo AMSA: entrar como **Eduardo**. Testeo estudiantes: abrir `#/convocatorias` (sin iniciar sesión).
+- Funciona en celular: las tablas pasan a tarjetas.
 
 ## Cómo funcionan los correos
 
@@ -151,10 +170,47 @@ En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene ca
 12. **Evaluar un vínculo.** En la ficha de uno sin calificar, "Evaluar vínculo" abre la sección de evaluación. Después de calificar queda fija.
 13. **Preguntarle al asistente.** Botón de abajo a la derecha; hay preguntas de ejemplo más arriba.
 
-## Qué queda por hacer en esta rama
+## Modo demo e IA real
+
+- Publicado como artifact en claude.ai, usa IA real (Claude).
+- Abierto desde GitHub Pages o el computador, funciona en **modo demo**: reglas simples para mostrar el flujo.
+- Para IA real fuera de claude.ai, se puede montar un servidor (por ejemplo en Flask) que reciba `POST {prompt}` y responda JSON, y poner su URL en `CONFIG.aiEndpoint` (`js/config.js`).
+- Transcribir audios todavía no está implementado: se pega la transcripción de Teams/Meet/Zoom o se usa el botón Dictar (Chrome).
+
+## Estructura
+
+```
+index.html        Página base
+css/styles.css    Estilos; colores y tipografía de AMSA en variables de :root (siempre fondo blanco)
+js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usuarios de prueba
+js/data.js        Vínculos, instituciones, convocatorias y estudiantes de ejemplo
+js/store.js       Estado, guardado en el navegador, cálculos (progreso, completitud, README en Markdown)
+js/ai.js          Asistente: prompts, conexión con IA y modo demo
+js/convocatorias.js Convocatorias, publicación en LinkedIn y página pública para postular
+js/extras.js      Pantallas y utilidades adicionales
+js/pdf.js         Ficha del vínculo en PDF
+js/vendor/        jsPDF, JSZip y pdf.js (para PDF y archivos Word/PDF)
+js/app.js         Pantallas, navegación y eventos
+ejemplos/         Archivos de ejemplo para "Actualizar con IA"
+```
+
+| Quiero cambiar…                    | Dónde                                             |
+| ---------------------------------- | ------------------------------------------------- |
+| Áreas o tipos de vínculo iniciales | `js/config.js`                                    |
+| Vínculos de ejemplo                | `js/data.js` (lista `filas`)                      |
+| Campos del README                  | `vForm` en `app.js` y `CAMPOS_README` en `store.js` |
+| Preguntas base del cuestionario    | `PREGUNTAS_BASE` en `js/store.js`                 |
+| Lo que se le pide a la IA          | `js/ai.js`                                        |
+| Una pantalla                       | `js/app.js`: `vMis`, `vFicha`, `vForm`, `vAreas`, `vContrapartes`, `vDashboard`, `vAdmin` |
+
+Datos: son inventados, salvo los correos `antonia.ramos+algo@uc.cl`. Los vínculos reales del mapeo ANF-COQ están en la rama `Anto`.
+
+## Qué queda por hacer
 
 - Cargar a mano más vínculos y convocatorias a medida que aparezcan casos que no cubre este set.
 - Revisar que el resumen semanal y los avisos tengan sentido con tan pocos datos.
 - Decidir qué instituciones reales se agregan después, y con qué correos.
 
-La versión anterior, con todos los datos del mapeo, sigue en la rama `Anto`.
+## Para trabajar las tres sin pisarnos
+
+`git pull` antes de empezar, una rama por cambio y avisar qué pantalla está tocando cada una.
