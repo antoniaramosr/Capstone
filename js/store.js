@@ -66,6 +66,7 @@ function estadoInicial() {
     metas: CONFIG.metas.map(nombre => ({ nombre, activa: true })),
     estudiantes: JSON.parse(JSON.stringify(SEED.estudiantes)),
     leidos: [],
+    metricas: { duplicados: 3 }, // dato de ejemplo: avisos de "otra área ya habla con esta institución" (Estadísticas > Uso de SIVA)
     nextId: vinculos.length + 1
   };
 }
