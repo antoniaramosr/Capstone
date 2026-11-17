@@ -58,12 +58,12 @@ Son las personas a las que se les escribe desde el botón "Contactar" o a las qu
 |---|---|---|---|---|
 | Paula Herrera | UCN | Vinculación con el medio | antonia.ramos+ucn@uc.cl | Contacto del vínculo "Memorias y prácticas UCN". Para probar "Contactar" y el cuestionario de feedback con un correo que sí llega. |
 | Rodrigo Castillo | UCN | Jefe de carrera, Ing. Civil de Minas | rcastillo@ucn.ejemplo.cl | Segundo contacto de la UCN, para ver cómo se elige a quién escribirle. |
-| Josefina Larraín | PUC | Coordinación de prácticas | antonia.ramos+puc@uc.cl | Contacto de la charla PUC (cerrada, con nota 5). Para probar "Contactar" y reutilizar un cuestionario ya respondido. |
+| Josefina Larraín | PUC | Coordinación de prácticas | antonia.ramos+puc@uc.cl | Contacto de la charla PUC (terminada, con nota 5). Para probar "Contactar" y reutilizar un cuestionario ya respondido. |
 | Tomás Vial | PUC | Profesor Capstone | tvial@ing.ejemplo.cl | Contacto del Capstone PUC. |
 | Carla Núñez | U. de Chile | Unidad de empleabilidad, FCFM | cnunez@uchile.ejemplo.cl | Contacto de "Meet the Office", el vínculo que lleva 75 días sin movimiento. |
 | Marcela Bravo | USACH | Centro de empleabilidad | mbravo@usach.ejemplo.cl | Contacto de la charla USACH, que tiene un cuestionario enviado hace 22 días sin respuesta. |
-| Ignacio Ramírez | UTFSM | Dirección de vinculación | iramirez@usm.ejemplo.cl | Contacto de la charla UTFSM, cerrada, donde el área y la institución califican distinto. |
-| Marcelo Pizarro | INACAP | Vicerrectoría | mpizarro@inacap.ejemplo.cl | Contacto de la pasantía docente, cerrada y sin calificar. |
+| Ignacio Ramírez | UTFSM | Dirección de vinculación | iramirez@usm.ejemplo.cl | Contacto de la charla UTFSM, terminada, donde el área y la institución califican distinto. |
+| Marcelo Pizarro | INACAP | Vicerrectoría | mpizarro@inacap.ejemplo.cl | Contacto de la pasantía docente, terminada y sin calificar. |
 | Felipe Ortiz | U. de Antofagasta | Vinculación con el medio | fortiz@uantof.ejemplo.cl | Contacto de la institución del convenio marco (el vínculo aún no tiene contacto cargado). |
 
 ## Estudiantes y postulantes
@@ -72,13 +72,13 @@ Postulan desde la página pública de convocatorias (menú del avatar, "Ver la p
 
 | Persona | Correo | Dónde está | Para qué sirve |
 |---|---|---|---|
-| Valentina Muñoz | antonia.ramos+postulante@uc.cl | Convocatoria "Memorias 2027", estado *Postuló* | Es la que se acepta o rechaza para ver llegar el correo de verdad. |
+| Valentina Muñoz | antonia.ramos+postulante@uc.cl | Convocatoria "Memorias 2027", estado *Postulación recibida* | Es la que se acepta o rechaza para ver llegar el correo de verdad. |
 | Diego Fuentes | diego.fuentes@ejemplo.cl | Misma convocatoria, *En revisión* | Para probar el paso de revisión a aceptado. También sirve para entrar a "Mi postulación". |
-| Tomás Herrera | tomas.herrera@ejemplo.cl | Misma convocatoria, *Postuló* | Postulante extra, para aceptar a varias personas a la vez. |
-| Camila Rojas | camila.rojas@ejemplo.cl | Misma convocatoria, *En práctica* | Ya tiene dos feedbacks del tutor. Sirve para ver cómo se ve una práctica en curso y la nota. |
-| Sofía Pizarro | sofia.pizarro@ejemplo.cl | "Práctica de verano 2026" (cerrada), *Terminó* | Práctica terminada, con feedback del tutor, del estudiante, informe y nota de la universidad. |
+| Tomás Herrera | tomas.herrera@ejemplo.cl | Misma convocatoria, *Postulación recibida* | Postulante extra, para aceptar a varias personas a la vez. |
+| Camila Rojas | camila.rojas@ejemplo.cl | Misma convocatoria, *En curso* | Ya tiene dos feedbacks del tutor. Sirve para ver cómo se ve una práctica en curso y la nota. |
+| Sofía Pizarro | sofia.pizarro@ejemplo.cl | "Práctica de verano 2026" (cerrada), *Terminado* | Práctica terminada, con feedback del tutor, del estudiante, informe y nota de la universidad. |
 | Felipe Guzmán | felipe.guzman@ejemplo.cl | Convocatoria "Práctica profesional invierno 2027", *Aceptado* | Ejemplo de aceptado dentro de una convocatoria abierta, para armar el correo de aceptados. |
-| Lucas Morales | lucas.morales@ejemplo.cl | "Práctica de verano 2026", *No aceptado* | Para ver cómo queda alguien que no quedó. |
+| Lucas Morales | lucas.morales@ejemplo.cl | "Práctica de verano 2026", *No seleccionado* | Para ver cómo queda alguien que no quedó. |
 
 ## Los 32 vínculos y qué muestran
 
@@ -96,9 +96,9 @@ Casos puestos a propósito para ver cada cosa de la página:
 - **Meet the Office (U. de Chile)**: semáforo en rojo, 75 días sin movimiento.
 - **Charla USACH**: cuestionario enviado hace 22 días sin respuesta.
 - **Charla UTFSM**: el área califica con 4 y la institución responde bajo ("dos miradas").
-- **Charla PUC**: cerrada, nota 5, con reunión y cuestionario respondido.
-- **Charla UdeC**: cerrada con nota 2, para tener también un mal resultado.
-- **Pasantía docente INACAP**: cerrada y sin calificar.
+- **Charla PUC**: terminada, nota 5, con reunión y cuestionario respondido.
+- **Charla UdeC**: terminada con nota 2, para tener también un mal resultado.
+- **Pasantía docente INACAP**: terminada y sin calificar.
 - **Convenio con la U. de Antofagasta**: ficha casi vacía, para el filtro "con datos por completar".
 - **Plataforma Empleo Región y Programa de Proveedores**: asociados a varias compañías a la vez.
 

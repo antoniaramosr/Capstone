@@ -83,7 +83,7 @@ const SEED = {
     ["uch", "Santiago", "rys", "tal", "Memorias U. de Chile", "Atracción de talento", 3, { c: 4, a: "si", f: "Sin aporte monetario", i: "2026-03-02", t: "2026-09-30", d: 35, co: ["cen"] }],
     ["puc", "Santiago", "rys", "char", "Charla de prácticas y memorias PUC", "Atracción de talento", 3, { c: 5, a: "si", f: "Sin aporte monetario", i: "2026-04-25", t: "2026-08-28", d: 60, co: ["corp"] }],
     ["utfsm", "Valparaíso", "rys", "char", "Charla de prácticas y memorias UTFSM", "Atracción de talento", 3, { c: 4, a: "si", i: "2026-03-18", t: "2026-06-30", d: 120, co: ["zal"] }],
-    ["uai", "Santiago", "rys", "char", "Charla de prácticas y memorias UAI", "Atracción de talento", 3, { c: 3, a: "parcial", i: "2025-10-08", t: "2025-11-12", d: 150, co: ["corp"] }],
+    ["uai", "Santiago", "rys", "char", "Charla de prácticas y memorias UAI", "Atracción de talento", 3, { a: "parcial", i: "2025-10-08", t: "2025-11-12", d: 150, co: ["corp"] }],
     ["udec", "Biobío", "rys", "char", "Charla de prácticas y memorias UdeC", "Atracción de talento", 3, { c: 2, a: "no", i: "2025-09-03", t: "2025-10-15", d: 170, co: ["corp"], n: "Asistieron muy pocas personas; la fecha chocó con pruebas." }],
     ["uls", "Coquimbo", "rys", "char", "Meet the Office La Serena", "Marca empleadora", 3, { c: 4, a: "si", i: "2026-05-06", t: "2026-05-27", d: 150, co: ["mlp"] }],
     ["uch", "Santiago", "rys", "char", "Meet the Office", "Marca empleadora", 2, { i: "2026-05-12", d: 75, co: ["corp"], n: "Sin respuesta de la universidad desde agosto." }],

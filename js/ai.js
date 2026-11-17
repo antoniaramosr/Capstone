@@ -163,7 +163,7 @@ function demoReunion(v, texto) {
   let etapa = null;
   if (/(firmamos|firmado|se firmó|firma del convenio)/.test(low)) etapa = "Formalización";
   if (/(comenzamos|empezamos|en marcha|arrancó|kickoff|pasamos a ejecución|pasamos a ejecucion)/.test(low)) etapa = "En ejecución";
-  if (/(terminamos|cerramos|finalizó|se cerró)/.test(low)) etapa = "Cerrado";
+  if (/(terminamos|cerramos|finalizó|se cerró|se terminó)/.test(low)) etapa = "Terminado";
   if (etapa && CONFIG.etapas.indexOf(etapa) <= v.etapa) etapa = null;
   const completados = v.hitos.filter(h => !h.ok && low.includes(h.t.toLowerCase().split(" ")[0]) && /(listo|hecho|realizad|complet|termin)/.test(low)).map(h => h.t).slice(0, 2);
   return {
@@ -245,7 +245,7 @@ function demoPregunta(pregunta, vid) {
   if (cp) {
     const l = todos.filter(v => v.contraparte === cp.id), ab = l.filter(v => v.etapa < 3);
     if (!l.length) return `No hay vínculos registrados con ${cp.corto}.`;
-    return `Con ${cp.corto} hay ${pl(l.length, "vínculo", "vínculos")}: ${ab.length} ${ab.length === 1 ? "abierto" : "abiertos"} y ${l.length - ab.length} ${l.length - ab.length === 1 ? "cerrado" : "cerrados"}.\n` + lista(l, v => `${v.nombre} (${CONFIG.etapas[v.etapa]}, ${nombreArea(v.area)})`);
+    return `Con ${cp.corto} hay ${pl(l.length, "vínculo", "vínculos")}: ${ab.length} ${ab.length === 1 ? "abierto" : "abiertos"} y ${l.length - ab.length} ${l.length - ab.length === 1 ? "terminado" : "terminados"}.\n` + lista(l, v => `${v.nombre} (${CONFIG.etapas[v.etapa]}, ${nombreArea(v.area)})`);
   }
   // 3) Un vínculo concreto
   const toks2 = q.split(/[^a-z0-9]+/).filter(t => t.length > 3 && !["como", "esta", "vinculo", "cuantos", "cuantas", "tiene", "hay", "para", "estan"].includes(t));
@@ -253,7 +253,7 @@ function demoPregunta(pregunta, vid) {
   const mejor = [...todos].sort((x, y) => sc(y) - sc(x))[0];
   if (tiene("como va", "como esta", "estado de", "que pasa con", "cuentame") && (vid || (mejor && sc(mejor) > 0.5))) {
     const v = (mejor && sc(mejor) > 0.5) ? mejor : vinculo(vid), s = saludDe(v), pend = v.hitos.filter(h => !h.ok).map(h => h.t);
-    return `**${v.nombre}** (${contraparte(v.contraparte).corto}) está en ${CONFIG.etapas[v.etapa]}, con ${progreso(v)} % de avance.\n- Salud: ${s.k === "verde" ? "al día" : s.k === "amarillo" ? "conviene atenderlo" : s.k === "rojo" ? "urgente" : "cerrado"}. ${s.motivo}\n- ${v.calif ? "Calificación del área: " + num1(v.calif) + " de 5." : "Todavía sin calificar."}\n- ${pend.length ? "Falta: " + pend.slice(0, 3).join(", ") + (pend.length > 3 ? " y " + (pend.length - 3) + " más" : "") + "." : "Todas las tareas del plan están hechas."}\n- Lo lleva ${v.responsable || "alguien sin definir"}.`;
+    return `**${v.nombre}** (${contraparte(v.contraparte).corto}) está en ${CONFIG.etapas[v.etapa]}, con ${progreso(v)} % de avance.\n- Salud: ${s.k === "verde" ? "al día" : s.k === "amarillo" ? "conviene atenderlo" : s.k === "rojo" ? "urgente" : "terminado"}. ${s.motivo}\n- ${v.calif ? "Calificación del área: " + num1(v.calif) + " de 5." : "Todavía sin calificar."}\n- ${pend.length ? "Falta: " + pend.slice(0, 3).join(", ") + (pend.length > 3 ? " y " + (pend.length - 3) + " más" : "") + "." : "Todas las tareas del plan están hechas."}\n- Lo lleva ${v.responsable || "alguien sin definir"}.`;
   }
   // 4) Conteos
   const alcance = tiene("todos", "en total", "en siva", "toda la") ? todos : mios;
@@ -263,7 +263,7 @@ function demoPregunta(pregunta, vid) {
     const u = alcance.filter(v => ["rojo", "amarillo"].includes(saludDe(v).k));
     return u.length ? `${pl(u.length, "vínculo pide", "vínculos piden")} atención:\n` + lista(u, v => `${v.nombre} (${saludDe(v).k === "rojo" ? "urgente" : "atender"}): ${saludDe(v).motivo}`) + nota : "Ningún vínculo pide atención ahora." + nota;
   }
-  if (tiene("sin calificar", "sin evaluar")) { const l = alcance.filter(v => v.etapa === 3 && !v.calif); return `${pl(l.length, "vínculo cerrado sin calificar", "vínculos cerrados sin calificar")}.` + (l.length ? "\n" + lista(l, v => v.nombre) : "") + nota; }
+  if (tiene("sin calificar", "sin evaluar")) { const l = alcance.filter(v => v.etapa === 3 && !v.calif); return `${pl(l.length, "vínculo terminado sin calificar", "vínculos terminados sin calificar")}.` + (l.length ? "\n" + lista(l, v => v.nombre) : "") + nota; }
   if (tiene("mejor", "mas alta", "mejor calificad", "promedio", "calificacion")) {
     const c = alcance.filter(v => v.calif);
     if (!c.length) return "Todavía no hay vínculos calificados.";
@@ -272,9 +272,9 @@ function demoPregunta(pregunta, vid) {
   }
   if (tiene("estudiante", "postulantes", "practicantes", "memoristas")) {
     const ps = S.convocatorias.flatMap(c => c.postulantes), n = e => ps.filter(p => p.estado === e).length;
-    return `Entre todas las convocatorias hay ${pl(ps.length, "postulante", "postulantes")}: ${n("Postuló") + n("En revisión")} por revisar, ${n("Aceptado")} aceptados, ${n("En práctica")} en práctica o memoria, ${n("Terminó")} que ya terminaron y ${n("No aceptado")} no aceptados.`;
+    return `Entre todas las convocatorias hay ${pl(ps.length, "postulante", "postulantes")}: ${n("Postulación recibida") + n("En revisión")} por revisar, ${n("Aceptado")} aceptados, ${n("En curso")} en práctica o memoria, ${n("Terminado")} que ya terminaron y ${n("No seleccionado")} no seleccionados.`;
   }
-  const etapaPorNombre = [["exploracion", 0], ["formalizacion", 1], ["ejecucion", 2], ["cerrad", 3]].find(([k]) => q.includes(k));
+  const etapaPorNombre = [["exploracion", 0], ["formalizacion", 1], ["ejecucion", 2], ["terminad", 3]].find(([k]) => q.includes(k));
   if (etapaPorNombre) { const l = porEtapa(etapaPorNombre[1]); return `Hay ${pl(l.length, "vínculo", "vínculos")} en ${CONFIG.etapas[etapaPorNombre[1]]}.` + (l.length && l.length <= 8 ? "\n" + lista(l, v => `${v.nombre} (${contraparte(v.contraparte).corto})`) : "") + nota; }
   const comp = S.companias.find(c => q.includes(normT(c.nombre)));
   if (comp) { const l = alcance.filter(v => compsDe(v).includes(comp.id)); return `Con ${comp.nombre} hay ${pl(l.length, "vínculo", "vínculos")} (${l.filter(v => v.etapa < 3).length} ${l.filter(v => v.etapa < 3).length === 1 ? "abierto" : "abiertos"}).` + nota; }
@@ -282,7 +282,7 @@ function demoPregunta(pregunta, vid) {
   if (tp) { const l = alcance.filter(v => v.tipo === tp.id); return `Hay ${pl(l.length, "vínculo", "vínculos")} de tipo ${tp.nombre.toLowerCase()} (${l.filter(v => v.etapa < 3).length} ${l.filter(v => v.etapa < 3).length === 1 ? "abierto" : "abiertos"}).` + nota; }
   if (tiene("cuantos vinculos", "cuantos hay", "vinculos hay", "numero de vinculos", "abiertos", "activos", "vigentes")) {
     const ab = alcance.filter(v => v.etapa < 3);
-    return `Hay ${pl(alcance.length, "vínculo", "vínculos")}: ${ab.length} ${tiene("abiertos", "activos", "vigentes") ? "abiertos" : "abiertos (no cerrados)"} y ${alcance.length - ab.length} cerrados.\nPor etapa: ` + ["en exploración", "en formalización", "en ejecución", "cerrados"].map((e, i) => `${porEtapa(i).length} ${e}`).join(", ") + "." + nota;
+    return `Hay ${pl(alcance.length, "vínculo", "vínculos")}: ${ab.length} ${tiene("abiertos", "activos", "vigentes") ? "abiertos" : "en curso"} y ${alcance.length - ab.length} terminados.\nPor etapa: ` + ["en exploración", "en formalización", "en ejecución", "terminados"].map((e, i) => `${porEtapa(i).length} ${e}`).join(", ") + "." + nota;
   }
   if (tiene("quien lleva", "responsable", "encargad")) {
     const v = mejor && sc(mejor) > 0.5 ? mejor : vid ? vinculo(vid) : null;
