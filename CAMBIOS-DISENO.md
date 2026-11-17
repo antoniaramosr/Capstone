@@ -59,3 +59,12 @@ Archivos modificados: index.html, js/app.js, js/extras.js
 - Márgenes: el «+ / −» de las secciones de Estadísticas ya no queda pegado al borde, más aire entre las flechas del ciclo de convocatorias y las tarjetas, y más margen en las flechas de las secciones plegables de la ficha.
 - Archivos: js/siva.js, js/app.js, js/extras.js, js/convocatorias.js, css/siva.css, index.html (cache v=52).
 
+
+## Ronda 11
+- Resumen de la semana: cada nivel de la línea de tiempo toma la altura de su contenido, así no se montan las burbujas cuando hay varios hitos en la misma fecha.
+- El conteo animado de números se hace solo la primera vez.
+- Paginación de 10 en 10 en todo (convocatorias, estudiantes y postulantes de cada convocatoria).
+
+## Ronda 12 (manual de marca AMSA)
+- Paleta del manual: Pantone 3145 C (#00778B) como color principal, 325 C turquesa, 1795 C rojo, 124 C amarillo y Cool Gray 8.
+- Tipografía: Aaux Pro para títulos y Univers para textos (con alternativas del sistema, se quitó Google Fonts).

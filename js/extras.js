@@ -33,7 +33,7 @@ function vEstudiantes(p) {
   const cmp = (a, b) => (estOrden === "antiguo" ? 1 : -1) * (a.p.fecha || "").localeCompare(b.p.fecha || "");
   if (PAG._estTab !== tab) { PAG.est = 1; PAG._estTab = tab; }
   const filas = enAnio.filter(pasa).sort(cmp);
-  const pg = paginar("est", filas, 15, "estTabla");
+  const pg = paginar("est", filas, 10, "estTabla");
   const nTab = t => estudiantesDe(t).length;
   const titulo = tab === "practicantes" ? "Practicantes" : tab === "memoristas" ? "Memoristas" : "Estudiantes";
   // Tarjetas de resumen (mismo estilo que Mis vínculos)

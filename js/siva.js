@@ -2,10 +2,10 @@
    Este archivo solo agrega cosas: no cambia la lógica de vínculos ni de datos. */
 
 /* ============================ Logo y personas ============================ */
-const SIVA_COL = { teal: "#186170", light: "#5BB5C0", red: "#D84325", amber: "#E8960F" };
+const SIVA_COL = { teal: "#00778B", light: "#5BB5C0", red: "#D22630", amber: "#E8960F" };
 // Degradados de tonos medios (suaves, como el logo de AMSA): claro, medio, profundo.
 const SIVA_GRAD = {
-  teal: ["#2F8A8F", "#256F7E", "#186170"],
+  teal: ["#2F8A8F", "#256F7E", "#00778B"],
   light: ["#8FD3C9", "#6BC0C0", "#4FA9B8"],
   red: ["#EE8A4A", "#DD5B30", "#C93A22"],
   amber: ["#F6C65A", "#EDA630", "#E08A0C"]
@@ -174,7 +174,7 @@ function verGuia() {
 }
 
 /* ============================ Logos de instituciones ============================ */
-const LOGO_COLS = ["#186170", "#D84325", "#3E8C9B", "#B87A00", "#0A3A46", "#5B7F2A", "#7A4E9E", "#B04A6B"];
+const LOGO_COLS = ["#00778B", "#D22630", "#4FB3BF", "#B87A00", "#00485A", "#5B7F2A", "#7A4E9E", "#B04A6B"];
 function logoSigla(c) {
   if (c.sigla) return c.sigla;
   const s = (c.corto || c.nombre || "?").replace(/\./g, "").trim(), w = s.split(/\s+/);
@@ -225,7 +225,7 @@ document.addEventListener("click", e => {
 });
 
 /* ============================ Calendario ============================ */
-const CAL_TIPOS = { reunion: { n: "Reuniones", c: "#186170" }, cierre: { n: "Cierre de convocatoria", c: "#D84325" }, inicio: { n: "Inicio de vínculo", c: "#3E8C9B" }, termino: { n: "Término de vínculo", c: "#C89900" }, cuest: { n: "Cuestionarios enviados", c: "#7C3F99" } };
+const CAL_TIPOS = { reunion: { n: "Reuniones", c: "#00778B" }, cierre: { n: "Cierre de convocatoria", c: "#D22630" }, inicio: { n: "Inicio de vínculo", c: "#4FB3BF" }, termino: { n: "Término de vínculo", c: "#EAAA00" }, cuest: { n: "Cuestionarios enviados", c: "#7C3F99" } };
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 let cal = { y: null, m: null, off: {} };
 function calEventos() {
@@ -270,10 +270,14 @@ function sivaWireCalendario() {
 }
 
 /* ============================ Después de dibujar ============================ */
+let sivaYaContado = false;
+// La cuenta animada de los números se hace una sola vez (la primera que se abre la página); después los números aparecen directo.
 function sivaContar() {
+  if (sivaYaContado) return;
   if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   $$(".resumen b, .kpis b").forEach(b => {
     const txt = b.textContent.trim(); if (!/^\d+$/.test(txt)) return;
+    sivaYaContado = true;
     const n = +txt, t0 = performance.now(), dur = 700; b.textContent = "0";
     const paso = ts => { const k = Math.min(1, (ts - t0) / dur); b.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(paso); };
     requestAnimationFrame(paso);
@@ -289,7 +293,7 @@ function sivaDespues(ruta) {
 }
 
 /* ============================ Rediseño v2 ============================ */
-const SIVA_SI = "#1FA8BA", SIVA_PAR = "#F2A516", SIVA_NO = "#D84325";
+const SIVA_SI = "#5FC4C4", SIVA_PAR = "#F2A516", SIVA_NO = "#D22630";
 const sivaFecha = f => new Date(f + "T12:00:00");
 
 // Tarjetas de indicadores: número, etiqueta de estado y mini gráfico.
@@ -305,7 +309,7 @@ function sivaTarjetasResumen(mios, nInst, activos, incom, sinCal, convA, cierran
   const chip = (t, c) => `<em class="sv-chip" style="--c:${c}">${t}</em>`;
   const tile = (tag, attrs, num, chipHTML, lbl, graf, col) => `<${tag} ${attrs} class="sv-k ${tag === "div" ? "" : "r-link"}" style="--c:${col}"><span class="sv-top"><b>${num}</b>${chipHTML}</span><span class="sv-l">${lbl}</span>${graf}</${tag}>`;
   return `<div class="resumen sv-resumen" role="region" aria-label="Resumen">
-    ${tile("div", "", n, chip(nuevos ? "+" + nuevos + " este mes" : "sin cambios", "#186170"), `vínculos con ${nInst} ${nInst === 1 ? "institución" : "instituciones"}`, `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="svk1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#186170" stop-opacity=".3"/><stop offset="1" stop-color="#186170" stop-opacity="0"/></linearGradient></defs><polygon points="${pts} 100,30 0,30" fill="url(#svk1)"/><polyline points="${pts}" fill="none" stroke="#186170" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`, "#186170")}
+    ${tile("div", "", n, chip(nuevos ? "+" + nuevos + " este mes" : "sin cambios", "#00778B"), `vínculos con ${nInst} ${nInst === 1 ? "institución" : "instituciones"}`, `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="svk1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00778B" stop-opacity=".3"/><stop offset="1" stop-color="#00778B" stop-opacity="0"/></linearGradient></defs><polygon points="${pts} 100,30 0,30" fill="url(#svk1)"/><polyline points="${pts}" fill="none" stroke="#00778B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`, "#00778B")}
     ${tile("div", "", activos, chip(n ? Math.round(activos / n * 100) + "%" : "–", SIVA_SI), "en curso", barra(n ? activos / n : 0, SIVA_SI), SIVA_SI)}
     ${tile("button", 'data-ir-f="inc"', incom, chip(incom ? incom + (incom === 1 ? " pendiente" : " pendientes") : "al día", incom ? "#B97800" : "#B97800"), "con datos por completar", incom ? barra(incom / (n || 1), SIVA_PAR) : puntos(SIVA_PAR), SIVA_PAR)}
     ${tile("div", "", sinCal, chip(sinCal ? "por calificar" : "al día", SIVA_NO), "terminados sin calificar", sinCal ? barra(sinCal / (n || 1), SIVA_NO) : puntos(SIVA_NO), SIVA_NO)}
@@ -329,7 +333,12 @@ function sivaTimelineHTML(d) {
   const meses = []; for (let m = new Date(ini); m < fin; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) meses.push({ n: ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][m.getMonth()], w: (new Date(m.getFullYear(), m.getMonth() + 1, 1) - m) / tot * 100 });
   items.sort((a, b) => a.d - b.d);
   const ult = []; items.forEach(i => { i.p = px(i.d); let l = 0; while (ult[l] != null && i.p - ult[l] < 17) l++; ult[l] = i.p; i.l = l; });
-  const H = 125, niveles = ult.length, alto = 62 + (niveles - 1) * H + 150;
+  // Cada nivel mide lo que ocupa su burbuja más grande y su texto (el texto tiene 170 px de ancho), para que un nivel no se monte sobre el otro.
+  const lineas = (t, n) => Math.max(1, Math.ceil(t.length / n));
+  const hItem = i => i.s + 10 + lineas(i.t, 19) * 20 + 4 + lineas(i.x, 23) * 19;
+  const nivH = ult.map((_, l) => Math.max(...items.filter(i => i.l === l).map(hItem)) + 22), nivTop = [];
+  nivH.reduce((acc, h, l) => (nivTop[l] = acc, acc + h), 62);
+  const niveles = ult.length, alto = nivTop[niveles - 1] + nivH[niveles - 1] + 6;
   const pasado = items.filter(i => i.d <= hoyD).sort((a, b) => a.d - b.d);
   const hoyP = px(hoyD), primero = Math.min(...items.map(i => i.p));
   const tramos = pasado.length ? `<i style="left:${Math.min(primero, hoyP)}%;width:${Math.max(0, hoyP - Math.min(primero, hoyP))}%;background:${SIVA_NO};opacity:.45"></i>` : "";
@@ -338,7 +347,7 @@ function sivaTimelineHTML(d) {
     <div class="sv-meses">${meses.map(m => `<span style="flex:${m.w}">${m.n}</span>`).join("")}</div>
     <div class="sv-bar">${tramos}${fut}</div>
     <div class="sv-hoy" style="left:${hoyP}%"><span>Hoy</span></div>
-    ${items.map(i => { const top = 62 + i.l * H; return `<a class="sv-hang" href="${i.href}" style="left:${i.p}%;--c:${i.c};top:48px;height:${top - 48 + i.s}px"><span class="sv-bub" style="--d:${i.s}px;top:${top - 48}px"><b>${i.dias}</b><small>días</small></span><span class="sv-txt" style="top:${top - 48 + i.s + 6}px"><strong>${esc(i.t)}</strong>${esc(i.x)}</span></a>`; }).join("")}
+    ${items.map(i => { const top = nivTop[i.l]; return `<a class="sv-hang" href="${i.href}" style="left:${i.p}%;--c:${i.c};top:48px;height:${top - 48 + i.s}px"><span class="sv-bub" style="--d:${i.s}px;top:${top - 48}px"><b>${i.dias}</b><small>días</small></span><span class="sv-txt" style="top:${top - 48 + i.s + 6}px"><strong>${esc(i.t)}</strong>${esc(i.x)}</span></a>`; }).join("")}
   </div></div>
   <p class="help sv-tl-ley">Cliquea el círculo para abrir.</p>`;
 }

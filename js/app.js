@@ -768,7 +768,7 @@ function vContraparte(id) {
 
 /* ============================ Dashboard ============================ */
 let dashVP = "", dashComp = "";
-const PALETA = ["#186170", "#5BB5C0", "#D84325", "#E8960F", "#0A3A46", "#3E8C9B", "#8FD3C9", "#9AA7AB"];
+const PALETA = ["#00778B", "#5BB5C0", "#D22630", "#E8960F", "#00485A", "#4FB3BF", "#8FD3C9", "#9AA7AB"];
 function barras(rows, max, extra = true) {
   return rows.map(r => `<div class="brow ${extra ? "" : "short"}"><span class="nm">${esc(r.n)}</span><span class="track"><i style="width:${max ? r.v / max * 100 : 0}%"></i></span><span class="v">${r.v}</span>${extra ? `<span class="s">${r.s || ""}</span>` : ""}</div>`).join("");
 }
@@ -793,7 +793,7 @@ function vDashboard() {
   const base = S.vinculos.filter(v => (!raiz || descendientes(raiz).includes(v.area)) && (!dashComp || compsDe(v).includes(dashComp)));
   const est = S.estudiantes.filter(e => (!raiz || descendientes(raiz).includes(e.area)) && (!dashComp || e.compania === dashComp));
   const porMeta = S.metas.map(m => { const l = base.filter(v => metasDe(v).includes(m.nombre)); return { n: m.nombre + (m.activa ? "" : " (desactivada)"), v: l.length, s: l.some(v => v.calif) ? "Prom. " + num1(promedio(l)) : "" }; }).filter(r => r.v).sort((a, b) => b.v - a.v);
-  const COLORES_COMP = ["#186170", "#5BB5C0", "#F2A516", "#D84325", "#0A3A46", "#8FD3C9"];
+  const COLORES_COMP = ["#00778B", "#5BB5C0", "#F2A516", "#D22630", "#00485A", "#8FD3C9"];
   const porComp = S.companias.map((c, i) => ({ n: c.nombre, v: base.filter(v => compsDe(v).includes(c.id)).length, color: COLORES_COMP[i % COLORES_COMP.length] }));
   const notaProm = l => { const n = l.filter(e => e.nota != null); return n.length ? n.reduce((a, e) => a + e.nota, 0) / n.length : null; };
   const estTipo = [...new Set(est.map(e => e.tipo))].map(t => ({ n: t, v: est.filter(e => e.tipo === t).length }));
