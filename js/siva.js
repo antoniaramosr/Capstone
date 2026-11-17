@@ -113,7 +113,7 @@ function sivaTutPasos() {
     { t: "Te damos la bienvenida a SIVA", x: "Aquí registras y sigues los vínculos de tu área con universidades e instituciones. Te mostramos lo esencial en un minuto." },
     { sel: ".nav-item[data-k=mis]", t: "Tus vínculos", x: "Desde aquí entras a los vínculos de tu área. Cada fila abre una ficha con contactos, reuniones y seguimiento." },
     { sel: ".resumen", t: "Un vistazo rápido", x: "Cuántos vínculos tienes (en curso y terminados), cuáles tienen algo pendiente y cuántas convocatorias hay abiertas." },
-    { sel: "#tablaMis", t: "Los vínculos abiertos", x: "La columna Estado te avisa cuáles conviene atender primero. Haz clic en una fila para abrir su ficha." },
+    { sel: "#tablaMis", t: "Los vínculos abiertos", x: "La columna Estado te avisa con cuáles conviene retomar el contacto. Haz clic en una fila para abrir su ficha." },
     { sel: "#btnAdd", t: "Registrar algo nuevo", x: "Con Añadir creas un vínculo, una charla, un convenio o una convocatoria para estudiantes." },
     { sel: "#btnBell", t: "Avisos en la campanita", x: "Aquí llegan los avisos: contactos sin respuesta, calificaciones pendientes o vínculos que te traspasaron." },
     { sel: "#fab", t: "Asistente SIVA", x: "Pregúntale por tus vínculos, o pásale las notas de una reunión y él propone cómo actualizar la ficha. Tú apruebas cada cambio." },
@@ -256,7 +256,8 @@ function vCalendario() {
   const mesTxt = MESES[cal.m] + " " + cal.y;
   return hero("Calendario", "Reuniones, cierres de convocatorias y fechas clave de tus vínculos en un solo lugar.") + `<div class="grid-main cal-grid"><div>
     <div class="card cal-card"><div class="cal-top"><div class="cal-nav"><button type="button" class="cal-b" data-cal="-1" aria-label="Mes anterior">‹</button><h2 class="cal-mes" aria-live="polite">${mesTxt}</h2><button type="button" class="cal-b" data-cal="1" aria-label="Mes siguiente">›</button></div><button type="button" class="btn-outline sm" data-cal="0">Hoy</button></div>
-      <div class="cal-leg">${Object.entries(CAL_TIPOS).map(([k, t]) => `<button type="button" class="cal-chip ${cal.off[k] ? "off" : ""}" data-cal-tipo="${k}" style="--c:${t.c}" aria-pressed="${!cal.off[k]}"><i></i>${t.n}</button>`).join("")}</div>
+      <div class="cal-leg">${Object.entries(CAL_TIPOS).map(([k, t]) => `<button type="button" class="cal-chip ${cal.off[k] ? "off" : ""}" data-cal-tipo="${k}" style="--c:${t.c}" aria-pressed="${!cal.off[k]}" title="${cal.off[k] ? "Mostrar" : "Ocultar"} este tipo de eventos"><i></i>${t.n} (${todos.filter(e => e.t === k).length})</button>`).join("")}${Object.values(cal.off).some(Boolean) ? `<button type="button" class="cal-chip todo" id="calTodo">Mostrar todo</button>` : ""}</div>
+      <p class="cal-ayuda">Toca una etiqueta para ocultar o mostrar ese tipo de evento; los eventos no se borran, solo se esconden.</p>
       <div class="cal-sem"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div>
       <div class="cal-g">${celdas}</div></div></div>
     <aside class="stack"><div class="card"><p class="card-title">Próximos 30 días</p>${prox.length ? prox.map(e => `<a class="cal-prox" href="${e.ir}" style="--c:${CAL_TIPOS[e.t].c}"><span class="cal-f"><b>${+e.f.slice(8)}</b>${["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+e.f.slice(5, 7) - 1]}</span><span class="cal-t"><b>${esc(e.txt)}</b><small>${CAL_TIPOS[e.t].n} · ${esc(e.sub)}</small></span></a>`).join("") : `<p class="muted small">No hay fechas en los próximos 30 días.</p>`}</div></aside></div>`;
@@ -266,6 +267,7 @@ function sivaWireCalendario() {
     const d = +b.dataset.cal; if (!d) { cal.y = null; } else { cal.m += d; if (cal.m < 0) { cal.m = 11; cal.y--; } if (cal.m > 11) { cal.m = 0; cal.y++; } }
     render();
   });
+  const ct = $("#calTodo"); if (ct) ct.onclick = () => { cal.off = {}; render(); };
   $$("[data-cal-tipo]").forEach(b => b.onclick = () => { cal.off[b.dataset.calTipo] = !cal.off[b.dataset.calTipo]; render(); });
 }
 
@@ -326,7 +328,7 @@ function sivaTimelineHTML(d) {
     ...d.cierran.map(c => { const dias = -diasDesde(c.cierre); return { f: c.cierre, dias, c: SIVA_PAR, s: Math.max(52, 92 - dias * 3), t: "Cierra: " + c.titulo, x: `${fechaTxt(c.cierre)} · ${c.postulantes.length} postulantes`, href: "#/convocatoria/" + c.id }; }),
     ...d.sinResp.map(({ v, q }) => { const f = q.fechaEnvio || q.fecha, dias = diasDesde(f); return { f, dias, c: dias > 14 ? SIVA_PAR : SIVA_SI, s: Math.min(92, 44 + dias * 1.2), t: "Cuestionario " + contraparte(v.contraparte).corto, x: `Enviado el ${fechaTxt(f)} · sin respuesta`, href: "#/ficha/" + v.id }; })
   ].map(i => ({ ...i, d: sivaFecha(i.f) }));
-  if (!items.length) return `<div class="sv-tl-vacio"><b>Todo al día</b><span>No hay vínculos urgentes, cierres cercanos ni cuestionarios pendientes.</span></div>`;
+  if (!items.length) return `<div class="sv-tl-vacio"><b>Todo al día</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios pendientes.</span></div>`;
   const DAY = 86400000, minD = new Date(Math.max(Math.min(hoyD - 30 * DAY, ...items.map(i => i.d)), hoyD - 150 * DAY));
   const ini = new Date(minD.getFullYear(), minD.getMonth(), 1), maxD = new Date(Math.max(+hoyD + 30 * DAY, ...items.map(i => +i.d + 10 * DAY)));
   const fin = new Date(maxD.getFullYear(), maxD.getMonth() + 1, 1), tot = fin - ini, px = dt => Math.min(99.2, Math.max(.8, (dt - ini) / tot * 100));

@@ -161,9 +161,9 @@ function demoReunion(v, texto) {
   const prox = buscar(texto, ["próxim", "proxim", "vamos a", "quedamos", "agendar", "enviar", "acordamos"]);
   const low = texto.toLowerCase();
   let etapa = null;
-  if (/(firmamos|firmado|se firmó|firma del convenio)/.test(low)) etapa = "Formalización";
-  if (/(comenzamos|empezamos|en marcha|arrancó|kickoff|pasamos a ejecución|pasamos a ejecucion)/.test(low)) etapa = "En ejecución";
-  if (/(terminamos|cerramos|finalizó|se cerró|se terminó)/.test(low)) etapa = "Terminado";
+  if (/(firmamos|firmado|se firmó|firma del convenio)/.test(low)) etapa = CONFIG.etapas[1];
+  if (/(comenzamos|empezamos|en marcha|arrancó|kickoff|pasamos a ejecución|pasamos a ejecucion)/.test(low)) etapa = CONFIG.etapas[2];
+  if (/(terminamos|cerramos|finalizó|se cerró|se terminó)/.test(low)) etapa = CONFIG.etapas[3];
   if (etapa && CONFIG.etapas.indexOf(etapa) <= v.etapa) etapa = null;
   const completados = v.hitos.filter(h => !h.ok && low.includes(h.t.toLowerCase().split(" ")[0]) && /(listo|hecho|realizad|complet|termin)/.test(low)).map(h => h.t).slice(0, 2);
   return {
@@ -253,15 +253,15 @@ function demoPregunta(pregunta, vid) {
   const mejor = [...todos].sort((x, y) => sc(y) - sc(x))[0];
   if (tiene("como va", "como esta", "estado de", "que pasa con", "cuentame") && (vid || (mejor && sc(mejor) > 0.5))) {
     const v = (mejor && sc(mejor) > 0.5) ? mejor : vinculo(vid), s = saludDe(v), pend = v.hitos.filter(h => !h.ok).map(h => h.t);
-    return `**${v.nombre}** (${contraparte(v.contraparte).corto}) está en ${CONFIG.etapas[v.etapa]}, con ${progreso(v)} % de avance.\n- Salud: ${s.k === "verde" ? "al día" : s.k === "amarillo" ? "conviene atenderlo" : s.k === "rojo" ? "urgente" : "terminado"}. ${s.motivo}\n- ${v.calif ? "Calificación del área: " + num1(v.calif) + " de 5." : "Todavía sin calificar."}\n- ${pend.length ? "Falta: " + pend.slice(0, 3).join(", ") + (pend.length > 3 ? " y " + (pend.length - 3) + " más" : "") + "." : "Todas las tareas del plan están hechas."}\n- Lo lleva ${v.responsable || "alguien sin definir"}.`;
+    return `**${v.nombre}** (${contraparte(v.contraparte).corto}) está en ${CONFIG.etapas[v.etapa]}, con ${progreso(v)} % de avance.\n- Salud: ${s.k === "verde" ? "al día" : s.k === "amarillo" ? "por reactivar" : s.k === "rojo" ? "sin contacto hace mucho" : "terminado"}. ${s.motivo}\n- ${v.calif ? "Calificación del área: " + num1(v.calif) + " de 5." : "Todavía sin calificar."}\n- ${pend.length ? "Falta: " + pend.slice(0, 3).join(", ") + (pend.length > 3 ? " y " + (pend.length - 3) + " más" : "") + "." : "Todas las tareas del plan están hechas."}\n- Lo lleva ${v.responsable || "alguien sin definir"}.`;
   }
   // 4) Conteos
   const alcance = tiene("todos", "en total", "en siva", "toda la") ? todos : mios;
   const nota = alcance === mios && mios.length !== todos.length ? `\n(Son los de tu área; en todo SIVA hay ${todos.length}.)` : "";
   const porEtapa = n => alcance.filter(v => v.etapa === n);
-  if (tiene("urgente", "atender", "atencion", "sin movimiento", "en rojo", "riesgo", "piden")) {
+  if (tiene("urgente", "atender", "atencion", "sin contacto", "reactivar", "sin movimiento", "en rojo", "riesgo", "piden")) {
     const u = alcance.filter(v => ["rojo", "amarillo"].includes(saludDe(v).k));
-    return u.length ? `${pl(u.length, "vínculo pide", "vínculos piden")} atención:\n` + lista(u, v => `${v.nombre} (${saludDe(v).k === "rojo" ? "urgente" : "atender"}): ${saludDe(v).motivo}`) + nota : "Ningún vínculo pide atención ahora." + nota;
+    return u.length ? `${pl(u.length, "vínculo pide", "vínculos piden")} atención:\n` + lista(u, v => `${v.nombre} (${saludDe(v).k === "rojo" ? "sin contacto" : "por reactivar"}): ${saludDe(v).motivo}`) + nota : "Ningún vínculo pide atención ahora." + nota;
   }
   if (tiene("sin calificar", "sin evaluar")) { const l = alcance.filter(v => v.etapa === 3 && !v.calif); return `${pl(l.length, "vínculo terminado sin calificar", "vínculos terminados sin calificar")}.` + (l.length ? "\n" + lista(l, v => v.nombre) : "") + nota; }
   if (tiene("mejor", "mas alta", "mejor calificad", "promedio", "calificacion")) {

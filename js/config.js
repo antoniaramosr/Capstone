@@ -77,7 +77,7 @@ const CONFIG = {
   // cuestionarios o cambios en la ficha. Es una propuesta: falta validarla con la contraparte.
   salud: { alDia: 30, urgente: 60 },
 
-  etapas: ["Exploración", "Formalización", "En ejecución", "Terminado"],
+  etapas: ["En exploración", "En formalización", "En ejecución", "Terminado"],
   // Qué significa cada etapa cuando el tipo de vínculo no trae su propia explicación.
   etapasAyuda: ["Conversando, aún sin acuerdo", "Se está confirmando o firmando", "En marcha", "Terminó"],
 

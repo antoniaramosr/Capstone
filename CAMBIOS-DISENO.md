@@ -68,3 +68,10 @@ Archivos modificados: index.html, js/app.js, js/extras.js
 ## Ronda 12 (manual de marca AMSA)
 - Paleta del manual: Pantone 3145 C (#00778B) como color principal, 325 C turquesa, 1795 C rojo, 124 C amarillo y Cool Gray 8.
 - Tipografía: Aaux Pro para títulos y Univers para textos (con alternativas del sistema, se quitó Google Fonts).
+
+## Ronda 14 (feedback de la profe)
+- Sin menús desplegables: cada pestaña lleva directo a su página, donde están la explicación y los filtros.
+- Estados renombrados: Urgente → Sin contacto, Atender → Por reactivar (Al día y Terminado igual). Etapas: En exploración, En formalización, En ejecución, Terminado, con su explicación bajo los filtros.
+- Recuadro de pendientes: "Por resolver", explica qué es pendiente, tiene formato distinto (borde punteado y "Ver cuáles"). Al abrirlo aparece un aviso con el filtro activo y botón "Ver todos".
+- Calendario: las etiquetas muestran cuántos eventos hay, explican que solo ocultan y hay "Mostrar todo".
+- "Actualizar con IA" pasa a botón secundario. Buscador en Estudiantes (estudiante, tutor, universidad, convocatoria).

@@ -19,7 +19,9 @@ function estudiantesDe(tab, soloAceptados) {
   return convVisibles().flatMap(c => c.postulantes.map(p => ({ c, p })))
     .filter(({ c, p }) => (tab === "memoristas" ? esMemoria(c) : tab === "practicantes" ? !esMemoria(c) : true) && (!soloAceptados || ACEPTADOS.includes(p.estado)));
 }
-let estEstado = "", estAnio = "", estOrden = "reciente", estAgrupar = false;
+let estEstado = "", estAnio = "", estOrden = "reciente", estAgrupar = false, estQ = "";
+const estTexto = x => [x.p.nombre, x.p.correo, x.p.universidad, x.p.carrera, x.c.titulo, x.c.tipo, x.c.lugar, (contraparte(x.c.institucion) || {}).nombre, (contraparte(x.c.institucion) || {}).corto, ...(x.p.feedbackTutor || []).map(f => f.autor), ...(x.p.feedbackEst || []).map(f => f.autor)].filter(Boolean).join(" ").toLowerCase();
+const sinTildes = t => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const PILL_POST = ["p0", "p1", "p2", "p3", "p2", "p3"];
 const POR_REVISAR = ["Postulación recibida", "En revisión"];
 const anioPost = x => (x.p.fecha || "").slice(0, 4);
@@ -32,7 +34,8 @@ function vEstudiantes(p) {
   const pasa = x => !estEstado || (estEstado === "por-revisar" ? POR_REVISAR.includes(x.p.estado) : x.p.estado === estEstado);
   const cmp = (a, b) => (estOrden === "antiguo" ? 1 : -1) * (a.p.fecha || "").localeCompare(b.p.fecha || "");
   if (PAG._estTab !== tab) { PAG.est = 1; PAG._estTab = tab; }
-  const filas = enAnio.filter(pasa).sort(cmp);
+  const qn = sinTildes(estQ.trim());
+  const filas = enAnio.filter(pasa).filter(x => !qn || sinTildes(estTexto(x)).includes(qn)).sort(cmp);
   const pg = paginar("est", filas, 10, "estTabla");
   const nTab = t => estudiantesDe(t).length;
   const titulo = tab === "practicantes" ? "Practicantes" : tab === "memoristas" ? "Memoristas" : "Estudiantes";
@@ -67,15 +70,16 @@ function vEstudiantes(p) {
   + resumen + `
   <div class="tabs" role="tablist"><a class="tab ${tab === "todos" ? "on" : ""}" href="#/estudiantes">Todos (${nTab("todos")})</a><a class="tab ${tab === "practicantes" ? "on" : ""}" href="#/estudiantes/practicantes">Practicantes (${nTab("practicantes")})</a><a class="tab ${tab === "memoristas" ? "on" : ""}" href="#/estudiantes/memoristas">Memoristas (${nTab("memoristas")})</a></div>
   <div class="card" id="estTabla"><div class="chips" style="margin:0 0 12px">${chip("", "Todos los estados")}${chip("por-revisar", "Por revisar", enAnio.filter(x => POR_REVISAR.includes(x.p.estado)).length)}${POST_ESTADOS.map(e => chip(e, e, enAnio.filter(x => x.p.estado === e).length)).join("")}</div>
-  <div class="frow" style="margin:0 0 14px"><select class="input sm" id="estOrden" aria-label="Ordenar postulaciones"><option value="reciente" ${estOrden === "reciente" ? "selected" : ""}>Ordenar: fecha de postulación, más reciente</option><option value="antiguo" ${estOrden === "antiguo" ? "selected" : ""}>Ordenar: fecha de postulación, más antigua</option></select>
+  <div class="frow" style="margin:0 0 14px"><input class="input sm" id="estQ" type="search" placeholder="Buscar por estudiante, tutor, universidad o convocatoria" value="${esc(estQ)}" aria-label="Buscar estudiantes" autocomplete="off"><select class="input sm" id="estOrden" aria-label="Ordenar postulaciones"><option value="reciente" ${estOrden === "reciente" ? "selected" : ""}>Ordenar: fecha de postulación, más reciente</option><option value="antiguo" ${estOrden === "antiguo" ? "selected" : ""}>Ordenar: fecha de postulación, más antigua</option></select>
     <select class="input sm" id="estAnio" aria-label="Año de postulación"><option value="">Todos los años</option>${anios.map(a => `<option ${estAnio === a ? "selected" : ""}>${a}</option>`).join("")}</select>
     <label class="chk"><input type="checkbox" id="estAgr" ${estAgrupar ? "checked" : ""}> Agrupar por año</label></div>
   ${filas.length ? `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Universidad y carrera</th><th>Convocatoria</th><th>Fecha de postulación</th><th>Estado</th></tr></thead><tbody>${filasHTML}</tbody></table></div>${pg.html}
   <p class="help" style="margin-top:10px">Haz clic en una fila para abrir la convocatoria, cambiar el estado, avisarle por correo o dejarle feedback.</p>`
-    : `<div class="empty">No hay estudiantes con estos filtros.${puedeCrear() ? ` <a class="lnk" href="#/nueva-convocatoria">Crea una convocatoria</a> para recibir postulaciones.` : ""}</div>`}</div>`;
+    : `<div class="empty">No hay estudiantes con estos filtros o con esa búsqueda.${puedeCrear() ? ` <a class="lnk" href="#/nueva-convocatoria">Crea una convocatoria</a> para recibir postulaciones.` : ""}</div>`}</div>`;
 }
 function wireEstudiantes() {
   $$("[data-est-f]").forEach(b => b.onclick = () => { estEstado = b.dataset.estF; PAG.est = 1; render(); });
+  const qe = $("#estQ"); if (qe) qe.oninput = e => { estQ = e.target.value; PAG.est = 1; render(); const n = $("#estQ"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } };
   const o = $("#estOrden"), y = $("#estAnio"), g = $("#estAgr");
   if (o) o.onchange = e => { estOrden = e.target.value; PAG.est = 1; render(); };
   if (y) y.onchange = e => { estAnio = e.target.value; PAG.est = 1; render(); };
@@ -90,7 +94,7 @@ function vAyuda() {
   + `<div class="grid-main"><div>
     <div class="card guia-card"><div><p class="card-title" style="margin:0 0 4px">Guía de inicio</p><p class="small muted" style="margin:0">Un recorrido corto por lo esencial de SIVA. Puedes repetirlo las veces que quieras.</p></div><button type="button" class="btn-accent" id="ayudaGuia">Volver a ver la guía</button></div>
     <div class="card"><p class="card-title">Cómo empezar</p><ol class="pasos-ayuda">
-      <li><b>Mira Mis vínculos.</b> Las filas amarillas son vínculos que conviene atender primero.</li>
+      <li><b>Mira Mis vínculos.</b> Las filas amarillas son vínculos por reactivar: conviene retomar el contacto.</li>
       <li><b>Registra algo nuevo</b> con <b>+ Añadir</b>. Se abre un menú para elegir qué tipo de vínculo quieres registrar; en la ficha eliges la institución y, si no está, la agregas ahí.</li>
       <li><b>Escríbele a un contacto</b> con el botón <b>Contactar</b> que está junto a su nombre. Si otra área ya habla con esa institución, SIVA te avisa antes.</li>
       <li><b>Sigue a las y los estudiantes</b> en Estudiantes: quién postula, quién está en práctica y quién terminó.</li>
@@ -101,7 +105,7 @@ function vAyuda() {
       ${g("Etapa", CONFIG.etapas.map((e, i) => `<b>${e}</b>: ${esc(CONFIG.etapasAyuda[i].toLowerCase())}`).join(". ") + ". Cada tipo de vínculo explica sus etapas con más detalle.")}
       ${g("Avance", "Qué parte del plan de trabajo ya se hizo (tareas marcadas como hechas). Se ve como una barra.")}
       ${g("Calificación", "De 1 a 5, qué tan bien resultó el vínculo. La pone el área con tres criterios que dependen del tipo. Cada número tiene una descripción: pasa el mouse sobre él en la ficha.")}
-      ${g("Estado del vínculo", `<b>Al día</b>: hubo movimiento en los últimos ${CONFIG.salud.alDia} días y hay un contacto alternativo. <b>Atender</b>: falta una de las dos cosas. <b>Urgente</b>: más de ${CONFIG.salud.urgente} días sin movimiento.`)}
+      ${g("Estado del vínculo", `<b>Al día</b>: hubo movimiento en los últimos ${CONFIG.salud.alDia} días y hay un contacto alternativo. <b>Por reactivar</b>: falta una de las dos cosas. <b>Sin contacto</b>: más de ${CONFIG.salud.urgente} días sin movimiento.`)}
       ${g("Contacto sin respuesta", `Si la institución no responde el cuestionario en ${DIAS_SIN_RESPUESTA} días, SIVA avisa y sugiere escribirle a otro contacto, para que el vínculo no dependa de una sola persona.`)}
       ${g("Estados de un postulante", "<b>Postulación recibida</b> y <b>En revisión</b>; <b>Aceptado</b> o <b>No seleccionado</b>; si queda, <b>En curso</b> mientras hace su práctica o memoria y <b>Terminado</b> al finalizar. Cada cambio prepara el correo para avisarle.")}
       ${g("Traspaso", "Cuando cambia quién lleva un vínculo, SIVA arma una hoja de traspaso que la nueva persona confirma con «Leí y asumo».")}

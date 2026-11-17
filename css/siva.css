@@ -411,3 +411,17 @@ button.pag-b:hover{background:var(--bg-soft,#EEF6F7);border-color:var(--brand-2)
 /* Ronda 13: las burbujas y los textos quedan por encima de las líneas punteadas; la etiqueta Hoy va debajo de la barra, sin tapar los meses */
 .sv-bub,.sv-txt{z-index:3}
 .sv-bub{z-index:3}
+
+/* Ronda 14: feedback de la profe */
+.resumen > .r-accion{border:2px dashed var(--accent);background:#FFF7F6;text-align:left;position:relative}
+.resumen > .r-accion .r-kick{display:inline-block;font:700 11px var(--font-head);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.resumen > .r-accion .r-cta{display:inline-block;margin-top:8px;font:700 14px var(--font-head);color:var(--accent)}
+.resumen > .r-accion:hover{background:#FFEFED}
+.filtro-activo{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 16px;border-radius:12px;background:#FFF7F6;border:1px solid #F1C9C5;font-size:15px}
+.etapas-ley{display:flex;flex-wrap:wrap;gap:4px 18px;margin:10px 0 0;font-size:13.5px;color:var(--muted)}
+.etapas-ley b{color:var(--ink,#00485A)}
+.cal-ayuda{margin:2px 0 10px;font-size:13.5px;color:var(--muted)}
+.cal-chip.todo{--c:var(--brand);background:#fff;border:1px dashed var(--brand);color:var(--brand)}
+#estQ{min-width:min(360px,100%);flex:1 1 280px}
+.resumen > .r-accion > span:not(.r-kick):not(.r-cta){text-decoration:none;color:var(--ink,#00485A);font-size:17px}
+.resumen > .r-accion > span:not(.r-kick):not(.r-cta):hover{text-decoration:none}

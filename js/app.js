@@ -60,7 +60,7 @@ function sinRespuesta(v) {
 }
 
 /* Salud del vínculo: verde "Al día" si hubo movimiento en los últimos días y hay
-   un contacto alternativo; amarillo "Atender" si falta una de las dos; rojo "Urgente"
+   un contacto alternativo; amarillo "Por reactivar" si falta una de las dos; rojo "Sin contacto"
    si pasó mucho tiempo sin movimiento. Los plazos están en CONFIG.salud. */
 function ultimoMovimiento(v) {
   const f = [...v.reuniones.map(r => r.fecha), ...v.cuestionarios.flatMap(q => [q.fecha, q.fechaEnvio, q.fechaResp]), ...v.versiones.map(x => x.fecha)].filter(Boolean).sort();
@@ -71,9 +71,9 @@ function saludDe(v) {
   if (v.etapa === 3) return { k: "cerrado", t: "Terminado", orden: 3, motivo: "El vínculo terminó." };
   const um = ultimoMovimiento(v), dias = um ? diasDesde(um) : 999, alt = tieneAlternativo(v);
   const mov = um ? `Último movimiento hace ${dias} ${dias === 1 ? "día" : "días"}` : "Sin movimientos registrados";
-  if (dias > CONFIG.salud.urgente) return { k: "rojo", t: "Urgente", orden: 0, dias, motivo: `${mov}.` };
+  if (dias > CONFIG.salud.urgente) return { k: "rojo", t: "Sin contacto", orden: 0, dias, motivo: `${mov}.` };
   if (dias <= CONFIG.salud.alDia && alt) return { k: "verde", t: "Al día", orden: 2, dias, motivo: `${mov} y hay un contacto alternativo.` };
-  return { k: "amarillo", t: "Atender", orden: 1, dias, motivo: `${mov}${alt ? "" : ". Falta un contacto alternativo"}.` };
+  return { k: "amarillo", t: "Por reactivar", orden: 1, dias, motivo: `${mov}${alt ? "" : ". Falta un contacto alternativo"}.` };
 }
 const saludHTML = v => { const x = saludDe(v); return `<span class="salud s-${x.k}" title="${esc(x.motivo)}"><i aria-hidden="true"></i>${x.t}</span>`; };
 
@@ -208,8 +208,8 @@ function wireContactPop() {
 function shell(active) {
   const contact = contactShellBits();
   const navs = ME.rol === "jefatura"
-    ? [{ k: "dashboard", t: "Estadísticas" }, { k: "mis", t: "Vínculos de mi gerencia", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "metas", t: "Metas" }, { k: "calendario", t: "Calendario" }]
-    : [{ k: "mis", t: ME.admin ? "Vínculos" : "Mis vínculos", mega: 1 }, { k: "areas", t: "Áreas", mega: 1 }, { k: "contrapartes", t: "Instituciones", mega: 1 }, { k: "estudiantes", t: "Estudiantes", mega: 1 }, { k: "dashboard", t: "Estadísticas" }, { k: "calendario", t: "Calendario" }];
+    ? [{ k: "dashboard", t: "Estadísticas" }, { k: "mis", t: "Vínculos de mi gerencia" }, { k: "contrapartes", t: "Instituciones" }, { k: "metas", t: "Metas" }, { k: "calendario", t: "Calendario" }]
+    : [{ k: "mis", t: ME.admin ? "Vínculos" : "Mis vínculos" }, { k: "areas", t: "Áreas" }, { k: "contrapartes", t: "Instituciones" }, { k: "estudiantes", t: "Estudiantes" }, { k: "dashboard", t: "Estadísticas" }, { k: "calendario", t: "Calendario" }];
   if (ME.admin) navs.push({ k: "admin", t: "Configuración" });
   navs.push({ k: "ayuda", t: "Ayuda" });
   const otros = Object.values(CONFIG.usuarios).filter(u => u.id !== ME.id);
@@ -349,7 +349,7 @@ const fold = (titulo, cnt, cuerpo, abierta = false, extra = "") => `<details cla
 
 /* ============================ Mis vínculos ============================ */
 let filtro = { etapa: -1, tipo: "", q: "", inc: false, comp: "", orden: "reciente", anio: "", agrupar: false, salud: "" };
-const ORDENES = { salud: "estado (urgentes primero)", reciente: "fecha de inicio, más reciente", antiguo: "fecha de inicio, más antigua", nombre: "nombre (A-Z)", etapa: "etapa" };
+const ORDENES = { salud: "estado (sin contacto primero)", reciente: "fecha de inicio, más reciente", antiguo: "fecha de inicio, más antigua", nombre: "nombre (A-Z)", etapa: "etapa" };
 function ordenar(list) {
   const f = v => v.inicio || (filtro.orden === "antiguo" ? "9999" : "0000");
   const by = { reciente: (a, b) => f(b).localeCompare(f(a)), antiguo: (a, b) => f(a).localeCompare(f(b)), nombre: (a, b) => (a.nombre + contraparte(a.contraparte).corto).localeCompare(b.nombre + contraparte(b.contraparte).corto), etapa: (a, b) => a.etapa - b.etapa || f(b).localeCompare(f(a)), salud: (a, b) => saludDe(a).orden - saludDe(b).orden || (saludDe(b).dias || 0) - (saludDe(a).dias || 0) }[filtro.orden] || (() => 0);
@@ -362,7 +362,7 @@ const anioDe = v => (v.inicio || "").slice(0, 4) || "Sin fecha";
 const LEYENDA_TABLA = `<div class="leyenda-tabla"><b class="ley-t">Cómo leer la tabla</b><div class="ley-grid">
   <div class="ley-it"><span class="ley-ic"><span class="dots"><i></i><i></i><i></i><i class="off"></i><i class="off"></i></span></span><p><b>Calificación</b>Qué tan bien resultó el vínculo, de 1 a 5. La pone el área.</p></div>
   <div class="ley-it"><span class="ley-ic"><span class="prog sm"><i style="width:60%"></i></span></span><p><b>Avance</b>Qué parte del plan de trabajo ya se hizo.</p></div>
-  <div class="ley-it"><span class="ley-ic"><span class="ley-fila"></span></span><p><b>Fila amarilla</b>Vínculo que conviene atender.</p></div></div></div>`;
+  <div class="ley-it"><span class="ley-ic"><span class="ley-fila"></span></span><p><b>Fila amarilla</b>Vínculo por reactivar.</p></div></div></div>`;
 function filasVinculos(list, opts = {}) {
   if (!list.length) return `<div class="empty">${opts.vacio || "No hay vínculos para mostrar."}</div>`;
   const mailCol = opts.mail !== false && vinculosContactables().length;
@@ -413,7 +413,7 @@ function vMis(p) {
   <div class="resumen resumen-3" role="region" aria-label="Resumen">
     <div class="r-total"><b>${mios.length}</b><span>vínculos con ${nInst} ${nInst === 1 ? "institución" : "instituciones"}</span>${rango ? `<small class="r-anios" title="Años de inicio de los vínculos registrados">${rango}</small>` : ""}
       <p class="r-split"><small><i class="d d-on"></i><strong>${activos}</strong> en curso</small><small><i class="d d-off"></i><strong>${terminados}</strong> ${terminados === 1 ? "terminado" : "terminados"}</small></p></div>
-    ${nPend ? `<button class="r-link r-pend" data-ir-f="pend"><b>${nPend}</b><span>${nPend === 1 ? "vínculo con pendientes" : "vínculos con pendientes"}</span><small class="r-det">${[incom ? incom + " con datos por completar" : "", sinCal ? sinCal + (sinCal === 1 ? " terminado sin calificar" : " terminados sin calificar") : ""].filter(Boolean).join("<br>")}</small></button>`
+    ${nPend ? `<button class="r-link r-pend r-accion" data-ir-f="pend" title="Abre la lista solo con estos vínculos"><span class="r-kick">Por resolver</span><b>${nPend}</b><span>${nPend === 1 ? "vínculo con algo pendiente" : "vínculos con algo pendiente"}</span><small class="r-det">${[incom ? incom + (incom === 1 ? " ficha con datos por completar" : " fichas con datos por completar") : "", sinCal ? sinCal + (sinCal === 1 ? " terminado sin calificar" : " terminados sin calificar") : ""].filter(Boolean).join("<br>")}</small><span class="r-cta">Ver cuáles →</span></button>`
       : `<div class="r-pend ok"><b>✓</b><span>Todo al día</span><small class="r-det">Fichas completas y vínculos terminados calificados</small></div>`}
     <a class="r-link" href="#/mis/convocatorias"><b>${convA}</b><span>${convA === 1 ? "convocatoria abierta" : "convocatorias abiertas"}</span><small class="r-det">Para estudiantes</small></a>
   </div>
@@ -432,16 +432,18 @@ function vMis(p) {
   const avVis = av.slice(0, 3), avMas = av.slice(3);
   const avHTML = a => `<button class="aviso ${S.leidos.includes(a.id) ? "read" : ""}" data-aviso="${a.id}" data-ir="${a.ir}"><b>${esc(a.titulo)}</b>${esc(a.texto)}</button>`;
   return head + `<div class="grid-main solo"><div>
+    ${filtro.inc ? `<div class="filtro-activo" role="status"><span>Estás viendo solo ${mios.filter(pendiente).length === 1 ? "el vínculo" : "los <b>" + mios.filter(pendiente).length + "</b> vínculos"} con algo pendiente (fichas con datos por completar o terminados sin calificar).</span><button type="button" class="btn-outline sm" id="quitaInc">Ver todos</button></div>` : ""}
     <div class="filters">
-      <div class="chips">${["Todos", ...CONFIG.etapas].map((t, i) => `<button class="chip-btn ${filtro.etapa === i - 1 ? "on" : ""}" data-etapa-f="${i - 1}">${t} (${i ? mios.filter(v => v.etapa === i - 1).length : mios.length})</button>`).join("")}</div>
+      <div class="chips">${["Todos", ...CONFIG.etapas].map((t, i) => `<button class="chip-btn ${filtro.etapa === i - 1 && !(i === 0 && filtro.inc) ? "on" : ""}" data-etapa-f="${i - 1}" ${i ? `title="${esc(CONFIG.etapasAyuda[i - 1])}"` : ""}>${t} (${i ? mios.filter(v => v.etapa === i - 1).length : mios.length})</button>`).join("")}</div>
       <div class="frow"><input class="input sm" id="fq" placeholder="Buscar vínculo o institución" value="${esc(filtro.q)}" aria-label="Buscar">
       <select class="input sm" id="fo" aria-label="Ordenar">${Object.entries(ORDENES).map(([k, t]) => `<option value="${k}" ${filtro.orden === k ? "selected" : ""}>Ordenar: ${t}</option>`).join("")}</select>
       <select class="input sm" id="fa" aria-label="Año de inicio"><option value="">Todos los años</option>${anios.map(a => `<option ${filtro.anio === a ? "selected" : ""}>${a}</option>`).join("")}</select>
-      <select class="input sm" id="fs" aria-label="Estado del vínculo"><option value="">Todos los estados</option>${[["verde", "Al día"], ["amarillo", "Atender"], ["rojo", "Urgente"], ["cerrado", "Terminado"]].map(([k, t]) => `<option value="${k}" ${filtro.salud === k ? "selected" : ""}>${t} (${mios.filter(v => saludDe(v).k === k).length})</option>`).join("")}</select>
+      <select class="input sm" id="fs" aria-label="Estado del vínculo"><option value="">Todos los estados</option>${[["verde", "Al día"], ["amarillo", "Por reactivar"], ["rojo", "Sin contacto"], ["cerrado", "Terminado"]].map(([k, t]) => `<option value="${k}" ${filtro.salud === k ? "selected" : ""}>${t} (${mios.filter(v => saludDe(v).k === k).length})</option>`).join("")}</select>
       <select class="input sm" id="fc" aria-label="Compañía"><option value="">Todas las compañías</option>${S.companias.map(c => `<option value="${c.id}" ${filtro.comp === c.id ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select>
       <select class="input sm" id="ft" aria-label="Tipo de vínculo"><option value="">Todos los tipos</option>${S.tipos.map(t => `<option value="${t.id}" ${filtro.tipo === t.id ? "selected" : ""}>${esc(t.nombre)}</option>`).join("")}</select>
       <label class="chk"><input type="checkbox" id="fag" ${filtro.agrupar ? "checked" : ""}> Agrupar por año</label>
-      <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Solo con pendientes</label></div>
+      <label class="chk"><input type="checkbox" id="finc" ${filtro.inc ? "checked" : ""}> Solo con algo pendiente</label></div>
+      <p class="etapas-ley">${CONFIG.etapas.map((e, i) => `<span><b>${e}:</b> ${esc(CONFIG.etapasAyuda[i].toLowerCase())}</span>`).join("")}</p>
     </div>
     <div class="card" id="tablaMis">${puedeCrear() ? `<div class="tabla-acts"><span class="muted small">Historial completo: en curso y terminados. Haz clic en una fila para abrir su ficha.</span><button type="button" class="btn-accent sm" data-abrir-add aria-haspopup="true">+ Añadir vínculo</button></div>` : ""}<div id="tablaMisCuerpo">${filasVinculos(listaFiltrada(), opcionesTabla())}</div></div>
   </div></div>`;
@@ -458,7 +460,7 @@ function datosSemana(mios) {
 function textoSemana(mios) {
   const d = datosSemana(mios);
   return [`Hola ${ME.nombre}:`, "", "Tu resumen de la semana en SIVA.", "",
-    `Vínculos urgentes (${d.rojos.length}):`, ...(d.rojos.length ? d.rojos.map(v => `- ${v.nombre} con ${contraparte(v.contraparte).corto}: ${saludDe(v).motivo}`) : ["- Ninguno"]), "",
+    `Vínculos sin contacto hace mucho (${d.rojos.length}):`, ...(d.rojos.length ? d.rojos.map(v => `- ${v.nombre} con ${contraparte(v.contraparte).corto}: ${saludDe(v).motivo}`) : ["- Ninguno"]), "",
     `Convocatorias que cierran en las próximas dos semanas (${d.cierran.length}):`, ...(d.cierran.length ? d.cierran.map(c => `- ${c.titulo}: cierra el ${fechaTxt(c.cierre)}, ${c.postulantes.length} postulantes`) : ["- Ninguna"]), "",
     `Cuestionarios sin respuesta (${d.sinResp.length}):`, ...(d.sinResp.length ? d.sinResp.map(({ v, q }) => `- ${contraparte(v.contraparte).corto}, "${v.nombre}": enviado el ${fechaTxt(q.fechaEnvio || q.fecha)}`) : ["- Ninguno"]), "",
     `Ver en SIVA: ${location.href.split("#")[0]}#/mis`].join("\n");
@@ -535,7 +537,7 @@ function vFicha(id) {
   <div class="statbar">
     <div><span class="lbl">Avance del plan de trabajo</span><span class="pcell">${barra(pr)}<b>${pr}%</b></span><span class="faltan">${hechos} de ${v.hitos.length} tareas hechas</span></div>
     ${comp.faltan.length ? `<div><span class="lbl">Datos por completar</span><span class="faltan" style="margin-top:0">${comp.faltan.join(", ")}</span></div>` : `<div><span class="lbl">Ficha</span><span class="faltan" style="margin-top:0">Todos los datos importantes están completos</span></div>`}
-    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar o eliminar</button><button class="btn-accent" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con IA</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>${evalVisible ? "" : `<button class="btn-outline" onclick="abrirEvaluacion(${v.id})">Evaluar vínculo</button>`}<button class="btn-outline" onclick="abrirTraspaso(${v.id})">Cambiar encargado/a</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
+    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">Editar o eliminar</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con IA</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>${evalVisible ? "" : `<button class="btn-outline" onclick="abrirEvaluacion(${v.id})">Evaluar vínculo</button>`}<button class="btn-outline" onclick="abrirTraspaso(${v.id})">Cambiar encargado/a</button>` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
   </div>
   <nav class="ficha-nav" aria-label="Secciones de la ficha"><button type="button" data-scroll="f-vinculo">El vínculo</button><button type="button" data-scroll="f-personas">Personas</button><button type="button" data-scroll="f-seg">Seguimiento</button>${evalVisible ? `<button type="button" data-scroll="f-eval">Evaluación</button>` : ""}<span class="ficha-nav-r"><button type="button" class="link-btn" data-fsec-todo="1">Abrir todo</button><button type="button" class="link-btn" data-fsec-todo="0">Plegar todo</button></span></nav>
   <details class="f-sec" id="f-vinculo" ${fAb("f-vinculo")}><summary class="f-h"><span>1</span><div>El vínculo<small>Qué se busca lograr y cómo va el trabajo</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
@@ -845,7 +847,7 @@ function vDashboard() {
       <p><b>Duplicados evitados:</b> cuenta cada vez que SIVA mostró el aviso de que otra área ya tiene contacto con esa institución. Si es 0, aún no se ha dado el caso.</p>
       <p><b>Áreas activas este mes:</b> de las áreas que tienen vínculos registrados, cuántas los actualizaron en los últimos 30 días.</p>
       <p><b>Vínculos al día:</b> vínculos en curso con movimiento en los últimos ${CONFIG.salud.alDia} días y un contacto alternativo registrado. Es el mismo estado "Al día" que se ve en Mis vínculos.</p>
-      <p><b>Días sin movimiento:</b> promedio de días desde el último movimiento, solo en vínculos en curso. Pasados ${CONFIG.salud.urgente} días, un vínculo pasa a "Urgente".</p></details>
+      <p><b>Días sin movimiento:</b> promedio de días desde el último movimiento, solo en vínculos en curso. Pasados ${CONFIG.salud.urgente} días, un vínculo pasa a "Sin contacto".</p></details>
   </div>`);
   const detalleHTML = sec("Detalle por institución y por área", `${detalle.length} instituciones`, `<div class="card"><div class="table-wrap"><table><thead><tr><th>Institución</th><th>Vínculos</th><th>Áreas que trabajan con ella</th><th>Calificación</th></tr></thead><tbody>${detalle.map(r => `<tr><td class="t"><a class="lnk" href="#/contraparte/${r.id}">${esc(contraparte(r.id).nombre)}</a></td><td>${r.n}</td><td>${r.as.map(a => `<span class="tag">${esc(nombreArea(a))}</span>`).join("")}</td><td>${r.p ? dots(r.p) + " " + num1(r.p) : '<span class="muted">Sin calificar</span>'}</td></tr>`).join("")}</tbody></table></div></div>`, false);
   const compSel = dashComp ? "solo la compañía " + esc((S.companias.find(c => c.id === dashComp) || {}).nombre || "") : "todas las compañías";
@@ -1182,6 +1184,7 @@ function wireVista(ruta, p) {
   if (ruta === "mis" && $("#fq")) {
     const pinta = () => { Object.keys(PAG).forEach(k => { if (k.startsWith("v#")) PAG[k] = 1; }); $("#tablaMisCuerpo").innerHTML = filasVinculos(listaFiltrada(), opcionesTabla()); wireVista("_tabla"); };
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
+    const qi = $("#quitaInc"); if (qi) qi.onclick = () => { filtro.inc = false; render(); };
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
     $("#fo").onchange = e => { filtro.orden = e.target.value; pinta(); };
