@@ -337,7 +337,7 @@ function sivaTimelineHTML(d) {
   const lineas = (t, n) => Math.max(1, Math.ceil(t.length / n));
   const hItem = i => i.s + 10 + lineas(i.t, 19) * 20 + 4 + lineas(i.x, 23) * 19;
   const nivH = ult.map((_, l) => Math.max(...items.filter(i => i.l === l).map(hItem)) + 22), nivTop = [];
-  nivH.reduce((acc, h, l) => (nivTop[l] = acc, acc + h), 62);
+  nivH.reduce((acc, h, l) => (nivTop[l] = acc, acc + h), 86);
   const niveles = ult.length, alto = nivTop[niveles - 1] + nivH[niveles - 1] + 6;
   const pasado = items.filter(i => i.d <= hoyD).sort((a, b) => a.d - b.d);
   const hoyP = px(hoyD), primero = Math.min(...items.map(i => i.p));
