@@ -373,12 +373,14 @@ function filasVinculos(list, opts = {}) {
     const mail = mailCol && puedeEditar(v) ? `<button type="button" class="link-btn" data-contact-v="${v.id}" data-contact-n="${esc(v.contacto.nombre)}" data-contact-c="${esc(v.contacto.correo)}" title="${esc(v.contacto.nombre ? "Escribirle a " + v.contacto.nombre : "Escribir a la institución")}">Contactar</button>` : "";
     return `<tr class="row ${sal.k === "rojo" || sal.k === "amarillo" ? "atender" : ""}" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span> <span class="anio" title="Año de inicio">${anioDe(v)}</span><small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}${v.inicio ? `<span class="fecha-row">desde ${fechaTxt(v.inicio)}</span>` : ""}</small></td><td><span class="inst-c">${logoInst(c, "sm")}<span>${esc(c.corto)}<small>${esc(v.sede)}</small></span></span></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td data-l="Estado">${saludHTML(v)}<small class="salud-m">${esc(sal.motivo)}</small></td><td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
   };
+  // De 10 en 10: cada ruta guarda su propia página (la clave empieza con "v#").
+  const pg = paginar("v" + location.hash.split("?")[0], list, 10, "tablaMis"), pagina = pg.items;
   let cuerpo;
   if (opts.agrupar) {
-    const anios = [...new Set(list.map(anioDe))].sort((a, b) => filtro.orden === "antiguo" ? a.localeCompare(b) : b.localeCompare(a));
-    cuerpo = anios.map(a => { const l = list.filter(v => anioDe(v) === a); return `<tr class="grupo-anio"><td colspan="${ncol}"><b>${a}</b> · ${l.length} ${l.length === 1 ? "vínculo" : "vínculos"} · ${l.filter(v => v.etapa < 3).length} vigentes</td></tr>${l.map(fila).join("")}`; }).join("");
-  } else cuerpo = list.map(fila).join("");
-  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Estado</th><th>Etapa</th><th>Avance</th><th title="Qué tan bien resultó el vínculo, de 1 a 5">Calificación</th>${mailCol ? "<th>Contactar</th>" : ""}</tr></thead><tbody>${cuerpo}</tbody></table></div>${LEYENDA_TABLA}`;
+    const anios = [...new Set(pagina.map(anioDe))].sort((a, b) => filtro.orden === "antiguo" ? a.localeCompare(b) : b.localeCompare(a));
+    cuerpo = anios.map(a => { const l = list.filter(v => anioDe(v) === a); return `<tr class="grupo-anio"><td colspan="${ncol}"><b>${a}</b> · ${l.length} ${l.length === 1 ? "vínculo" : "vínculos"} · ${l.filter(v => v.etapa < 3).length} vigentes</td></tr>${pagina.filter(v => anioDe(v) === a).map(fila).join("")}`; }).join("");
+  } else cuerpo = pagina.map(fila).join("");
+  return `<div class="table-wrap"><table><thead><tr><th>Vínculo</th><th>Institución</th>${opts.area ? "<th>Área</th>" : ""}<th>Estado</th><th>Etapa</th><th>Avance</th><th title="Qué tan bien resultó el vínculo, de 1 a 5">Calificación</th>${mailCol ? "<th>Contactar</th>" : ""}</tr></thead><tbody>${cuerpo}</tbody></table></div>${pg.html}${LEYENDA_TABLA}`;
 }
 // Pendiente = datos de la ficha incompletos, o vínculo terminado que aún no se califica.
 const pendiente = v => completitud(v).pct < 50 || (v.etapa === 3 && !v.calif);
@@ -881,7 +883,7 @@ function vDashboard() {
     <div class="card"><div class="est-grid"><div class="kpi flat"><b>${est.length}</b><span>estudiantes hoy · nota promedio ${num1(notaProm(est))} (de 1 a 7, la pone la o el tutor)</span></div>
       <div>${barras(estTipo, mx(estTipo), false)}</div></div>
       ${estUni.length ? `<div class="table-wrap"><table><thead><tr><th>Universidad o institución</th><th>Estudiantes</th><th>Nota promedio</th></tr></thead><tbody>${estUni.map(r => `<tr><td class="t">${esc(contraparte(r.id).nombre)}</td><td>${r.n}</td><td>${r.p == null ? '<span class="muted">Sin evaluar</span>' : num1(r.p)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No hay estudiantes con este filtro.</p>`}
-      <p class="card-title" style="margin-top:14px">Feedback de instituciones (respondido en el link)</p><p class="small">${resp.length ? `${resp.length} ${resp.length === 1 ? "cuestionario respondido" : "cuestionarios respondidos"}; las instituciones nos califican con <b>${num1(resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length)} de 5</b>.` : "Aún no hay cuestionarios respondidos."}</p></div>`, true)}
+      <p class="card-title" style="margin-top:34px">Feedback de instituciones (respondido en el link)</p><p class="small">${resp.length ? `${resp.length} ${resp.length === 1 ? "cuestionario respondido" : "cuestionarios respondidos"}; las instituciones nos califican con <b>${num1(resp.reduce((s, q) => s + (+q.respuestas[0] || 0), 0) / resp.length)} de 5</b>.` : "Aún no hay cuestionarios respondidos."}</p></div>`, true)}
   ${detalleHTML}`;
 }
 
@@ -1178,7 +1180,7 @@ function wireVista(ruta, p) {
   const sm = $("#semMail"); if (sm) sm.onclick = () => { abrirOutlookWeb(ME.correo, "Tu resumen de la semana en SIVA", textoSemana(misVinculos())); toast("Se abrió Outlook con tu resumen"); };
   $$("[data-ir-f]").forEach(b => b.onclick = () => { filtro.inc = true; if (location.hash === "#/mis/vinculos") render(); else location.hash = "#/mis/vinculos"; });
   if (ruta === "mis" && $("#fq")) {
-    const pinta = () => { $("#tablaMisCuerpo").innerHTML = filasVinculos(listaFiltrada(), opcionesTabla()); wireVista("_tabla"); };
+    const pinta = () => { Object.keys(PAG).forEach(k => { if (k.startsWith("v#")) PAG[k] = 1; }); $("#tablaMisCuerpo").innerHTML = filasVinculos(listaFiltrada(), opcionesTabla()); wireVista("_tabla"); };
     $$("[data-etapa-f]").forEach(b => b.onclick = () => { filtro.etapa = +b.dataset.etapaF; render(); });
     $("#fq").oninput = e => { filtro.q = e.target.value; pinta(); };
     $("#ft").onchange = e => { filtro.tipo = e.target.value; pinta(); };
