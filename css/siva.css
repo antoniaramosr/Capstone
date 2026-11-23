@@ -438,3 +438,24 @@ button.pag-b:hover{background:var(--bg-soft,#EEF6F7);border-color:var(--brand-2)
 .cal-sel{display:inline-flex;gap:6px;margin-left:6px}
 .cal-leg .cal-sel .cal-chip{--c:var(--brand)}
 .sv-txt strong .logo-i,.cal-t small .logo-i,.rank .nm .logo-i{margin-right:6px;vertical-align:middle}
+
+/* Logos desde archivo: las siglas quedan debajo hasta que carga la imagen */
+.logo-i{position:relative}
+.logo-i .lg-f{position:absolute;inset:0;padding:3px;background:#fff;border-radius:inherit;width:100%;height:100%;object-fit:contain}
+.logo-i.con-img .lg-sg{visibility:hidden}
+.logo-i.con-img{background:#fff}
+/* Resumen del mes */
+.res-intro{margin:0 0 10px;color:var(--ink)}
+.res-list{display:flex;flex-direction:column;border:1px solid var(--line,#e3e8ea);border-radius:12px;overflow:hidden;background:#fff}
+.res-row{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:inherit;border-top:1px solid var(--line,#e3e8ea)}
+.res-row:first-child{border-top:0}
+.res-row:hover{background:#f4f9fa}
+.res-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.res-t b{font-weight:700}
+.res-t small{color:var(--muted,#5b6b70);line-height:1.35}
+.res-tag{flex:none;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px;background:#eef3f4;color:#44565b;white-space:nowrap}
+.res-row.k-sin .res-tag{background:#fbe9e6;color:#a8392b}
+.res-row.k-cierra .res-tag{background:#fdf3d6;color:#8a6200}
+.res-row.k-cuest .res-tag{background:#e3f3f5;color:#00606f}
+.res-mas{margin:8px 2px 0}
+@media(max-width:600px){.res-row{flex-wrap:wrap}.res-tag{order:-1}}

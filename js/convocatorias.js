@@ -133,6 +133,9 @@ function migrarGestores() {
 function migrarEstados() {
   migrarGestores();
   let cambio = false;
+  // Tipo "Meet the Office": se agrega a quien ya tenía datos guardados y se reclasifican esos vínculos.
+  if (!S.tipos.some(t => t.id === "mto")) { const t = CONFIG.tipos.find(x => x.id === "mto"); if (t) { const i = S.tipos.findIndex(x => x.id === "char"); S.tipos.splice(i < 0 ? S.tipos.length : i + 1, 0, JSON.parse(JSON.stringify(t))); cambio = true; } }
+  S.vinculos.forEach(v => { if (v.tipo === "char" && /^Meet the Office/i.test(v.nombre)) { v.tipo = "mto"; cambio = true; } });
   (S.convocatorias || []).forEach(c => c.postulantes.forEach(p => { if (ESTADO_ANTIGUO[p.estado]) { p.estado = ESTADO_ANTIGUO[p.estado]; cambio = true; } if (ESTADO_ANTIGUO[p.avisado]) { p.avisado = ESTADO_ANTIGUO[p.avisado]; cambio = true; } }));
   if (cambio) guardar();
 }

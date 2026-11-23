@@ -10,7 +10,7 @@ Los datos son de ejemplo, armados a mano: **32 vínculos, 18 instituciones, 5 co
 ## Qué hace
 
 - **Mis vínculos**: el Inicio muestra el resumen del mes y solo lo abierto (vínculos y convocatorias). Las pestañas Vínculos y Convocatorias tienen todo el historial con filtros, chips por etapa y listas de 10 en 10. El recuadro "Por resolver" abre solo los vínculos con algo pendiente (ficha incompleta o terminado sin calificar).
-- **Resumen del mes**: una línea de tiempo de 30 días hacia atrás y hacia adelante con los hitos que piden atención (vínculos sin contacto, convocatorias que cierran y cuestionarios sin respuesta). El círculo dice cuánto tiempo lleva, en días, meses o años, y lleva el logo de la institución.
+- **Resumen del mes**: una lista corta, de lo más urgente a lo menos, con lo que conviene mirar: convocatorias que cierran pronto, vínculos sin contacto y cuestionarios sin respuesta. Cada fila lleva el logo de la institución, el motivo en palabras simples y abre la ficha.
 - **Ficha de cada vínculo**, en secciones plegables (El vínculo, Personas, Seguimiento, Evaluación): objetivo, metas, compañías, alcance, financiamiento, fechas, contactos de la institución, líder y encargado/a, reuniones, feedback e historial de cambios. Avisa qué datos faltan, y se descarga en PDF.
 - **Estado del vínculo**: *Al día*, *Por reactivar* (más de 30 días sin movimiento o falta un contacto alternativo), *Sin contacto* (más de 60 días sin movimiento) y *Terminado*. Las etapas son En exploración, En formalización, En ejecución y Terminado.
 - **Encargado y gestor**: el encargado es el dueño del vínculo y puede asignarle la gestión a un gestor de su equipo ("Asignar gestor/a"), que lo edita, usa la IA y escribe a la institución, pero no lo elimina ni lo reasigna. Es distinto de "Cambiar encargado/a", que traspasa el vínculo a otra persona. Un gestor ve solo los vínculos (y las convocatorias) que le asignaron.
@@ -98,7 +98,7 @@ Postulan desde la página pública de convocatorias (menú del avatar, "Ver la p
 Casos puestos a propósito para ver cada cosa de la página:
 
 - **Memorias y prácticas UCN**: vínculo al día, con dos convocatorias y un cuestionario reciente.
-- **Meet the Office (U. de Chile)**: estado *Sin contacto*, meses sin movimiento.
+- **Meet the Office (U. de Chile)**: tipo *Meet the Office*, estado *Sin contacto*, meses sin movimiento.
 - **Charla USACH**: cuestionario enviado hace 22 días sin respuesta.
 - **Charla UTFSM**: el área califica con 4 y la institución responde bajo ("dos miradas").
 - **Charla PUC**: terminada, nota 5, con reunión y cuestionario respondido.
@@ -187,6 +187,7 @@ En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene ca
 ```
 index.html        Página base
 css/styles.css    Estilos base; colores y tipografía de AMSA en variables de :root
+logos/            Logos de las instituciones (un archivo por id, ver logos/LEEME.txt)
 css/siva.css      Capa visual de SIVA (marca, resumen del mes, calendario, login, paginación, logos)
 js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usuarios de prueba y su contraseña
 js/data.js        Vínculos, instituciones, convocatorias y estudiantes de ejemplo

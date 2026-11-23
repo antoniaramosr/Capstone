@@ -1,0 +1,27 @@
+LOGOS DE LAS INSTITUCIONES
+
+Para que SIVA muestre el logo de una institución, deja aquí un archivo con el id de la institución como nombre.
+Formatos: .png, .svg, .jpg o .webp (cuadrado o apaisado, fondo transparente o blanco).
+Si no hay archivo, SIVA muestra las siglas.
+
+Ejemplo: logos/ucn.png
+
+Id -> institución
+ucn.png -> Universidad Católica del Norte
+ua.png -> Universidad de Antofagasta
+uls.png -> Universidad de La Serena
+ceduc.png -> CEDUC UCN
+uch.png -> Universidad de Chile
+puc.png -> Pontificia Universidad Católica de Chile
+usach.png -> Universidad de Santiago de Chile
+utfsm.png -> Universidad Técnica Federico Santa María
+pucv.png -> Pontificia Universidad Católica de Valparaíso
+uai.png -> Universidad Adolfo Ibáñez
+udec.png -> Universidad de Concepción
+ceim.png -> Centro de Entrenamiento Industrial y Minero (CEIM)
+cicitem.png -> Centro de Investigación Científica y Tecnológica para la Minería (CICITEM)
+fch.png -> Fundación Chile
+cm.png -> Consejo Minero
+corfo.png -> Corfo
+inacap.png -> INACAP
+duoc.png -> Duoc UC

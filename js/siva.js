@@ -175,7 +175,9 @@ function verGuia() {
 
 /* ============================ Logos de instituciones ============================ */
 const LOGO_COLS = ["#00778B", "#D22630", "#4FB3BF", "#B87A00", "#00485A", "#5B7F2A", "#7A4E9E", "#B04A6B"];
+const LOGO_SIGLAS = { uch: "UCh", uls: "ULS", ua: "UA", puc: "PUC", pucv: "PUCV", ceduc: "CEDUC", fch: "FCh", cm: "CM" };
 function logoSigla(c) {
+  if (LOGO_SIGLAS[c.id]) return LOGO_SIGLAS[c.id];
   if (c.sigla) return c.sigla;
   const s = (c.corto || c.nombre || "?").replace(/\./g, "").trim(), w = s.split(/\s+/);
   if (w.length === 1) return s.length > 7 ? s.slice(0, 5) : s;
@@ -188,9 +190,12 @@ function logoInst(c, tam) {
   if (!c || !c.id) return "";
   const col = LOGO_COLS[[...c.id].reduce((a, ch) => a + ch.charCodeAt(0), 0) % LOGO_COLS.length];
   if (c.logo) return `<span class="logo-i ${tam || ""} con-img" style="--lc:${col}"><img src="${c.logo}" alt=""></span>`;
+  // Si existe un archivo logos/<id>.png (o .svg, .jpg, .webp) se usa; si no, quedan las siglas.
   const sg = logoSigla(c);
-  return `<span class="logo-i ${tam || ""} n${Math.min(sg.length, 5)}" style="--lc:${col}" aria-hidden="true">${esc(sg)}</span>`;
+  return `<span class="logo-i ${tam || ""} n${Math.min(sg.length, 5)}" style="--lc:${col}"><span class="lg-sg" aria-hidden="true">${esc(sg)}</span><img class="lg-f" src="logos/${esc(c.id)}.png" alt="${esc(c.nombre)}" data-x="0" onload="this.parentNode.classList.add('con-img')" onerror="logoFalla(this)"></span>`;
 }
+const LOGO_EXT = ["png", "svg", "jpg", "webp"];
+function logoFalla(im) { const k = +im.dataset.x + 1; if (k < LOGO_EXT.length) { im.dataset.x = k; im.src = im.src.replace(/\.[a-z]+$/, "." + LOGO_EXT[k]); } else im.remove(); }
 function sivaLogoArchivo(f, ok) {
   if (!/^image\//.test(f.type)) { toast("Elige una imagen (PNG, JPG o SVG)"); return; }
   const r = new FileReader();
@@ -329,6 +334,23 @@ function sivaDur(dias) {
   const a = Math.round(d / 36.5) / 10, tx = String(a).replace(".", ",");
   return { n: tx, u: a === 1 ? "año" : "años", t: tx + (a === 1 ? " año" : " años") };
 }
+/* Resumen del mes: lista corta, ordenada por lo que urge, con el motivo en palabras simples. */
+function sivaResumenHTML(d) {
+  const filas = [
+    ...d.cierran.map(c => { const dias = -diasDesde(c.cierre), sr = sinRevisar(c).length;
+      return { o: dias, k: "cierra", tag: "Cierra pronto", cp: contraparte(c.institucion), t: c.titulo, x: `Cierra el ${fechaTxt(c.cierre)} (${dias <= 0 ? "hoy" : dias === 1 ? "mañana" : "en " + dias + " días"}) · ${c.postulantes.length} ${c.postulantes.length === 1 ? "postulante" : "postulantes"}${sr ? ", " + sr + " por revisar" : ""}`, href: "#/convocatoria/" + c.id, ir: "Ver convocatoria" }; }),
+    ...d.rojos.map(v => { const f = ultimoMovimiento(v), dias = f ? diasDesde(f) : 120;
+      return { o: 100 - dias / 10, k: "sin", tag: "Sin contacto", cp: contraparte(v.contraparte), t: v.nombre, x: `Sin movimiento hace ${sivaDur(dias).t}. Conviene escribirle a ${contraparte(v.contraparte).corto}.`, href: "#/ficha/" + v.id, ir: "Abrir ficha" }; }),
+    ...d.sinResp.map(({ v, q }) => { const f = q.fechaEnvio || q.fecha, dias = diasDesde(f);
+      return { o: 200 - dias, k: "cuest", tag: "Sin respuesta", cp: contraparte(v.contraparte), t: v.nombre, x: `Le pediste feedback a ${contraparte(v.contraparte).corto} hace ${sivaDur(dias).t} y aún no responde.`, href: "#/ficha/" + v.id, ir: "Abrir ficha" }; })
+  ].sort((a, b) => a.o - b.o);
+  if (!filas.length) return `<div class="sv-tl-vacio"><b>Todo al día</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios pendientes.</span></div>`;
+  const vis = filas.slice(0, 6), n = filas.length;
+  return `<p class="res-intro">${n === 1 ? "Hay <b>1 cosa</b> que conviene mirar este mes." : `Hay <b>${n} cosas</b> que conviene mirar este mes, de lo más urgente a lo menos.`}</p>
+  <div class="res-list">${vis.map(i => `<a class="res-row k-${i.k}" href="${i.href}">${logoInst(i.cp, "sm")}<span class="res-t"><b>${esc(i.t)}</b><small>${esc(i.x)}</small></span><span class="res-tag">${i.tag}</span></a>`).join("")}</div>
+  ${n > vis.length ? `<p class="muted small res-mas">Y ${n - vis.length} más. Los vínculos sin contacto están en la pestaña Vínculos.</p>` : ""}`;
+}
+
 function sivaTimelineHTML(d) {
   const SIVA_NO = "#C8604A", SIVA_PAR = "#DDA545", SIVA_SI = "#4FA3AE";
   const hoyD = sivaFecha(hoy());

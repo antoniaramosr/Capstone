@@ -197,7 +197,7 @@ function demoPreguntas(v) {
   const p = [];
   const pend = v.hitos.find(h => !h.ok);
   if (pend) p.push(`¿Cómo ve el avance en "${pend.t}"? ¿Hay algo que lo esté frenando?`);
-  if (v.tipo === "char") p.push("¿Qué temas le gustaría que Antofagasta Minerals aborde en la próxima actividad?");
+  if (v.tipo === "char" || v.tipo === "mto") p.push("¿Qué temas le gustaría que Antofagasta Minerals aborde en la próxima actividad?");
   if (v.tipo === "acad" || v.tipo === "tal") p.push("¿Cómo evalúa el acompañamiento de Antofagasta Minerals a los estudiantes?");
   p.push("¿Qué otra área o unidad de su institución podría beneficiarse de trabajar con Antofagasta Minerals?");
   return { preguntas: p.slice(0, 3) };

@@ -473,8 +473,7 @@ function textoSemana(mios) {
 }
 function resumenSemanaHTML(mios) {
   const d = datosSemana(mios), tot = d.rojos.length + d.cierran.length + d.sinResp.length;
-  const col = (t, items, vacio) => `<div class="sem-col"><p class="lbl2">${t} <span class="fold-n">${items.length}</span></p>${items.length ? items.slice(0, 4).join("") + (items.length > 4 ? `<p class="muted small">y ${items.length - 4} más</p>` : "") : `<p class="muted small">${vacio}</p>`}</div>`;
-  return fold("Resumen del mes", tot, `${sivaTimelineHTML(d)}<div class="sem-acts"><button class="btn-outline" id="semMail">Enviarme este resumen</button></div>`, true);
+  return fold("Resumen del mes", tot, `${sivaResumenHTML(d)}<div class="sem-acts"><button class="btn-outline" id="semMail">Enviarme este resumen</button></div>`, tot > 0);
 }
 
 /* Vínculos con otras áreas: mis instituciones que también trabajan con otras
@@ -1444,13 +1443,13 @@ document.addEventListener("ai-listo", () => { const m = $("#aiModo"); if (m) m.t
    El nuevo encargado/a la lee y confirma con "Leí y asumo". */
 let traspasoAbierto = null, gestionAbierta = null;
 function abrirGestion(id) { gestionAbierta = id; render(); setTimeout(() => { const e = $("#gsPara"); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } }, 0); }
-const candidatosGestion = () => Object.values(CONFIG.usuarios).filter(u => u.delegadoDe === (ME && ME.id));
+const candidatosGestion = () => Object.values(CONFIG.usuarios).filter(u => u.delegadoDe && u.nombre !== (ME && ME.nombre));
 function gestionFormHTML(v) {
   const cs = candidatosGestion();
   if (!cs.length) return `<div class="tp-form"><p class="help">Aún no tienes personas a cargo en SIVA para asignarles vínculos.</p><div class="form-actions"><button class="btn-outline" id="gsNo">Cerrar</button></div></div>`;
   return `<div class="tp-form"><label class="f" for="gsPara">Quién lo gestiona</label>
     <select class="input" id="gsPara">${cs.map(u => `<option ${u.nombre === v.gestor ? "selected" : ""}>${esc(u.nombre)}</option>`).join("")}</select>
-    <p class="help">Puede actualizar la ficha, usar la IA y escribirle a la institución. Tú sigues siendo el encargado del vínculo.</p>
+    <p class="help">Puede actualizar la ficha, usar la IA y escribirle a la institución. Tú sigues siendo el encargado del vínculo y el gestor solo verá este vínculo.</p>
     <div class="form-actions"><button class="btn-accent" id="gsOk">Asignar</button>${v.gestor ? `<button class="btn-outline" id="gsQuitar">Quitar asignación</button>` : ""}<button class="btn-outline" id="gsNo">Cancelar</button></div></div>`;
 }
 let evaluando = null;
