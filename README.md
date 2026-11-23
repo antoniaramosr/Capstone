@@ -9,14 +9,18 @@ Los datos son de ejemplo, armados a mano: **32 vínculos, 18 instituciones, 5 co
 
 ## Qué hace
 
-- **Mis vínculos**: el Inicio muestra el resumen y solo lo abierto (vínculos y convocatorias). Las pestañas Vínculos y Convocatorias tienen todo el historial con filtros, y Con otras áreas muestra instituciones donde también trabajan otras áreas.
+- **Mis vínculos**: el Inicio muestra el resumen del mes y solo lo abierto (vínculos y convocatorias). Las pestañas Vínculos y Convocatorias tienen todo el historial con filtros, chips por etapa y listas de 10 en 10. El recuadro "Por resolver" abre solo los vínculos con algo pendiente (ficha incompleta o terminado sin calificar).
+- **Resumen del mes**: una línea de tiempo de 30 días hacia atrás y hacia adelante con los hitos que piden atención (vínculos sin contacto, convocatorias que cierran y cuestionarios sin respuesta). El círculo dice cuánto tiempo lleva, en días, meses o años, y lleva el logo de la institución.
 - **Ficha de cada vínculo**, en secciones plegables (El vínculo, Personas, Seguimiento, Evaluación): objetivo, metas, compañías, alcance, financiamiento, fechas, contactos de la institución, líder y encargado/a, reuniones, feedback e historial de cambios. Avisa qué datos faltan, y se descarga en PDF.
-- **Semáforo de salud** y aviso de contacto sin respuesta.
+- **Estado del vínculo**: *Al día*, *Por reactivar* (más de 30 días sin movimiento o falta un contacto alternativo), *Sin contacto* (más de 60 días sin movimiento) y *Terminado*. Las etapas son En exploración, En formalización, En ejecución y Terminado.
+- **Encargado y gestor**: el encargado es el dueño del vínculo y puede asignarle la gestión a un gestor de su equipo ("Asignar gestor/a"), que lo edita, usa la IA y escribe a la institución, pero no lo elimina ni lo reasigna. Es distinto de "Cambiar encargado/a", que traspasa el vínculo a otra persona. Un gestor ve solo los vínculos (y las convocatorias) que le asignaron.
+- **Calendario** con filtros por tipo de evento (Todos / Ninguno) y **buscador de estudiantes** (por estudiante, tutor, universidad o convocatoria).
 - **Evaluación** por criterios, distintos según el tipo de institución.
 - **Asistente de IA**: "Actualizar con IA" propone cambios a la ficha desde una reunión (texto pegado, dictado o archivo Word, PDF o texto) y tú apruebas cada uno; también arma cuestionarios de feedback y un chat responde preguntas sobre los vínculos.
 - **Feedback de la institución por link**, sin cuenta; el link se crea y se copia solo.
 - **Convocatorias para estudiantes**: se crean desde un vínculo, se publican en LinkedIn, se postula en una página pública (`#/convocatorias`) y cada estudiante ve su estado en "Mi postulación".
-- **Instituciones** por tipo, **Estadísticas**, **Metas**, **Zonas** y **Administración**.
+- **Instituciones** por tipo (con logo o siglas), **Estadísticas**, **Metas**, **Zonas** y **Administración**. La administración configura áreas, instituciones, compañías y tipos, pero no ve los vínculos.
+- La paleta y la tipografía siguen el manual de normas gráficas de Antofagasta Minerals (Pantone 3145 C, 325 C, 1795 C y 124 C; Aaux Pro y Univers).
 
 ## Cómo verlo
 
@@ -26,9 +30,9 @@ Para cargar los datos de partida desde cero usa **https://antoniaramosr.github.i
 
 ### Para las sesiones de testeo
 
-- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar`: borra lo que registró la persona anterior y reinicia los sandboxes del Perfil 0 y del Perfil 2.
-- Dos testeadores en paralelo: uno entra como **Perfil 0** y otro como **Perfil 2** (cada uno con su página vacía separada).
-- Testeo AMSA: entrar como **Eduardo**. Testeo estudiantes: abrir `#/convocatorias` (sin iniciar sesión).
+- Antes de cada participante abrir `https://antoniaramosr.github.io/Capstone/#/reiniciar`: borra lo que registró la persona anterior y deja los datos de ejemplo y la página vacía en blanco.
+- Se entra con correo y contraseña. Todas las cuentas de prueba usan la contraseña **siva2026**, y el desplegable "Cuentas de prueba para el testeo" de la pantalla de inicio deja entrar con un clic.
+- Testeo AMSA: entrar como **Eduardo** (encargado). Para probar la asignación, entrar luego como **Matías**. Para empezar de cero, entrar como **Página vacía**. Testeo estudiantes: abrir `#/convocatorias` (sin iniciar sesión).
 - Funciona en celular: las tablas pasan a tarjetas.
 
 ## Cómo funcionan los correos
@@ -39,16 +43,17 @@ Los que terminan en `@ejemplo.cl` o `@amsa.ejemplo.cl` son inventados y no recib
 
 ## Perfiles de AMSA (los que usa quien prueba)
 
-Se cambian desde el avatar de arriba a la derecha. Ninguno pide clave.
+Se entra con el correo y la contraseña `siva2026` (o con un clic desde "Cuentas de prueba"). Para cambiar de perfil sin cerrar sesión se usa el avatar de arriba a la derecha.
 
 | Perfil | Correo | Qué rol tiene | Qué se puede probar con él |
 |---|---|---|---|
-| Eduardo | antonia.ramos+eduardo@uc.cl | Responsable de vínculos, Reclutamiento y selección | Es el perfil principal. Ve 5 vínculos, crea convocatorias, contacta instituciones, pide feedback y se manda el resumen semanal (llega a su correo). |
-| Matías | matias@amsa.ejemplo.cl | Responsable de vínculos, mismo equipo que Eduardo | Recibir un vínculo traspasado por Eduardo, o pasarle uno. Lleva el Capstone PUC y la pasantía INACAP, que son del área de Aprendizaje y academia. |
-| Daniela | daniela@amsa.ejemplo.cl | Responsable de vínculos, Asuntos Corporativos y Desarrollo Social | No tiene vínculos. Sirve para ver la bienvenida y registrar su primer vínculo desde cero. |
-| Carolina | carolina@amsa.ejemplo.cl | Revisión y metas, Desarrollo Organizacional y Compensaciones | Ve los vínculos de su gerencia, las estadísticas y las metas. No registra vínculos. |
-| Administración | admin@amsa.ejemplo.cl | Configuración | Ve todo (incluye el convenio con la U. de Antofagasta, que ningún otro perfil ve) y edita áreas, tipos de vínculo, compañías y metas. |
-| Perfil 0 y Perfil 2 | perfil0@amsa.ejemplo.cl, perfil2@amsa.ejemplo.cl | Responsable de vínculos | Entran a una página vacía e independiente, para crear todo a mano. Perfil 2 es para una segunda persona probando al mismo tiempo. |
+| Eduardo | antonia.ramos+eduardo@uc.cl | Encargado, Reclutamiento y selección | Es el perfil principal. Ve 11 vínculos, crea convocatorias, contacta instituciones, pide feedback y se manda el resumen del mes (llega a su correo). Le asigna la gestión de 4 vínculos a Matías. |
+| Matías | matias@amsa.ejemplo.cl | Gestor de Eduardo | Ve solo los vínculos y convocatorias que Eduardo le asignó. Edita, usa la IA y contacta, pero no elimina, reasigna ni crea vínculos. |
+| Sofía | sofia@amsa.ejemplo.cl | Encargada, Aprendizaje y academia | Ve 6 vínculos distintos a los de Eduardo (Capstone, diplomado, pasantías docentes, liderazgo). Le asigna la gestión de 3 a Rocío. |
+| Rocío | rocio@amsa.ejemplo.cl | Gestora de Sofía | Igual que Matías, pero con lo que le asigna Sofía. |
+| Carolina | carolina@amsa.ejemplo.cl | Dirección, Desarrollo Organizacional y Compensaciones | Solo ve Estadísticas de su gerencia. No registra ni edita vínculos. |
+| Administración | admin@amsa.ejemplo.cl | Configuración | Ve y edita Áreas, Instituciones, compañías, tipos y metas. No ve los vínculos. |
+| Página vacía | perfil0@amsa.ejemplo.cl | Encargado | Entra a una página vacía e independiente, para crear todo a mano. |
 
 ## Personas de las instituciones (contactos)
 
@@ -60,8 +65,8 @@ Son las personas a las que se les escribe desde el botón "Contactar" o a las qu
 | Rodrigo Castillo | UCN | Jefe de carrera, Ing. Civil de Minas | rcastillo@ucn.ejemplo.cl | Segundo contacto de la UCN, para ver cómo se elige a quién escribirle. |
 | Josefina Larraín | PUC | Coordinación de prácticas | antonia.ramos+puc@uc.cl | Contacto de la charla PUC (terminada, con nota 5). Para probar "Contactar" y reutilizar un cuestionario ya respondido. |
 | Tomás Vial | PUC | Profesor Capstone | tvial@ing.ejemplo.cl | Contacto del Capstone PUC. |
-| Carla Núñez | U. de Chile | Unidad de empleabilidad, FCFM | cnunez@uchile.ejemplo.cl | Contacto de "Meet the Office", el vínculo que lleva 75 días sin movimiento. |
-| Marcela Bravo | USACH | Centro de empleabilidad | mbravo@usach.ejemplo.cl | Contacto de la charla USACH, que tiene un cuestionario enviado hace 22 días sin respuesta. |
+| Carla Núñez | U. de Chile | Unidad de empleabilidad, FCFM | cnunez@uchile.ejemplo.cl | Contacto de "Meet the Office", el vínculo que lleva meses sin movimiento y aparece como *Sin contacto*. |
+| Marcela Bravo | USACH | Centro de empleabilidad | mbravo@usach.ejemplo.cl | Contacto de la charla USACH, que tiene un cuestionario enviado hace semanas sin respuesta. |
 | Ignacio Ramírez | UTFSM | Dirección de vinculación | iramirez@usm.ejemplo.cl | Contacto de la charla UTFSM, terminada, donde el área y la institución califican distinto. |
 | Marcelo Pizarro | INACAP | Vicerrectoría | mpizarro@inacap.ejemplo.cl | Contacto de la pasantía docente, terminada y sin calificar. |
 | Felipe Ortiz | U. de Antofagasta | Vinculación con el medio | fortiz@uantof.ejemplo.cl | Contacto de la institución del convenio marco (el vínculo aún no tiene contacto cargado). |
@@ -84,8 +89,8 @@ Postulan desde la página pública de convocatorias (menú del avatar, "Ver la p
 
 | Área | Vínculos | Qué hay |
 |---|---|---|
-| Reclutamiento y selección (Eduardo y Matías) | 11 | Charlas, Meet the Office, memorias y prácticas con UCN, U. de Antofagasta, U. de Chile, PUC, UTFSM, UAI, UdeC, ULS, USACH y PUCV, en todas las etapas. |
-| Aprendizaje y academia | 6 | Capstone PUC y UCN, diplomado con UAI, pasantías docentes (INACAP, Duoc UC) y un programa de liderazgo con Fundación Chile. |
+| Reclutamiento y selección (Eduardo, con Matías como gestor) | 11 | Charlas, Meet the Office, memorias y prácticas con UCN, U. de Antofagasta, U. de Chile, PUC, UTFSM, UAI, UdeC, ULS, USACH y PUCV, en todas las etapas. |
+| Aprendizaje y academia (Sofía, con Rocío como gestora) | 6 | Capstone PUC y UCN, diplomado con UAI, pasantías docentes (INACAP, Duoc UC) y un programa de liderazgo con Fundación Chile. |
 | Inclusión y empleo | 2 | Mentoring a ingenieras (PUC) y Beca Mujeres en Minería (UdeC). |
 | Asuntos Públicos Norte y MLP | 12 | Convenios, directorio de la Escuela de Negocios Mineros, mesa del Consejo Minero, empleo y oficios (CEDUC, CEIM), proveedores, I+D con CICITEM y Corfo, relaves con la UCN y el acuerdo con CEDUC Los Vilos. |
 | Desarrollo Organizacional | 1 | Sesión de relaves en La Serena. |
@@ -93,7 +98,7 @@ Postulan desde la página pública de convocatorias (menú del avatar, "Ver la p
 Casos puestos a propósito para ver cada cosa de la página:
 
 - **Memorias y prácticas UCN**: vínculo al día, con dos convocatorias y un cuestionario reciente.
-- **Meet the Office (U. de Chile)**: semáforo en rojo, 75 días sin movimiento.
+- **Meet the Office (U. de Chile)**: estado *Sin contacto*, meses sin movimiento.
 - **Charla USACH**: cuestionario enviado hace 22 días sin respuesta.
 - **Charla UTFSM**: el área califica con 4 y la institución responde bajo ("dos miradas").
 - **Charla PUC**: terminada, nota 5, con reunión y cuestionario respondido.
@@ -161,12 +166,12 @@ En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene ca
 3. **Aceptar a una postulante.** Entra a la convocatoria "Memorias 2027", pasa a Valentina Muñoz a *En revisión* y luego a *Aceptado*. Después usa "Correo para aceptados": elige el área, ajusta la plantilla y se abre Outlook con los correos de los aceptados en copia oculta. Llega a antonia.ramos+postulante@uc.cl.
 4. **Postular como estudiante.** Desde el avatar, "Ver la página de estudiantes". Postula con un correo inventado y luego, como Eduardo, revisa que aparezca en la convocatoria.
 5. **Seguir una práctica.** Con el correo de Camila Rojas o de Sofía Pizarro, entra a "Mi postulación" y mira el feedback del tutor.
-6. **Traspasar un vínculo.** Como Eduardo, en la ficha de un vínculo usa "Cambiar encargado/a" y pásaselo a Matías (el botón está arriba, junto a "Editar o eliminar", y también en el panel lateral). Cambia de perfil a Matías para verlo llegar.
-7. **Empezar de cero.** Entra como Daniela (sin vínculos) o como Perfil 0 (página vacía) y registra el primer vínculo con "+ Añadir".
+6. **Asignar un gestor y traspasar.** Como Eduardo, en la ficha de un vínculo usa "Asignar gestor/a" para que Matías lo gestione (Eduardo sigue siendo el encargado). Entra como Matías y comprueba que ve solo lo asignado. "Cambiar encargado/a" es otra cosa: traspasa el vínculo a otra persona y genera la hoja de traspaso.
+7. **Empezar de cero.** Entra como Página vacía y registra el primer vínculo con "+ Añadir".
 8. **Actualizar con IA.** En una ficha, "Actualizar con IA" abre un panel aparte del de feedback. Se dicta, se pega una transcripción o se sube un archivo de texto, y se aprueba cada cambio propuesto. Hay un texto y archivos de ejemplo en la sección de arriba.
 9. **Descargar la ficha.** El botón "Descargar ficha" baja un PDF con todos los datos del vínculo.
-10. **Ver las convocatorias.** En el Inicio de Mis vínculos aparecen las convocatorias abiertas, y la pestaña "Convocatorias" muestra el historial completo, abiertas y cerradas. En Mis vínculos, el "Inicio" solo muestra lo abierto; la pestaña "Vínculos" tiene el historial con filtros. Los menús de la barra de arriba se abren al pasar el mouse por la flechita.
-11. **Ver metas y estadísticas.** Entra como Carolina o como Administración.
+10. **Ver las convocatorias.** En el Inicio de Mis vínculos aparecen las convocatorias abiertas, y la pestaña "Convocatorias" muestra el historial completo, abiertas y cerradas. En Mis vínculos, el "Inicio" solo muestra lo abierto; la pestaña "Vínculos" tiene el historial con filtros.
+11. **Ver estadísticas y configuración.** Entra como Carolina (solo estadísticas) o como Administración (áreas, instituciones, compañías, tipos y metas).
 12. **Evaluar un vínculo.** En la ficha de uno sin calificar, "Evaluar vínculo" abre la sección de evaluación. Después de calificar queda fija.
 13. **Preguntarle al asistente.** Botón de abajo a la derecha; hay preguntas de ejemplo más arriba.
 
@@ -181,13 +186,15 @@ En la ficha, la sección Evaluación aparece solo cuando el vínculo ya tiene ca
 
 ```
 index.html        Página base
-css/styles.css    Estilos; colores y tipografía de AMSA en variables de :root (siempre fondo blanco)
-js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usuarios de prueba
+css/styles.css    Estilos base; colores y tipografía de AMSA en variables de :root
+css/siva.css      Capa visual de SIVA (marca, resumen del mes, calendario, login, paginación, logos)
+js/config.js      Áreas, tipos de vínculo, tipos de institución, etapas, usuarios de prueba y su contraseña
 js/data.js        Vínculos, instituciones, convocatorias y estudiantes de ejemplo
 js/store.js       Estado, guardado en el navegador, cálculos (progreso, completitud, README en Markdown)
 js/ai.js          Asistente: prompts, conexión con IA y modo demo
 js/convocatorias.js Convocatorias, publicación en LinkedIn y página pública para postular
-js/extras.js      Pantallas y utilidades adicionales
+js/extras.js      Estudiantes, ayuda y utilidades adicionales
+js/siva.js        Resumen del mes, calendario, logos de instituciones, paginación y guía de inicio
 js/pdf.js         Ficha del vínculo en PDF
 js/vendor/        jsPDF, JSZip y pdf.js (para PDF y archivos Word/PDF)
 js/app.js         Pantallas, navegación y eventos
@@ -208,7 +215,8 @@ Datos: son inventados, salvo los correos `antonia.ramos+algo@uc.cl`. Los víncul
 ## Qué queda por hacer
 
 - Cargar a mano más vínculos y convocatorias a medida que aparezcan casos que no cubre este set.
-- Revisar que el resumen semanal y los avisos tengan sentido con tan pocos datos.
+- Revisar que el resumen del mes y los avisos tengan sentido con tan pocos datos.
+- Proyecciones, sin construir: usar SIVA para proveedores de capacitación (categorías, historial y evaluaciones) y entrar con la cuenta corporativa (inicio de sesión único).
 - Decidir qué instituciones reales se agregan después, y con qué correos.
 
 ## Para trabajar las tres sin pisarnos
