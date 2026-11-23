@@ -135,9 +135,12 @@ function rutaArea(id) { const r = []; let a = area(id); while (a) { r.unshift(a)
 const vpDe = id => rutaArea(id)[0];
 const nombreArea = id => (area(id) || {}).nombre || "Área eliminada";
 
-const misVinculos = () => ME.admin ? S.vinculos : S.vinculos.filter(v => descendientes(ME.area).includes(v.area));
-const puedeEditar = v => ME && (ME.admin || (ME.rol === "gestor" && descendientes(ME.area).includes(v.area)));
-const puedeCrear = () => ME && (ME.admin || ME.rol === "gestor");
+// Quien gestiona por encargo de otra persona (por ejemplo, Matías para Eduardo) ve y gestiona solo los vínculos que le asignaron; el dueño sigue siendo quien lo asignó.
+const esDelegado = u => !!(u && u.delegadoDe);
+// La administración configura la estructura (áreas, instituciones, compañías, tipos); no ve ni edita vínculos.
+const misVinculos = () => ME.admin ? [] : esDelegado(ME) ? S.vinculos.filter(v => v.gestor === ME.nombre && descendientes(ME.area).includes(v.area)) : S.vinculos.filter(v => descendientes(ME.area).includes(v.area));
+const puedeEditar = v => ME && !ME.admin && ME.rol === "gestor" && (esDelegado(ME) ? v.gestor === ME.nombre : descendientes(ME.area).includes(v.area));
+const puedeCrear = () => ME && !ME.admin && ME.rol === "gestor" && !esDelegado(ME);
 const compania = id => S.companias.find(c => c.id === id) || { id: "", nombre: "Sin compañía", color: "#999" };
 // Un vínculo puede ser de varias compañías y aportar a varias metas.
 const compsDe = v => v.companias || (v.compania ? [v.compania] : []);

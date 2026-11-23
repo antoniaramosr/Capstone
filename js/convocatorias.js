@@ -121,7 +121,17 @@ function haceDias(d) { return new Date(Date.now() - d * 86400000).toISOString().
 const _estadoInicialBase = estadoInicial;
 estadoInicial = function () { const s = _estadoInicialBase(); s.convocatorias = convSemilla(s); return s; };
 if (!S.convocatorias) { S.convocatorias = esEspacioVacio() ? [] : convSemilla(S); guardar(); }
+function migrarGestores() {
+  if (S._gestorMig2 || !S.vinculos || !S.vinculos.length) return;
+  // Sofía lleva Aprendizaje y academia; Matías (con Eduardo) y Rocío (con Sofía) gestionan solo lo que sus encargados les asignan.
+  S.vinculos.forEach(v => { if (v.area === "aya" && (!v.responsable || /^Equipo/.test(v.responsable) || v.responsable === "Matías")) v.responsable = "Sofía"; });
+  S.vinculos.forEach(v => { delete v.gestor; });
+  S.vinculos.filter(v => v.responsable === "Eduardo" && v.etapa < 3).slice(0, 4).forEach(v => { v.gestor = "Matías"; });
+  S.vinculos.filter(v => v.responsable === "Sofía" && v.etapa < 3).slice(0, 3).forEach(v => { v.gestor = "Rocío"; });
+  S._gestorMig2 = true; guardar();
+}
 function migrarEstados() {
+  migrarGestores();
   let cambio = false;
   (S.convocatorias || []).forEach(c => c.postulantes.forEach(p => { if (ESTADO_ANTIGUO[p.estado]) { p.estado = ESTADO_ANTIGUO[p.estado]; cambio = true; } if (ESTADO_ANTIGUO[p.avisado]) { p.avisado = ESTADO_ANTIGUO[p.avisado]; cambio = true; } }));
   if (cambio) guardar();
@@ -132,9 +142,11 @@ const convocatoria = id => S.convocatorias.find(c => c.id === id);
 const convArea = c => c.area || (vinculo(c.vinculo) || {}).area;
 const convInst = c => c.institucion != null ? c.institucion : (vinculo(c.vinculo) || {}).contraparte || "";
 const convComps = c => c.companias || (c.compania ? [c.compania] : compsDe(vinculo(c.vinculo) || {}));
-const puedeEditarConv = c => ME && (ME.admin || (ME.rol === "gestor" && descendientes(ME.area).includes(convArea(c))));
+const puedeEditarConv = c => ME && !ME.admin && ME.rol === "gestor" && descendientes(ME.area).includes(convArea(c)) && (!esDelegado(ME) || convDeMiGestion(c));
 const instTxt = c => convInst(c) ? contraparte(convInst(c)).nombre : "Abierta a todas las universidades";
-const convVisibles = () => S.convocatorias.filter(c => ME && (ME.admin || descendientes(ME.area).includes(convArea(c))));
+// Quien gestiona por encargo ve solo las convocatorias de los vínculos que le asignaron.
+const convDeMiGestion = c => { const v = vinculo(c.vinculo); return !!v && v.gestor === ME.nombre; };
+const convVisibles = () => S.convocatorias.filter(c => ME && !ME.admin && descendientes(ME.area).includes(convArea(c)) && (!esDelegado(ME) || convDeMiGestion(c)));
 const convDe = vid => S.convocatorias.filter(c => c.vinculo === vid);
 const urlPostular = c => location.href.split("#")[0] + "#/postular/" + c.id;
 const quedaron = c => c.postulantes.filter(p => ACEPTADOS.includes(p.estado));
@@ -336,7 +348,7 @@ function vConvocatoria(id) {
   const local = location.protocol === "file:";
   const pgP = paginar("post" + c.id, c.postulantes.map((p, i) => ({ p, i })), 10, "postTabla");
   return `<div class="crumbs"><a href="#/mis">Mis vínculos</a> / ${v ? `<a href="#/ficha/${v.id}">${esc(v.nombre)}</a> / ` : ""}Convocatoria</div>
-  <div class="head-row"><div><h1>${esc(c.titulo)}</h1><p class="sub">${esc(c.tipo)} · ${esc(instTxt(c))} · ${compTag(convComps(c))} · cierra el ${fechaTxt(c.cierre)}</p></div>${convPill(c)}</div>
+  <div class="head-row"><div><h1>${esc(c.titulo)}</h1><p class="sub">${esc(c.tipo)} · ${logoInst(contraparte(c.institucion), "xs")}${esc(instTxt(c))} · ${compTag(convComps(c))} · cierra el ${fechaTxt(c.cierre)}</p></div>${convPill(c)}</div>
   <div class="statbar">
     <div><span class="lbl">Postulantes</span><b class="statnum">${c.postulantes.length}</b></div>
     <div><span class="lbl">Cupos llenos</span><span class="pcell">${barra(Math.min(100, Math.round(q.length / c.cupos * 100)))}<b>${q.length} de ${c.cupos}</b></span></div>

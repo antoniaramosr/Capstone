@@ -231,13 +231,13 @@ let cal = { y: null, m: null, off: {} };
 function calEventos() {
   const ev = [], mios = misVinculos(), ok = f => /^\d{4}-\d{2}-\d{2}$/.test(f || "");
   mios.forEach(v => {
-    const c = contraparte(v.contraparte).corto, ir = "#/ficha/" + v.id;
-    if (ok(v.inicio)) ev.push({ f: v.inicio, t: "inicio", txt: v.nombre, sub: c, ir });
-    if (ok(v.termino)) ev.push({ f: v.termino, t: "termino", txt: v.nombre, sub: c, ir });
-    (v.reuniones || []).forEach(r => { if (ok(r.fecha)) ev.push({ f: r.fecha, t: "reunion", txt: v.nombre, sub: c, ir }); });
-    (v.cuestionarios || []).forEach(q => { const f = q.fechaEnvio || (q.estado !== "borrador" ? q.fecha : ""); if (ok(f) && q.estado !== "borrador") ev.push({ f, t: "cuest", txt: v.nombre, sub: c, ir }); });
+    const cpo = contraparte(v.contraparte), c = cpo.corto, ir = "#/ficha/" + v.id;
+    if (ok(v.inicio)) ev.push({ f: v.inicio, t: "inicio", txt: v.nombre, sub: c, cp: cpo, ir });
+    if (ok(v.termino)) ev.push({ f: v.termino, t: "termino", txt: v.nombre, sub: c, cp: cpo, ir });
+    (v.reuniones || []).forEach(r => { if (ok(r.fecha)) ev.push({ f: r.fecha, t: "reunion", txt: v.nombre, sub: c, cp: cpo, ir }); });
+    (v.cuestionarios || []).forEach(q => { const f = q.fechaEnvio || (q.estado !== "borrador" ? q.fecha : ""); if (ok(f) && q.estado !== "borrador") ev.push({ f, t: "cuest", txt: v.nombre, sub: c, cp: cpo, ir }); });
   });
-  convVisibles().forEach(c => { if (ok(c.cierre)) ev.push({ f: c.cierre, t: "cierre", txt: c.titulo, sub: contraparte(c.institucion).corto, ir: "#/convocatoria/" + c.id }); });
+  convVisibles().forEach(c => { if (ok(c.cierre)) ev.push({ f: c.cierre, t: "cierre", txt: c.titulo, sub: contraparte(c.institucion).corto, cp: contraparte(c.institucion), ir: "#/convocatoria/" + c.id }); });
   return ev.sort((a, b) => a.f.localeCompare(b.f));
 }
 function vCalendario() {
@@ -256,11 +256,11 @@ function vCalendario() {
   const mesTxt = MESES[cal.m] + " " + cal.y;
   return hero("Calendario", "Reuniones, cierres de convocatorias y fechas clave de tus vínculos en un solo lugar.") + `<div class="grid-main cal-grid"><div>
     <div class="card cal-card"><div class="cal-top"><div class="cal-nav"><button type="button" class="cal-b" data-cal="-1" aria-label="Mes anterior">‹</button><h2 class="cal-mes" aria-live="polite">${mesTxt}</h2><button type="button" class="cal-b" data-cal="1" aria-label="Mes siguiente">›</button></div><button type="button" class="btn-outline sm" data-cal="0">Hoy</button></div>
-      <div class="cal-leg">${Object.entries(CAL_TIPOS).map(([k, t]) => `<button type="button" class="cal-chip ${cal.off[k] ? "off" : ""}" data-cal-tipo="${k}" style="--c:${t.c}" aria-pressed="${!cal.off[k]}" title="${cal.off[k] ? "Mostrar" : "Ocultar"} este tipo de eventos"><i></i>${t.n} (${todos.filter(e => e.t === k).length})</button>`).join("")}${Object.values(cal.off).some(Boolean) ? `<button type="button" class="cal-chip todo" id="calTodo">Mostrar todo</button>` : ""}</div>
-      <p class="cal-ayuda">Toca una etiqueta para ocultar o mostrar ese tipo de evento; los eventos no se borran, solo se esconden.</p>
+      <div class="cal-leg">${Object.entries(CAL_TIPOS).map(([k, t]) => `<button type="button" class="cal-chip ${cal.off[k] ? "off" : ""}" data-cal-tipo="${k}" style="--c:${t.c}" aria-pressed="${!cal.off[k]}" title="${cal.off[k] ? "Mostrar" : "Ocultar"} este tipo de eventos"><i></i>${t.n} (${todos.filter(e => e.t === k).length})</button>`).join("")}<span class="cal-sel"><button type="button" class="cal-chip todo" id="calTodo">Todos</button><button type="button" class="cal-chip todo" id="calNada">Ninguno</button></span></div>
+      <p class="cal-ayuda">Marca los tipos de evento que quieres ver. Los eventos no se borran, solo se esconden.</p>
       <div class="cal-sem"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div>
       <div class="cal-g">${celdas}</div></div></div>
-    <aside class="stack"><div class="card"><p class="card-title">Próximos 30 días</p>${prox.length ? prox.map(e => `<a class="cal-prox" href="${e.ir}" style="--c:${CAL_TIPOS[e.t].c}"><span class="cal-f"><b>${+e.f.slice(8)}</b>${["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+e.f.slice(5, 7) - 1]}</span><span class="cal-t"><b>${esc(e.txt)}</b><small>${CAL_TIPOS[e.t].n} · ${esc(e.sub)}</small></span></a>`).join("") : `<p class="muted small">No hay fechas en los próximos 30 días.</p>`}</div></aside></div>`;
+    <aside class="stack"><div class="card"><p class="card-title">Próximos 30 días</p>${prox.length ? prox.map(e => `<a class="cal-prox" href="${e.ir}" style="--c:${CAL_TIPOS[e.t].c}"><span class="cal-f"><b>${+e.f.slice(8)}</b>${["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+e.f.slice(5, 7) - 1]}</span><span class="cal-t"><b>${esc(e.txt)}</b><small>${CAL_TIPOS[e.t].n} · ${e.cp ? logoInst(e.cp, "xs") : ""}${esc(e.sub)}</small></span></a>`).join("") : `<p class="muted small">No hay fechas en los próximos 30 días.</p>`}</div></aside></div>`;
 }
 function sivaWireCalendario() {
   $$("[data-cal]").forEach(b => b.onclick = () => {
@@ -268,6 +268,7 @@ function sivaWireCalendario() {
     render();
   });
   const ct = $("#calTodo"); if (ct) ct.onclick = () => { cal.off = {}; render(); };
+  const cn = $("#calNada"); if (cn) cn.onclick = () => { cal.off = Object.fromEntries(Object.keys(CAL_TIPOS).map(k => [k, true])); render(); };
   $$("[data-cal-tipo]").forEach(b => b.onclick = () => { cal.off[b.dataset.calTipo] = !cal.off[b.dataset.calTipo]; render(); });
 }
 
@@ -320,19 +321,27 @@ function sivaTarjetasResumen(mios, nInst, activos, incom, sinCal, convA, cierran
 }
 
 // Línea de tiempo del resumen semanal: cinta de meses con burbujas colgadas.
+// Tiempo legible: días hasta unos 45, meses hasta casi 2 años y años desde ahí (así un vínculo de 10 años no dice "3650 días").
+function sivaDur(dias) {
+  const d = Math.max(0, Math.round(dias));
+  if (d < 45) return { n: d, u: d === 1 ? "día" : "días", t: d + (d === 1 ? " día" : " días") };
+  if (d < 700) { const m = Math.round(d / 30.4); return { n: m, u: m === 1 ? "mes" : "meses", t: m + (m === 1 ? " mes" : " meses") }; }
+  const a = Math.round(d / 36.5) / 10, tx = String(a).replace(".", ",");
+  return { n: tx, u: a === 1 ? "año" : "años", t: tx + (a === 1 ? " año" : " años") };
+}
 function sivaTimelineHTML(d) {
   const SIVA_NO = "#C8604A", SIVA_PAR = "#DDA545", SIVA_SI = "#4FA3AE";
   const hoyD = sivaFecha(hoy());
   const items = [
-    ...d.rojos.map(v => { const f = ultimoMovimiento(v), dias = f ? diasDesde(f) : 120; return { f: f || hoy(), dias, c: SIVA_NO, s: Math.min(100, 56 + dias * .6), t: v.nombre, x: `${contraparte(v.contraparte).corto} · sin movimiento hace ${dias} días`, href: "#/ficha/" + v.id }; }),
-    ...d.cierran.map(c => { const dias = -diasDesde(c.cierre); return { f: c.cierre, dias, c: SIVA_PAR, s: Math.max(52, 92 - dias * 3), t: "Cierra: " + c.titulo, x: `${fechaTxt(c.cierre)} · ${c.postulantes.length} postulantes`, href: "#/convocatoria/" + c.id }; }),
-    ...d.sinResp.map(({ v, q }) => { const f = q.fechaEnvio || q.fecha, dias = diasDesde(f); return { f, dias, c: dias > 14 ? SIVA_PAR : SIVA_SI, s: Math.min(92, 44 + dias * 1.2), t: "Cuestionario " + contraparte(v.contraparte).corto, x: `Enviado el ${fechaTxt(f)} · sin respuesta`, href: "#/ficha/" + v.id }; })
+    ...d.rojos.map(v => { const f = ultimoMovimiento(v), dias = f ? diasDesde(f) : 120; return { cp: contraparte(v.contraparte), f: f || hoy(), dias, c: SIVA_NO, s: Math.min(100, 56 + dias * .6), t: v.nombre, x: `${contraparte(v.contraparte).corto} · sin movimiento hace ${sivaDur(dias).t}`, href: "#/ficha/" + v.id }; }),
+    ...d.cierran.map(c => { const dias = -diasDesde(c.cierre); return { cp: contraparte(c.institucion), f: c.cierre, dias, c: SIVA_PAR, s: Math.max(52, 92 - dias * 3), t: "Cierra: " + c.titulo, x: `${fechaTxt(c.cierre)} · ${c.postulantes.length} postulantes`, href: "#/convocatoria/" + c.id }; }),
+    ...d.sinResp.map(({ v, q }) => { const f = q.fechaEnvio || q.fecha, dias = diasDesde(f); return { cp: contraparte(v.contraparte), f, dias, c: dias > 14 ? SIVA_PAR : SIVA_SI, s: Math.min(92, 44 + dias * 1.2), t: "Cuestionario " + contraparte(v.contraparte).corto, x: `Enviado el ${fechaTxt(f)} · sin respuesta`, href: "#/ficha/" + v.id }; })
   ].map(i => ({ ...i, d: sivaFecha(i.f) }));
   if (!items.length) return `<div class="sv-tl-vacio"><b>Todo al día</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios pendientes.</span></div>`;
-  const DAY = 86400000, minD = new Date(Math.max(Math.min(hoyD - 30 * DAY, ...items.map(i => i.d)), hoyD - 150 * DAY));
-  const ini = new Date(minD.getFullYear(), minD.getMonth(), 1), maxD = new Date(Math.max(+hoyD + 30 * DAY, ...items.map(i => +i.d + 10 * DAY)));
-  const fin = new Date(maxD.getFullYear(), maxD.getMonth() + 1, 1), tot = fin - ini, px = dt => Math.min(99.2, Math.max(.8, (dt - ini) / tot * 100));
-  const meses = []; for (let m = new Date(ini); m < fin; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) meses.push({ n: ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][m.getMonth()], w: (new Date(m.getFullYear(), m.getMonth() + 1, 1) - m) / tot * 100 });
+  // Vista del mes: 30 días hacia atrás y 30 hacia adelante. Lo que es más antiguo se pega al borde izquierdo y su círculo dice cuánto tiempo lleva (días, meses o años).
+  const DAY = 86400000, ini = new Date(+hoyD - 30 * DAY), fin = new Date(+hoyD + 30 * DAY), tot = fin - ini, px = dt => Math.min(99.2, Math.max(.8, (dt - ini) / tot * 100));
+  const NM = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"], meses = [];
+  for (let t = +ini; t < +fin;) { const dt = new Date(t), sig = Math.min(+fin, +new Date(dt.getFullYear(), dt.getMonth() + 1, 1)); meses.push({ n: NM[dt.getMonth()], w: (sig - t) / tot * 100 }); t = sig; }
   items.sort((a, b) => a.d - b.d);
   const ult = []; items.forEach(i => { i.p = px(i.d); let l = 0; while (ult[l] != null && i.p - ult[l] < 17) l++; ult[l] = i.p; i.l = l; });
   // Cada nivel mide lo que ocupa su burbuja más grande y su texto (el texto tiene 170 px de ancho), para que un nivel no se monte sobre el otro.
@@ -349,9 +358,9 @@ function sivaTimelineHTML(d) {
     <div class="sv-meses">${meses.map(m => `<span style="flex:${m.w}">${m.n}</span>`).join("")}</div>
     <div class="sv-bar">${tramos}${fut}</div>
     <div class="sv-hoy" style="left:${hoyP}%"><span>Hoy</span></div>
-    ${items.map(i => { const top = nivTop[i.l]; return `<a class="sv-hang" href="${i.href}" style="left:${i.p}%;--c:${i.c};top:48px;height:${top - 48 + i.s}px"><span class="sv-bub" style="--d:${i.s}px;top:${top - 48}px"><b>${i.dias}</b><small>días</small></span><span class="sv-txt" style="top:${top - 48 + i.s + 6}px"><strong>${esc(i.t)}</strong>${esc(i.x)}</span></a>`; }).join("")}
+    ${items.map(i => { const top = nivTop[i.l]; return `<a class="sv-hang" href="${i.href}" style="left:${i.p}%;--c:${i.c};top:48px;height:${top - 48 + i.s}px"><span class="sv-bub" style="--d:${i.s}px;top:${top - 48}px"><b>${sivaDur(i.dias).n}</b><small>${sivaDur(i.dias).u}</small></span><span class="sv-txt" style="top:${top - 48 + i.s + 6}px"><strong>${i.cp ? logoInst(i.cp, "xs") : ""}${esc(i.t)}</strong>${esc(i.x)}</span></a>`; }).join("")}
   </div></div>
-  <p class="help sv-tl-ley">Cliquea el círculo para abrir.</p>`;
+  <p class="help sv-tl-ley">Cada círculo es algo que requiere tu atención. El número es el tiempo sin movimiento (rojo y amarillo) o lo que falta para el cierre. Toca un círculo para abrirlo.</p>`;
 }
 
 // ¿Ayudó a cumplir las metas?: cifra, barra apilada y personas.

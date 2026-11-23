@@ -77,7 +77,7 @@ const SEED = {
              n = comentarios, i = inicio, t = término, d = días desde el último movimiento,
              r = responsable, al = alcance, co = compañías */
   filas: [
-    // Reclutamiento y selección (equipo de Eduardo y Matías)
+    // Reclutamiento y selección (equipo de Eduardo, con Matías como gestor)
     ["ucn", "Antofagasta", "rys", "tal", "Memorias y prácticas UCN", "Atracción de talento", 2, { f: "Sin aporte monetario", i: "2026-08-10", d: 4, co: ["cen"], al: "Dos convocatorias al año (memorias y práctica de verano) para Ingeniería Civil de Minas, Industrial y Geología.", n: "Definir temas de memoria con las gerencias de operación." }],
     ["ua", "Antofagasta", "rys", "tal", "Práctica profesional U. de Antofagasta", "Atracción de talento", 2, { f: "Sin aporte monetario", i: "2026-09-15", d: 3, co: ["ant"], al: "Prácticas de invierno para Ingeniería Civil de Minas e Industrial." }],
     ["uch", "Santiago", "rys", "tal", "Memorias U. de Chile", "Atracción de talento", 3, { c: 4, a: "si", f: "Sin aporte monetario", i: "2026-03-02", t: "2026-09-30", d: 35, co: ["cen"] }],
@@ -91,11 +91,11 @@ const SEED = {
     ["pucv", "Valparaíso", "rys", "char", "Feria de empleo PUCV", "Marca empleadora", 0, { d: 12, co: ["corp"], n: "Falta confirmar fecha y cupos del stand." }],
 
     // Aprendizaje y academia
-    ["puc", "Santiago", "aya", "acad", "Capstone Ingeniería PUC", "Formación", 2, { k: 1, f: "Sin aporte monetario", i: "2026-08-24", d: 9, r: "Matías", co: ["corp"] }],
-    ["ucn", "Coquimbo", "aya", "acad", "Capstone Ingeniería UCN", "Formación", 3, { c: 5, a: "si", f: "Sin aporte monetario", i: "2026-03-09", t: "2026-07-17", d: 100, r: "Matías", co: ["mlp"] }],
-    ["uai", "Santiago", "aya", "prog", "Diplomado Jóvenes Profesionales", "Desarrollo de talento", 2, { f: "Financiado por AMSA", i: "2026-06-01", d: 14, r: "Matías", co: ["corp"] }],
-    ["inacap", "Nacional", "aya", "prog", "Pasantía docente INACAP", "Formación", 3, { i: "2026-03-02", t: "2026-07-31", d: 95, r: "Matías", co: ["corp"] }],
-    ["duoc", "Nacional", "aya", "prog", "Pasantía docente Duoc UC", "Formación", 1, { i: "2026-10-12", d: 18, r: "Matías", co: ["corp"] }],
+    ["puc", "Santiago", "aya", "acad", "Capstone Ingeniería PUC", "Formación", 2, { k: 1, f: "Sin aporte monetario", i: "2026-08-24", d: 9, r: "Sofía", co: ["corp"] }],
+    ["ucn", "Coquimbo", "aya", "acad", "Capstone Ingeniería UCN", "Formación", 3, { c: 5, a: "si", f: "Sin aporte monetario", i: "2026-03-09", t: "2026-07-17", d: 100, r: "Sofía", co: ["mlp"] }],
+    ["uai", "Santiago", "aya", "prog", "Diplomado Jóvenes Profesionales", "Desarrollo de talento", 2, { f: "Financiado por AMSA", i: "2026-06-01", d: 14, r: "Sofía", co: ["corp"] }],
+    ["inacap", "Nacional", "aya", "prog", "Pasantía docente INACAP", "Formación", 3, { i: "2026-03-02", t: "2026-07-31", d: 95, r: "Sofía", co: ["corp"] }],
+    ["duoc", "Nacional", "aya", "prog", "Pasantía docente Duoc UC", "Formación", 1, { i: "2026-10-12", d: 18, r: "Sofía", co: ["corp"] }],
 
     // Inclusión y empleo
     ["puc", "Santiago", "iye", "prog", "Mentoring a ingenieras", "Diversidad e inclusión", 2, { f: "Sin aporte monetario", i: "2026-05-04", d: 8, co: ["corp"] }],
@@ -112,7 +112,7 @@ const SEED = {
     ["ucn", "Antofagasta", "rin", "inn", "Proyecto de relaves con la UCN", "Vinculación sectorial", 2, { f: "Fondo externo (CORFO, ANID u otro)", i: "2026-07-06", d: 7, co: ["cen"], al: "Prueba piloto de recuperación de agua en relaves, con tesistas de la UCN." }],
     ["ceim", "Antofagasta", "iln", "emp", "Pre contratos oficios mineros CEIM", "Empleo y proveedores", 2, { c: 4, a: "si", i: "2026-04-14", d: 15, co: ["cen"] }],
     ["cicitem", "Antofagasta", "rin", "inn", "Laboratorio de biolixiviación CICITEM", "Vinculación sectorial", 3, { c: 5, a: "si", f: "Fondo externo (CORFO, ANID u otro)", i: "2025-11-10", t: "2026-08-31", d: 70, co: ["cen"] }],
-    ["fch", "Santiago", "aya", "prog", "Programa de liderazgo con Fundación Chile", "Desarrollo de talento", 3, { c: 3, a: "parcial", f: "Financiado por AMSA", i: "2026-02-16", t: "2026-07-24", d: 100, r: "Matías", co: ["corp"] }],
+    ["fch", "Santiago", "aya", "prog", "Programa de liderazgo con Fundación Chile", "Desarrollo de talento", 3, { c: 3, a: "parcial", f: "Financiado por AMSA", i: "2026-02-16", t: "2026-07-24", d: 100, r: "Sofía", co: ["corp"] }],
     ["cm", "Santiago", "rin", "cons", "Mesa de capital humano del Consejo Minero", "Formación", 2, { i: "2026-03-05", d: 28 }],
     ["corfo", "Santiago", "rin", "inn", "Piloto de relaves con Corfo", "Vinculación sectorial", 1, { f: "Fondo externo (CORFO, ANID u otro)", i: "2026-10-05", d: 9, co: ["cen"] }],
     ["uls", "Coquimbo", "doc", "char", "Sesión de relaves La Serena", "Vinculación sectorial", 3, { c: 3, a: "parcial", i: "2026-06-09", t: "2026-06-10", d: 130, co: ["mlp"] }]
@@ -164,7 +164,7 @@ function construirVinculosSemilla(areas, tipos) {
       nombre, contraparte, sede, area, tipo, etapa, tema,
       companias: VARIAS_COMP.includes(nombre) ? ["cen", "ant", "zal"] : (x.co || [comp]),
       contacto: Object.assign({ nombre: "", cargo: "", correo: "", telefono: "" }, kBase),
-      lider: x.l || "", responsable: x.r || (area === "rys" ? "Eduardo" : "Equipo " + nombreArea(area)),
+      lider: x.l || "", responsable: x.r || (area === "rys" ? "Eduardo" : area === "aya" ? "Sofía" : "Equipo " + nombreArea(area)),
       objetivo, metas: meta ? [meta] : [], alcance: x.al || "",
       financiamiento: { tipo: FIN_SEMILLA[x.f] || "No definido", monto: "", fuente: "" },
       // Fechas de ejemplo repartidas para poder ordenar por fecha.

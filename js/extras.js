@@ -60,7 +60,7 @@ function vEstudiantes(p) {
     ${cardEval}
   </div>`;
   const chip = (v, t, n) => `<button class="chip-btn ${estEstado === v ? "on" : ""}" data-est-f="${v}">${t}${n == null ? "" : " (" + n + ")"}</button>`;
-  const cuerpo = x => `<tr class="row" data-conv="${x.c.id}" tabindex="0"><td><span class="t">${esc(x.p.nombre)}</span><small>${esc(x.p.correo)}</small></td><td>${esc(x.p.universidad)}<small>${esc(x.p.carrera)}</small></td><td>${esc(x.c.titulo)}<small>${esc(x.c.tipo)}</small></td><td><small style="color:var(--ink)">${fechaTxt(x.p.fecha)}${x.p.via === "portal" ? " · portal AMSA" : ""}</small></td><td><span class="pill ${PILL_POST[POST_ESTADOS.indexOf(x.p.estado)] || "p0"}">${x.p.estado}</span></td></tr>`;
+  const cuerpo = x => `<tr class="row" data-conv="${x.c.id}" tabindex="0"><td><span class="t">${esc(x.p.nombre)}</span><small>${esc(x.p.correo)}</small></td><td>${esc(x.p.universidad)}<small>${esc(x.p.carrera)}</small></td><td>${esc(x.c.titulo)}<small>${logoInst(contraparte(x.c.institucion), "xs")}${esc(x.c.tipo)}</small></td><td><small style="color:var(--ink)">${fechaTxt(x.p.fecha)}${x.p.via === "portal" ? " · portal AMSA" : ""}</small></td><td><span class="pill ${PILL_POST[POST_ESTADOS.indexOf(x.p.estado)] || "p0"}">${x.p.estado}</span></td></tr>`;
   let filasHTML;
   if (estAgrupar && !estAnio) {
     const ys = [...new Set(pg.items.map(anioPost))];

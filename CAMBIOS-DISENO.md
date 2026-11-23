@@ -75,3 +75,10 @@ Archivos modificados: index.html, js/app.js, js/extras.js
 - Recuadro de pendientes: "Por resolver", explica qué es pendiente, tiene formato distinto (borde punteado y "Ver cuáles"). Al abrirlo aparece un aviso con el filtro activo y botón "Ver todos".
 - Calendario: las etiquetas muestran cuántos eventos hay, explican que solo ocultan y hay "Mostrar todo".
 - "Actualizar con IA" pasa a botón secundario. Buscador en Estudiantes (estudiante, tutor, universidad, convocatoria).
+
+## Ronda 15 (testeo con Paola)
+- Resumen del mes: ventana de 30 días hacia atrás y adelante; los círculos dicen días, meses o años según corresponda; logos de las instituciones; explicación del número.
+- Perfiles: encargados Eduardo y Sofía (áreas distintas), gestores Matías (de Eduardo) y Rocío (de Sofía), Carolina solo ve estadísticas, Administración configura áreas e instituciones sin ver vínculos, y una página vacía.
+- "Asignar gestor/a" (el encargado sigue siendo el dueño) distinto de "Cambiar encargado/a" (traspaso).
+- Inicio de sesión con correo y contraseña (contraseña de prueba: siva2026) y lista de cuentas de prueba.
+- Calendario: botones Todos y Ninguno.

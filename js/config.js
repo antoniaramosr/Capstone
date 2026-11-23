@@ -104,7 +104,7 @@ const CONFIG = {
   roles: {
     // Los perfiles se nombran por lo que hacen en la plataforma, no por su cargo en la empresa.
     gestor: { nombre: "Responsable de vínculos", desc: "Registra y actualiza los vínculos de su área y crea convocatorias para estudiantes." },
-    jefatura: { nombre: "Revisión y metas", desc: "Define las metas de su gerencia y revisa si los vínculos aportan a ellas. No registra vínculos." },
+    jefatura: { nombre: "Dirección (estadísticas)", desc: "Mira las estadísticas de su gerencia. No registra ni edita vínculos." },
     admin: { nombre: "Configuración", desc: "Configura compañías, áreas, tipos de vínculo y metas. Ve todos los vínculos." }
   },
 
@@ -115,13 +115,14 @@ const CONFIG = {
   ],
 
   // Usuarios de prueba del prototipo.
+  claveDemo: "siva2026",
   usuarios: {
     eduardo:  { id: "eduardo", nombre: "Eduardo", correo: "antonia.ramos+eduardo@uc.cl", inicial: "E", rol: "gestor", area: "rys", compania: "corp", admin: false },
-    matias:   { id: "matias", nombre: "Matías", correo: "matias@amsa.ejemplo.cl", inicial: "M", rol: "gestor", area: "rys", compania: "corp", admin: false, nota: "Del mismo equipo que Eduardo: para probar el traspaso de un vínculo" },
-    daniela:  { id: "daniela", nombre: "Daniela", correo: "daniela@amsa.ejemplo.cl", inicial: "D", rol: "gestor", area: "acds", compania: "cen", admin: false, nota: "Recién llega: aún no tiene vínculos" },
+    sofia:    { id: "sofia", nombre: "Sofía", correo: "sofia@amsa.ejemplo.cl", inicial: "S", rol: "gestor", area: "aya", compania: "corp", admin: false, nota: "Encargada de los vínculos de Aprendizaje y academia" },
+    matias:   { id: "matias", nombre: "Matías", correo: "matias@amsa.ejemplo.cl", inicial: "M", rol: "gestor", area: "rys", compania: "corp", admin: false, delegadoDe: "eduardo", nota: "Gestiona solo los vínculos que Eduardo le asigna" },
+    rocio:    { id: "rocio", nombre: "Rocío", correo: "rocio@amsa.ejemplo.cl", inicial: "R", rol: "gestor", area: "aya", compania: "corp", admin: false, delegadoDe: "sofia", nota: "Gestiona solo los vínculos que Sofía le asigna" },
     carolina: { id: "carolina", nombre: "Carolina", correo: "carolina@amsa.ejemplo.cl", inicial: "C", rol: "jefatura", area: "doc", compania: "corp", admin: false },
-    perfil0:  { id: "perfil0", nombre: "Perfil 0", correo: "perfil0@amsa.ejemplo.cl", inicial: "0", rol: "gestor", area: "rys", compania: "corp", admin: false, espacio: "vacio", nota: "Entra a la página vacía, sin ningún vínculo registrado, para probar desde cero" },
-    perfil2:  { id: "perfil2", nombre: "Perfil 2", correo: "perfil2@amsa.ejemplo.cl", inicial: "2", rol: "gestor", area: "rys", compania: "corp", admin: false, espacio: "vacio2", nota: "Otra página vacía independiente del Perfil 0, para un segundo testeador en paralelo" },
+    perfil0:  { id: "perfil0", nombre: "Página vacía", correo: "perfil0@amsa.ejemplo.cl", inicial: "0", rol: "gestor", area: "rys", compania: "corp", admin: false, espacio: "vacio", nota: "Entra a la página vacía, sin ningún vínculo registrado, para probar desde cero" },
     admin:    { id: "admin", nombre: "Administración", correo: "admin@amsa.ejemplo.cl", inicial: "A", rol: "admin", area: null, compania: null, admin: true }
   },
 

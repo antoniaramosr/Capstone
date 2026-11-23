@@ -425,3 +425,16 @@ button.pag-b:hover{background:var(--bg-soft,#EEF6F7);border-color:var(--brand-2)
 #estQ{min-width:min(360px,100%);flex:1 1 280px}
 .resumen > .r-accion > span:not(.r-kick):not(.r-cta){text-decoration:none;color:var(--ink,#00485A);font-size:17px}
 .resumen > .r-accion > span:not(.r-kick):not(.r-cta):hover{text-decoration:none}
+
+/* Ronda 15: inicio de sesión con correo y contraseña, resumen del mes, perfiles */
+.login-in{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.login-in .f{margin-top:8px}
+.login-in .sso{margin-top:16px}
+.lg-err{margin:6px 0 0;padding:9px 12px;border-radius:10px;background:#FFF1F0;color:#B01E28;font-size:14.5px}
+.cuentas-prueba{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:4px 14px 12px;background:#fff}
+.cuentas-prueba summary{cursor:pointer;padding:10px 0;font:700 14px var(--font-head);color:var(--brand)}
+.cuentas-prueba .login-opt{margin-top:8px}
+.gest-tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:#E8F0F1;color:var(--brand);font:600 11.5px var(--font-head);vertical-align:middle}
+.cal-sel{display:inline-flex;gap:6px;margin-left:6px}
+.cal-leg .cal-sel .cal-chip{--c:var(--brand)}
+.sv-txt strong .logo-i,.cal-t small .logo-i,.rank .nm .logo-i{margin-right:6px;vertical-align:middle}
