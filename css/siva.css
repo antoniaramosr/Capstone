@@ -497,7 +497,7 @@ main:focus{outline:none}
 }
 
 /* Logos reales: el recuadro se ensancha según la proporción del logo */
-.logo-i.con-img{width:auto;min-width:var(--s);padding:3px 5px;background:#fff}
-.logo-i.con-img .lg-f{position:static;width:auto;height:calc(var(--s) - 8px);max-width:calc(var(--s)*2.6);padding:0;object-fit:contain;background:none}
+.logo-i.con-img{display:inline-flex;align-items:center;justify-content:center;width:max-content;max-width:none;min-width:var(--s);padding:4px 7px;background:#fff;overflow:visible}
+.logo-i.con-img .lg-f{position:static;display:block;flex:none;width:auto;height:calc(var(--s) - 10px);max-width:none;padding:0;object-fit:contain;background:none;border-radius:0}
 .logo-i.con-img .lg-sg{display:none}
 .logo-i.xs.con-img{--s:26px}
