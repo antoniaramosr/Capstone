@@ -495,3 +495,9 @@ main:focus{outline:none}
   .fab{width:52px;height:52px}
   main{padding-bottom:96px}
 }
+
+/* Logos reales: el recuadro se ensancha según la proporción del logo */
+.logo-i.con-img{width:auto;min-width:var(--s);padding:3px 5px;background:#fff}
+.logo-i.con-img .lg-f{position:static;width:auto;height:calc(var(--s) - 8px);max-width:calc(var(--s)*2.6);padding:0;object-fit:contain;background:none}
+.logo-i.con-img .lg-sg{display:none}
+.logo-i.xs.con-img{--s:26px}
