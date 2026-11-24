@@ -101,7 +101,14 @@ function fichaPDF(v) {
   pie();
   return doc;
 }
-function descargarFichaPDF(v) {
+// Las librerías de PDF y Word pesan unos 750 KB: se cargan solo cuando alguien las necesita (el portal de estudiantes no las usa).
+const _libs = {};
+function cargarLib(src) { return _libs[src] || (_libs[src] = new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => { delete _libs[src]; no(new Error("No cargó " + src)); }; document.head.appendChild(s); })); }
+const cargarJsPDF = () => window.jspdf ? Promise.resolve() : cargarLib("js/vendor/jspdf.umd.min.js");
+const cargarZip = () => window.JSZip ? Promise.resolve() : cargarLib("js/vendor/jszip.min.js");
+const cargarPdfJs = () => window.pdfjsLib ? Promise.resolve() : cargarLib("js/vendor/pdf.min.js");
+async function descargarFichaPDF(v) {
+  try { await cargarJsPDF(); } catch (e) {}
   const slug = v.nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   if (!window.jspdf) { descargar("ficha-" + slug + ".md", readmeMarkdown(v), "text/markdown"); toast("No se pudo armar el PDF; se bajó la ficha en texto."); return; }
   fichaPDF(v).save("ficha-" + slug + ".pdf");

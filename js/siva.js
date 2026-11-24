@@ -254,9 +254,9 @@ function vCalendario() {
   let celdas = ""; for (let i = 0; i < ini; i++) celdas += `<div class="cal-d vacio"></div>`;
   for (let d = 1; d <= dias; d++) {
     const es = porDia[d] || [], f = pref + String(d).padStart(2, "0");
-    celdas += `<div class="cal-d ${f === h ? "hoy" : ""} ${es.length ? "con" : ""}"><span class="cal-n">${d}</span>${es.slice(0, 3).map(e => `<a class="cal-ev" href="${e.ir}" style="--c:${CAL_TIPOS[e.t].c}" title="${esc(CAL_TIPOS[e.t].n + " · " + e.txt + " · " + e.sub)}"><i></i><span>${esc(e.txt)}</span></a>`).join("")}${es.length > 3 ? `<span class="cal-mas">+${es.length - 3} más</span>` : ""}</div>`;
+    celdas += `<div class="cal-d ${f === h ? "hoy" : ""} ${es.length ? "con" : ""}"><span class="cal-n">${d}</span>${es.slice(0, 3).map(e => `<a class="cal-ev" href="${e.ir}" aria-label="${esc(CAL_TIPOS[e.t].n + ": " + e.txt)}" style="--c:${CAL_TIPOS[e.t].c}" title="${esc(CAL_TIPOS[e.t].n + " · " + e.txt + " · " + e.sub)}"><i></i><span>${esc(e.txt)}</span></a>`).join("")}${es.length > 3 ? `<span class="cal-mas">+${es.length - 3} más</span>` : ""}</div>`;
   }
-  const lim = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  const lim = fechaLocal(new Date(Date.now() + 30 * 86400000));
   const prox = vis.filter(e => e.f >= h && e.f <= lim).slice(0, 12);
   const mesTxt = MESES[cal.m] + " " + cal.y;
   return hero("Calendario", "Reuniones, cierres de convocatorias y fechas clave de tus vínculos en un solo lugar.") + `<div class="grid-main cal-grid"><div>
@@ -340,11 +340,11 @@ function sivaResumenHTML(d) {
     ...d.cierran.map(c => { const dias = -diasDesde(c.cierre), sr = sinRevisar(c).length;
       return { o: dias, k: "cierra", tag: "Cierra pronto", cp: contraparte(c.institucion), t: c.titulo, x: `Cierra el ${fechaTxt(c.cierre)} (${dias <= 0 ? "hoy" : dias === 1 ? "mañana" : "en " + dias + " días"}) · ${c.postulantes.length} ${c.postulantes.length === 1 ? "postulante" : "postulantes"}${sr ? ", " + sr + " por revisar" : ""}`, href: "#/convocatoria/" + c.id, ir: "Ver convocatoria" }; }),
     ...d.rojos.map(v => { const f = ultimoMovimiento(v), dias = f ? diasDesde(f) : 120;
-      return { o: 100 - dias / 10, k: "sin", tag: "Sin contacto", cp: contraparte(v.contraparte), t: v.nombre, x: `Sin movimiento hace ${sivaDur(dias).t}. Conviene escribirle a ${contraparte(v.contraparte).corto}.`, href: "#/ficha/" + v.id, ir: "Abrir ficha" }; }),
+      return { o: 100 - dias / 10, k: "sin", tag: "Sin contacto", cp: contraparte(v.contraparte), t: v.nombre, x: `Sin movimiento hace ${sivaDur(dias).t}${dias >= 45 ? " (" + dias + " días)" : ""}. Conviene escribirle a ${contraparte(v.contraparte).corto}.`, href: "#/ficha/" + v.id, ir: "Abrir ficha" }; }),
     ...d.sinResp.map(({ v, q }) => { const f = q.fechaEnvio || q.fecha, dias = diasDesde(f);
       return { o: 200 - dias, k: "cuest", tag: "Sin respuesta", cp: contraparte(v.contraparte), t: v.nombre, x: `Le pediste feedback a ${contraparte(v.contraparte).corto} hace ${sivaDur(dias).t} y aún no responde.`, href: "#/ficha/" + v.id, ir: "Abrir ficha" }; })
   ].sort((a, b) => a.o - b.o);
-  if (!filas.length) return `<div class="sv-tl-vacio"><b>Todo al día</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios pendientes.</span></div>`;
+  if (!filas.length) return `<div class="sv-tl-vacio"><b>Sin urgencias este mes</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios sin respuesta.</span></div>`;
   const vis = filas.slice(0, 6), n = filas.length;
   return `<p class="res-intro">${n === 1 ? "Hay <b>1 cosa</b> que conviene mirar este mes." : `Hay <b>${n} cosas</b> que conviene mirar este mes, de lo más urgente a lo menos.`}</p>
   <div class="res-list">${vis.map(i => `<a class="res-row k-${i.k}" href="${i.href}">${logoInst(i.cp, "sm")}<span class="res-t"><b>${esc(i.t)}</b><small>${esc(i.x)}</small></span><span class="res-tag">${i.tag}</span></a>`).join("")}</div>
@@ -359,7 +359,7 @@ function sivaTimelineHTML(d) {
     ...d.cierran.map(c => { const dias = -diasDesde(c.cierre); return { cp: contraparte(c.institucion), f: c.cierre, dias, c: SIVA_PAR, s: Math.max(52, 92 - dias * 3), t: "Cierra: " + c.titulo, x: `${fechaTxt(c.cierre)} · ${c.postulantes.length} postulantes`, href: "#/convocatoria/" + c.id }; }),
     ...d.sinResp.map(({ v, q }) => { const f = q.fechaEnvio || q.fecha, dias = diasDesde(f); return { cp: contraparte(v.contraparte), f, dias, c: dias > 14 ? SIVA_PAR : SIVA_SI, s: Math.min(92, 44 + dias * 1.2), t: "Cuestionario " + contraparte(v.contraparte).corto, x: `Enviado el ${fechaTxt(f)} · sin respuesta`, href: "#/ficha/" + v.id }; })
   ].map(i => ({ ...i, d: sivaFecha(i.f) }));
-  if (!items.length) return `<div class="sv-tl-vacio"><b>Todo al día</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios pendientes.</span></div>`;
+  if (!items.length) return `<div class="sv-tl-vacio"><b>Sin urgencias este mes</b><span>No hay vínculos sin contacto, cierres cercanos ni cuestionarios sin respuesta.</span></div>`;
   // Vista del mes: 30 días hacia atrás y 30 hacia adelante. Lo que es más antiguo se pega al borde izquierdo y su círculo dice cuánto tiempo lleva (días, meses o años).
   const DAY = 86400000, ini = new Date(+hoyD - 30 * DAY), fin = new Date(+hoyD + 30 * DAY), tot = fin - ini, px = dt => Math.min(99.2, Math.max(.8, (dt - ini) / tot * 100));
   const NM = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"], meses = [];

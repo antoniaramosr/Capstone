@@ -174,7 +174,7 @@ function construirVinculosSemilla(areas, tipos) {
       comentarios: x.n || "",
       criterios: crit, calif: x.c ? +(Object.values(crit).reduce((a, b) => a + b, 0) / Object.values(crit).length).toFixed(1) : null, aporta: x.a || null,
       // Fecha del último cambio, relativa a hoy, para que el semáforo de salud tenga los tres colores.
-      versiones: [{ v: 1, fecha: new Date(Date.now() - (x.d != null ? x.d : 10) * 86400000).toISOString().slice(0, 10), autor: "Equipo del vínculo", resumen: "Registro inicial del vínculo." }],
+      versiones: [{ v: 1, fecha: fechaLocal(new Date(Date.now() - (x.d != null ? x.d : 10) * 86400000)), autor: "Equipo del vínculo", resumen: "Registro inicial del vínculo." }],
       reuniones: [], cuestionarios: []
     };
   });

@@ -111,11 +111,24 @@ function convSemillaExtra(s) {
       post("Daniela Rojas", "daniela.rojas@ejemplo.cl", "Universidad de Chile", "Ingeniería Civil de Minas", 260, "No seleccionado")
     ]
   });
+  const pd = por("Pasantía docente Duoc UC");
+  if (pd) out.push({
+    id: 6, vinculo: pd.id, area: pd.area, companias: ["corp"], institucion: pd.contraparte, titulo: "Pasantía docente 2027 en Duoc UC",
+    tipo: "Programa", carreras: "Ingeniería en Minas, Ingeniería Industrial",
+    cupos: 4, cierre: haceDias(-20), lugar: "Online y visitas a faena", condiciones: "Un semestre, 6 horas semanales de acompañamiento a una sección de primer año.",
+    descripcion: "Profesionales jóvenes de AMSA apoyan clases del ciclo básico en una sede de Duoc UC.", requisitos: "Trabajar en AMSA o ser egresado/a reciente de ingeniería.",
+    estado: "Abierta", creada: haceDias(6), linkedin: { publicada: false, fecha: "" },
+    postulantes: [
+      post("Camilo Vera", "camilo.vera@ejemplo.cl", "Duoc UC", "Ingeniería en Minas", 4, "Postulación recibida"),
+      post("Isidora Maturana", "isidora.maturana@ejemplo.cl", "Duoc UC", "Ingeniería Industrial", 3, "En revisión"),
+      post("Bastián Ortega", "bastian.ortega@ejemplo.cl", "INACAP", "Ingeniería en Minas", 1, "Postulación recibida")
+    ]
+  });
   return out;
 }
 
 // Fecha relativa a hoy, para que los ejemplos no envejezcan.
-function haceDias(d) { return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10); }
+function haceDias(d) { return fechaLocal(new Date(Date.now() - d * 86400000)); }
 
 // Los datos guardados antes de esta versión no traen convocatorias: se agregan.
 const _estadoInicialBase = estadoInicial;
@@ -186,7 +199,8 @@ function correoEstudiante(c, p) {
   }[p.estado];
   return txt ? { asunto: txt[0], cuerpo: txt[1] + firma } : null;
 }
-const sinRevisar = c => c.postulantes.filter(p => p.estado === "Postulación recibida");
+// "Por revisar" = postulaciones que aún no tienen decisión (recibidas o en revisión). Es la misma definición en todas las pantallas.
+const sinRevisar = c => c.postulantes.filter(p => p.estado === "Postulación recibida" || p.estado === "En revisión");
 const convPill = c => `<span class="pill ${c.estado === "Abierta" ? "p2" : "p3"}">${c.estado}</span>`;
 
 function textoLinkedIn(c) {
@@ -326,6 +340,9 @@ function wireNuevaConv(vid, ce) {
     const d = leerConv(v);
     $("#eTit").classList.toggle("show", !d.titulo); $("#eCierre").classList.toggle("show", !d.cierre);
     if (!d.titulo || !d.cierre) return;
+    if (!ce && d.cierre < hoy()) { $("#eCierre").classList.add("show"); $("#cCierre") && $("#cCierre").focus(); toast("La fecha de cierre ya pasó: elige una fecha futura"); return; }
+    if (d.cupos != null && +d.cupos < 1) d.cupos = 1;
+    if ($("#cGuardar").dataset.busy) return; $("#cGuardar").dataset.busy = "1";
     if (ce) { if (!ce.vinculo) { d.vinculo = null; } else { delete d.vinculo; delete d.area; delete d.institucion; } Object.assign(ce, d); guardar(); location.hash = "#/convocatoria/" + ce.id; setTimeout(() => toast("Cambios guardados"), 50); return; }
     const id = S.convocatorias.reduce((m, c) => Math.max(m, c.id), 0) + 1;
     S.convocatorias.push(Object.assign(d, { id, estado: "Abierta", creada: hoy(), linkedin: { publicada: false, fecha: "" }, postulantes: [] }));
@@ -481,10 +498,10 @@ function vPostular(id) {
   const unis = S.contrapartes.filter(x => x.tipoOrg === "Universidad" || x.tipoOrg === "Instituto profesional" || x.tipoOrg === "Centro de formación técnica").map(x => x.nombre).sort();
   const det = (k, val) => val ? `<dt>${k}</dt><dd>${esc(val)}</dd>` : "";
   const cuerpo = postEnviado === c.id
-    ? `<div class="card ok-box"><h2>¡Recibimos tu postulación!</h2><p>Te escribiremos al correo que dejaste cuando revisemos las postulaciones. La convocatoria cierra el ${fechaTxt(c.cierre)}.</p><p>Puedes ver en qué va tu postulación cuando quieras con tu correo.</p><div class="form-actions"><a class="btn-accent" href="#/mi-postulacion">Ver el estado de mi postulación</a><button class="btn-outline" id="otra">Enviar otra postulación</button></div></div>`
+    ? `<div class="card ok-box"><h2>¡Recibimos tu postulación!</h2><p>Te escribiremos al correo que dejaste cuando revisemos las postulaciones. La convocatoria cierra el ${fechaTxt(c.cierre)}.</p><p>Guarda este número de postulación: <b>#${c.id}-${c.postulantes.length}</b>. Puedes ver en qué va tu postulación cuando quieras, solo con tu correo.</p><div class="form-actions"><a class="btn-accent" href="#/mi-postulacion">Ver el estado de mi postulación</a><button class="btn-outline" id="otra">Enviar otra postulación</button></div></div>`
     : c.estado !== "Abierta"
       ? `<div class="card empty">Esta convocatoria ya cerró y no está recibiendo postulaciones.</div>`
-      : `<div class="card"><p class="card-title">${c.portal ? "Ya postulé en el portal: seguir mi proceso aquí" : "Postula"}</p><div class="g2">
+      : `<div class="card" id="formPost"><p class="card-title">${c.portal ? "Ya postulé en el portal: seguir mi proceso aquí" : "Postula"}</p><div class="g2">
           <div class="full"><label class="f" for="pNom">Nombre completo *</label><input class="input" id="pNom" autocomplete="name"></div>
           <div class="full"><label class="f" for="pCor">Correo *</label><input class="input" id="pCor" type="email" autocomplete="email"></div>
           <div><label class="f" for="pUni">Universidad o institución *</label><select class="input" id="pUni"><option value=""></option>${unis.map(u => `<option>${esc(u)}</option>`).join("")}<option>Otra</option></select></div>
@@ -497,27 +514,36 @@ function vPostular(id) {
     <a class="lnk small" href="#/convocatorias">← Todas las convocatorias</a>
     <p class="sub">${esc(c.tipo)}${cp.tipoOrg === "Universidad" ? " · en alianza con " + esc(cp.nombre) : ""}</p>
     <h1>${esc(c.titulo)}</h1>
+    <p class="pub-acts">${c.estado === "Abierta" && postEnviado !== c.id ? `<button type="button" class="btn-accent" id="irPostular">Postular</button>` : ""}<button type="button" class="btn-outline" id="pCopiar">Copiar enlace</button></p>
     <div class="card"><dl class="kv">${det("Carreras", c.carreras)}${det("Lugar", c.lugar)}${det("Condiciones", c.condiciones)}${det("Descripción del cargo", c.descripcion)}${det("Requisitos", c.requisitos)}<dt>Cupos</dt><dd>${c.cupos}</dd><dt>Postulaciones hasta</dt><dd>${fechaTxt(c.cierre)}</dd></dl></div>
     <div class="card"><p class="card-title">Cómo sigue el proceso</p>${pasosProceso(null)}</div>
     ${portalBox}${cuerpo}
-    <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p></main>${pie()}`;
+    <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>${contactoPub()}</main>${pie()}`;
 }
 
 function wirePostular(id) {
   const c = convocatoria(+id); if (!c) return;
   const o = $("#otra"); if (o) o.onclick = () => { postEnviado = null; render(); };
+  const ip = $("#irPostular"); if (ip) ip.onclick = () => { const f = $("#formPost"); if (f) { f.scrollIntoView({ behavior: "smooth", block: "start" }); const n = $("#pNom"); n && n.focus({ preventScroll: true }); } };
+  const pc = $("#pCopiar"); if (pc) pc.onclick = () => copiar(location.href, "Enlace copiado");
   const b = $("#pEnviar"); if (!b) return;
   $$("main.pub input, main.pub select").forEach(el => el.addEventListener("input", () => $("#ePost").classList.remove("show")));
   b.onclick = () => {
     const d = { nombre: $("#pNom").value.trim(), correo: $("#pCor").value.trim(), universidad: $("#pUni").value, carrera: $("#pCar").value.trim(), cv: $("#pCv").value.trim() };
-    const ok = d.nombre && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.correo) && d.universidad && d.carrera;
-    $("#ePost").classList.toggle("show", !ok);
-    if (!ok) return;
+    const falta = [["pNom", d.nombre, "tu nombre"], ["pCor", /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.correo), d.correo ? "un correo válido (por ejemplo nombre@universidad.cl)" : "tu correo"], ["pUni", d.universidad, "tu universidad"], ["pCar", d.carrera, "tu carrera"]].filter(x => !x[1]);
+    $$("main.pub .input.bad").forEach(e => e.classList.remove("bad")); falta.forEach(x => $("#" + x[0]).classList.add("bad"));
+    const ok = !falta.length; $("#ePost").textContent = ok ? "" : "Falta completar: " + falta.map(x => x[2]).join(", ") + "."; $("#ePost").classList.toggle("show", !ok);
+    if (!ok) { $("#" + falta[0][0]).focus(); return; }
+    if (b.dataset.busy) return; b.dataset.busy = "1";
     c.postulantes.push(Object.assign(d, { fecha: hoy(), estado: "Postulación recibida" }));
     guardar(); postEnviado = c.id; render();
   };
 }
 
+
+/* Contacto visible en el portal público: para estudiantes y para universidades. */
+const CONTACTO_PUB = "vinculacion@amsa.ejemplo.cl";
+const contactoPub = () => `<section class="card pub-contacto" aria-label="Contacto"><p class="card-title">¿Tienes dudas?</p><p>Escríbenos a <a class="lnk" href="mailto:${CONTACTO_PUB}">${CONTACTO_PUB}</a>. <b>Si eres coordinador o coordinadora de una universidad</b> y quieres difundir estas convocatorias o conversar sobre una alianza, escríbenos al mismo correo y te respondemos desde el área que corresponde.</p></section>`;
 
 /* ---------- Portal público: todas las convocatorias abiertas ---------- */
 let pubTipo = "", pubQ = "";
@@ -533,6 +559,7 @@ function vConvPub() {
     <div class="frow"><input class="input sm" id="pubQ" placeholder="Buscar por carrera o palabra" value="${esc(pubQ)}" aria-label="Buscar convocatoria"></div></div>
     <div class="stack" id="pubLista">${pubLista()}</div>
     <p class="help" style="text-align:center;margin-top:18px"><a class="lnk" href="#/mi-postulacion">¿Ya postulaste? Revisa el estado de tu postulación</a></p>
+    ${contactoPub()}
     ${ME ? "" : `<p class="help" style="text-align:center"><a class="lnk" href="#/login">Trabajo en Antofagasta Minerals: iniciar sesión</a></p>`}
   </main>${pie()}`;
 }

@@ -37,7 +37,7 @@ function estadoInicial() {
   const areas = JSON.parse(JSON.stringify(CONFIG.areas));
   const tipos = JSON.parse(JSON.stringify(CONFIG.tipos));
   const vinculos = construirVinculosSemilla(areas, tipos);
-  const hace = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const hace = d => fechaLocal(new Date(Date.now() - d * 86400000));
   const buscar = nombre => vinculos.find(v => v.nombre === nombre);
   const preguntas = PREGUNTAS_BASE.map(p => p.texto);
   // Charla ya cerrada, con una reunión de evaluación y el cuestionario respondido por la institución.
@@ -122,7 +122,8 @@ function cerrarSesion() { ME = null; try { localStorage.removeItem(SESSION_KEY);
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const hoy = () => new Date().toISOString().slice(0, 10);
+// Fecha de hoy en la hora local (no en UTC), para que de noche no marque el día siguiente.
+const hoy = () => fechaLocal(new Date());
 const fechaTxt = f => { if (!f) return ""; const [y, m, d] = f.split("-"); return `${+d} ${["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][+m - 1]} ${y}`; };
 
 const area = id => S.areas.find(a => a.id === id);

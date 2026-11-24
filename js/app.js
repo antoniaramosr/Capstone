@@ -377,7 +377,7 @@ function filasVinculos(list, opts = {}) {
     const c = contraparte(v.contraparte), comp = completitud(v), pr = progreso(v), sal = saludDe(v);
     const falta = comp.pct < 50 ? `<small class="falta" title="Falta: ${esc(comp.faltan.join(", "))}">Faltan ${comp.faltan.length} datos de la ficha</small>` : "";
     const mail = mailCol && puedeEditar(v) ? `<button type="button" class="link-btn" data-contact-v="${v.id}" data-contact-n="${esc(v.contacto.nombre)}" data-contact-c="${esc(v.contacto.correo)}" title="${esc(v.contacto.nombre ? "Escribirle a " + v.contacto.nombre : "Escribir a la institución")}">Contactar</button>` : "";
-    return `<tr class="row ${sal.k === "rojo" || sal.k === "amarillo" ? "atender" : ""}" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span> <span class="anio" title="Año de inicio">${anioDe(v)}</span>${v.gestor && !esDelegado(ME) ? ` <span class="gest-tag" title="Lo gestiona ${esc(v.gestor)}">Gestiona ${esc(v.gestor)}</span>` : ""}<small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}${v.inicio ? `<span class="fecha-row">desde ${fechaTxt(v.inicio)}</span>` : ""}</small></td><td><span class="inst-c">${logoInst(c, "sm")}<span>${esc(c.corto)}<small>${esc(v.sede)}</small></span></span></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td data-l="Estado">${saludHTML(v)}<small class="salud-m">${esc(sal.motivo)}</small></td><td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
+    return `<tr class="row ${sal.k === "rojo" || sal.k === "amarillo" ? "atender" : ""}" data-ficha="${v.id}" tabindex="0"><td><span class="t">${esc(v.nombre)}</span> <span class="anio" title="Año de inicio">${anioDe(v)}</span>${v.gestor && !esDelegado(ME) ? ` <span class="gest-tag" title="Lo gestiona ${esc(v.gestor)}">Gestiona ${esc(v.gestor)}</span>` : ""}<small>${esc(tipo(v.tipo).nombre)} ${compTag(compsDe(v))}${v.inicio ? `<span class="fecha-row">desde ${fechaTxt(v.inicio)}</span>` : ""}</small></td><td><span class="inst-c">${logoInst(c, "sm")}<span>${esc(c.corto)}<small>${esc(v.sede)}</small></span></span></td>${opts.area ? `<td><small style="color:var(--ink)">${esc(nombreArea(v.area))}</small></td>` : ""}<td data-l="Estado">${saludHTML(v)}${sal.dias != null && sal.k !== "cerrado" ? `<small class="salud-d">${sal.dias >= 999 ? "sin movimientos" : "hace " + sal.dias + (sal.dias === 1 ? " día" : " días")}</small>` : ""}<small class="salud-m">${esc(sal.motivo)}</small></td><td>${pill(v.etapa, v.tipo)}</td><td data-l="Avance"><span class="pcell">${barra(pr)}<b>${pr}%</b></span>${falta}</td><td data-l="Calificación">${dots(v.calif)}${v.calif ? ` <span class="muted small">${num1(v.calif)}</span>` : ""}</td>${mailCol ? `<td data-l="Contactar" class="td-mail">${mail}</td>` : ""}</tr>`;
   };
   // De 10 en 10: cada ruta guarda su propia página (la clave empieza con "v#").
   const pg = paginar("v" + location.hash.split("?")[0], list, 10, "tablaMis"), pagina = pg.items;
@@ -460,7 +460,7 @@ function vMis(p) {
 function datosSemana(mios) {
   const rojos = mios.filter(v => saludDe(v).k === "rojo");
   const cierran = S.convocatorias.filter(c => c.estado === "Abierta" && (ME.admin || descendientes(ME.area).includes(convArea(c))) && c.cierre && diasDesde(c.cierre) <= 0 && diasDesde(c.cierre) >= -30);
-  const sinResp = mios.flatMap(v => v.cuestionarios.filter(q => q.estado === "enviado").map(q => ({ v, q })));
+  const sinResp = mios.flatMap(v => v.cuestionarios.filter(q => q.estado === "enviado" && diasDesde(q.fechaEnvio || q.fecha) >= DIAS_SIN_RESPUESTA).map(q => ({ v, q })));
   return { rojos, cierran, sinResp };
 }
 function textoSemana(mios) {
@@ -542,7 +542,7 @@ function vFicha(id) {
   <div class="statbar">
     <div><span class="lbl">Avance del plan de trabajo</span><span class="pcell">${barra(pr)}<b>${pr}%</b></span><span class="faltan">${hechos} de ${v.hitos.length} tareas hechas</span></div>
     ${comp.faltan.length ? `<div><span class="lbl">Datos por completar</span><span class="faltan" style="margin-top:0">${comp.faltan.join(", ")}</span></div>` : `<div><span class="lbl">Ficha</span><span class="faltan" style="margin-top:0">Todos los datos importantes están completos</span></div>`}
-    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">${esDelegado(ME) ? "Editar" : "Editar o eliminar"}</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con IA</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>${evalVisible ? "" : `<button class="btn-outline" onclick="abrirEvaluacion(${v.id})">Evaluar vínculo</button>`}${esDelegado(ME) ? "" : `<button class="btn-outline" onclick="abrirGestion(${v.id})">Asignar gestor/a</button><button class="btn-outline" onclick="abrirTraspaso(${v.id})">Cambiar encargado/a</button>`}` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
+    <div class="actions">${ed ? `<button class="btn-outline" onclick="location.hash='#/editar/${v.id}'">${esDelegado(ME) ? "Editar" : "Editar o eliminar"}</button><button class="btn-outline" id="notaBtn">Agregar nota</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'reunion')">Actualizar con IA</button><button class="btn-outline" onclick="abrirAsistente(${v.id},'cuestionario')">Pedir feedback</button>${evalVisible ? "" : `<button class="btn-outline" onclick="abrirEvaluacion(${v.id})">Evaluar vínculo</button>`}${esDelegado(ME) ? "" : `<button class="btn-outline" onclick="abrirGestion(${v.id})">Asignar gestor/a</button><button class="btn-outline" onclick="abrirTraspaso(${v.id})">Cambiar encargado/a</button>`}` : ""}<button class="btn-outline" id="dlReadme">Descargar ficha</button></div>
   </div>
   <nav class="ficha-nav" aria-label="Secciones de la ficha"><button type="button" data-scroll="f-vinculo">El vínculo</button><button type="button" data-scroll="f-personas">Personas</button><button type="button" data-scroll="f-seg">Seguimiento</button>${evalVisible ? `<button type="button" data-scroll="f-eval">Evaluación</button>` : ""}<span class="ficha-nav-r"><button type="button" class="link-btn" data-fsec-todo="1">Abrir todo</button><button type="button" class="link-btn" data-fsec-todo="0">Plegar todo</button></span></nav>
   <details class="f-sec" id="f-vinculo" ${fAb("f-vinculo")}><summary class="f-h"><span>1</span><div>El vínculo<small>Qué se busca lograr y cómo va el trabajo</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
@@ -578,8 +578,8 @@ function vFicha(id) {
   </div></details>
   <details class="f-sec" id="f-seg" ${fAb("f-seg")}><summary class="f-h"><span>3</span><div>Seguimiento<small>Reuniones, respuestas de la institución y cambios</small></div><i class="chev" aria-hidden="true"></i></summary><div class="f-body">
     <div class="stack">
-    ${fold("Reuniones", v.reuniones.length, `${ed ? `<div class="fold-acts"><button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button></div>` : ""}
-      ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones registradas. Pega la transcripción o tus notas en el asistente y se agregan aquí con un resumen.</p>`}`, false, v.reuniones.length ? "última: " + fechaTxt(v.reuniones[v.reuniones.length - 1].fecha) : "")}
+    ${fold("Reuniones y notas", v.reuniones.length, `${ed ? `<div class="fold-acts"><button class="link-btn" id="notaAbrir">+ Agregar nota</button><button class="link-btn" onclick="abrirAsistente(${v.id},'reunion')">+ Agregar reunión</button></div>` : ""}${ed && notaAbierta === v.id ? `<div class="tp-form" id="notaForm"><label class="f" for="notaTxt">Nota</label><textarea class="input" id="notaTxt" rows="3" placeholder="Ej.: Llamé al contacto, quedó de responder el lunes"></textarea><p class="help">Queda en la ficha con tu nombre y la fecha de hoy, y cuenta como movimiento del vínculo.</p><div class="form-actions"><button class="btn-accent" id="notaOk">Guardar nota</button><button class="btn-outline" id="notaNo">Cancelar</button></div></div>` : ""}
+      ${v.reuniones.length ? v.reuniones.slice().reverse().map(r => `<div class="fb"><b>${fechaTxt(r.fecha)}</b> · <span class="muted">${esc(r.fuente)}</span><br>${esc(r.resumen)}</div>`).join("") : `<p class="muted small">Aún no hay reuniones ni notas. Escribe una nota corta o pega la transcripción en el asistente y se agrega aquí.</p>`}`, Math.abs(notaAbierta || 0) === v.id, v.reuniones.length ? "última: " + fechaTxt(v.reuniones[v.reuniones.length - 1].fecha) : "")}
     ${fold("Feedback de la institución", v.cuestionarios.length, `${ed ? `<div class="fold-acts"><button class="link-btn" onclick="abrirAsistente(${v.id},'cuestionario')">+ Nuevo cuestionario</button></div>` : ""}
       <p class="help">La institución responde en un link, sin cuenta y sin correos de ida y vuelta. Sus respuestas llegan solas a esta ficha.</p>
       ${v.cuestionarios.length ? v.cuestionarios.slice().reverse().map(q => cuestionarioHTML(v, q, ed)).join("") : `<p class="muted small">Aún no se ha preparado un cuestionario para la institución.</p>`}`, v.cuestionarios.some(q => q.estado !== "respondido"), v.cuestionarios.some(q => q.estado !== "respondido") ? "esperando respuesta" : satis ? "nos califican " + num1(satis) + " de 5" : "")}
@@ -627,7 +627,7 @@ const planFila = (h, i) => `<div class="plan-row"><input type="checkbox" ${h.ok 
 function vForm(id, tipoPre) {
   const v = id ? vinculo(+id) : null;
   if (v && !puedeEditar(v)) return `<div class="card empty">Este vínculo lo edita ${esc(nombreArea(v.area))}. Si necesitas cambiar algo, escríbele a ${esc(v.responsable || "esa área")}.</div>`;
-  if (!v && !puedeCrear()) return `<div class="card empty">Tu perfil puede revisar los vínculos, pero no registrarlos.</div>`;
+  if (!v && !puedeCrear()) return `<div class="card empty">${esDelegado(ME) ? "Como gestor o gestora puedes editar los vínculos que te asignan, pero no crear otros. Pídele a tu encargado o encargada que lo registre." : ME.admin ? "Administración no registra vínculos." : "Tu perfil puede revisar los vínculos, pero no registrarlos."}</div>`;
   const tPre = S.tipos.find(t => t.id === tipoPre);
   const d = v || { nombre: "", tipo: tPre ? tPre.id : "", companias: ME.compania ? [ME.compania] : [], area: ME.admin ? "" : ME.area, etapa: 0, contraparte: preCp, sede: "", contacto: { nombre: "", cargo: "", correo: "" }, lider: "", responsable: ME.admin ? "" : ME.nombre, objetivo: "", metas: [], alcance: "", financiamiento: { tipo: "No definido", monto: "", fuente: "" }, inicio: "", termino: "", hitos: tPre ? tPre.hitos.map(t => ({ t, ok: false })) : [], comentarios: "" };
   preCp = "";
@@ -662,7 +662,7 @@ function vForm(id, tipoPre) {
       <div><label class="f" for="fCTel">Teléfono (opcional)</label><input class="input" id="fCTel" type="tel" value="${esc(d.contacto.telefono || "")}" placeholder="+56 9 1234 5678"></div></div>
       ${sec(3, "Personas a cargo", "Quién impulsa el vínculo y quién lo coordina")}
       <div class="g2"><div><label class="f" for="fLider">Líder de la iniciativa</label><input class="input" id="fLider" value="${esc(d.lider || "")}" placeholder="Ej.: jefatura que lo impulsa"><p class="help">Quien decide y responde por el vínculo.</p></div>
-      <div><label class="f" for="fResp">Encargado/a del día a día</label><input class="input" id="fResp" value="${esc(d.responsable)}" placeholder="Nombre de quien coordina"><p class="help">Quien habla con la institución y actualiza la ficha.</p></div></div>
+      <div><label class="f" for="fResp">Encargado/a del día a día</label><input class="input" id="fResp" value="${esc(d.responsable)}" placeholder="Nombre de quien coordina" ${esDelegado(ME) ? "readonly" : ""}><p class="help">${esDelegado(ME) ? "Solo quien lleva el vínculo puede cambiarlo." : "Quien habla con la institución y actualiza la ficha."}</p></div></div>
       ${sec(4, "Para qué", "Lo más importante")}
       <label class="f" for="fObj">Objetivo: qué se va a hacer</label><textarea class="input" id="fObj" rows="2" placeholder="Ej.: Realizar una charla para presentar prácticas, memorias y el programa JP.">${esc(d.objetivo)}</textarea>
       <span class="f">Metas a las que busca aportar</span><div class="checks" id="fMetas" role="group" aria-label="Metas">${metasOpc.map(m => `<label class="chk-pill"><input type="checkbox" value="${esc(m)}" ${metas.includes(m) ? "checked" : ""}>${esc(m)}</label>`).join("")}</div>
@@ -827,9 +827,12 @@ function vDashboard() {
   const mx = (rows) => Math.max(1, ...rows.map(r => r.v));
   const mejor = porTipo.find(r => r.p && r.nc >= 3); // solo si hay al menos 3 vínculos calificados: con 1 no es un ranking
   const sinCalTerm = base.filter(v => v.etapa === 3 && !v.calif).length;
+  const sinFin = base.filter(v => !v.financiamiento || !v.financiamiento.tipo || v.financiamiento.tipo === "No definido").length;
   const frases = [
-    pctSi != null ? `De los vínculos evaluados, <b>${pctSi}%</b> ayudó a cumplir sus metas.` : "",
+    cal.length < 10 ? `Hay pocos datos: solo <b>${cal.length} de ${base.length}</b> vínculos tienen calificación, así que los promedios son una referencia y no una conclusión.` : "",
+    pctSi != null ? `De los <b>${ev.length}</b> vínculos que ya se evaluaron contra las metas, <b>${pctSi}%</b> ayudó a cumplirlas.` : "",
     mejor ? `El tipo de vínculo mejor evaluado es <b>${esc(mejor.t.nombre)}</b> (${num1(mejor.p)} de 5, con ${mejor.nc} vínculos calificados).` : "",
+    sinFin ? `<b>${sinFin} de ${base.length}</b> vínculos no tienen definido quién los financia: sin eso no se puede estimar la inversión. Se completa en la ficha.` : "",
     sinCalTerm ? `<b>${sinCalTerm} ${sinCalTerm === 1 ? "vínculo terminado" : "vínculos terminados"}</b> ${sinCalTerm === 1 ? "aún no se califica" : "aún no se califican"}: sin nota no entran en los promedios.` : ""
   ].filter(Boolean);
   const sec = (titulo, sub, cuerpo, abierta = true) => `<details class="dash-sec" ${abierta ? "open" : ""}><summary><span><b>${titulo}</b><small>${sub}</small></span></summary><div class="dash-body">${cuerpo}</div></details>`;
@@ -876,8 +879,8 @@ function vDashboard() {
   ${pilotoHTML}
   ${sec("Calificaciones y metas", "", `<div class="bars2">
     <div class="card"><p class="card-title">Calificación por tipo de vínculo</p><p class="card-sub">Promedio de 1 a 5</p>${sivaColumnasNota(porTipo.map(r => ({ n: r.t.nombre, p: r.p, s: r.nc ? r.nc + " calif." : "Sin calificar" })))}</div>
-    <div class="card"><p class="card-title">¿Ayudó a cumplir las metas?</p><p class="card-sub">Según los vínculos evaluados</p>${sivaMetasHTML(ev.filter(v => v.aporta === "si").length, ev.filter(v => v.aporta === "parcial").length, ev.filter(v => v.aporta === "no").length)}</div>
-    <div class="card wide-card"><p class="card-title">Instituciones mejor evaluadas</p>${topCp.length ? topCp.map((r, i) => `<a class="rank" href="#/contraparte/${r.id}"><span class="pos">${i + 1}</span><span class="nm">${logoInst(contraparte(r.id), "xs")}${esc(contraparte(r.id).nombre)}<small>${r.nc} ${r.nc === 1 ? "vínculo calificado" : "vínculos calificados"} de ${r.n}</small></span>${dots(r.p)}<b>${num1(r.p)}</b></a>`).join("") : `<p class="muted small">Aún no hay calificaciones.</p>`}</div></div>`)}
+    <div class="card"><p class="card-title">¿Ayudó a cumplir las metas?</p><p class="card-sub">Según los ${ev.length} vínculos evaluados contra las metas (no es lo mismo que los calificados)</p>${sivaMetasHTML(ev.filter(v => v.aporta === "si").length, ev.filter(v => v.aporta === "parcial").length, ev.filter(v => v.aporta === "no").length)}</div>
+    <div class="card wide-card"><p class="card-title">Instituciones mejor evaluadas</p><p class="card-sub">Con 1 vínculo calificado, la nota es solo una referencia.</p>${topCp.length ? topCp.map((r, i) => `<a class="rank" href="#/contraparte/${r.id}"><span class="pos">${i + 1}</span><span class="nm">${logoInst(contraparte(r.id), "xs")}${esc(contraparte(r.id).nombre)}<small>${r.nc} ${r.nc === 1 ? "vínculo calificado" : "vínculos calificados"} de ${r.n}</small></span>${dots(r.p)}<b>${num1(r.p)}</b></a>`).join("") : `<p class="muted small">Aún no hay calificaciones.</p>`}</div></div>`)}
   ${sec("¿Dónde están los vínculos?", "Por etapa, compañía, área, meta y tipo de institución", `<div class="bars2">
     <div class="card"><p class="card-title">Por etapa</p>${torta(porEtapa, "Vínculos por etapa")}</div>
     <div class="card"><p class="card-title">Por compañía</p>${torta(porComp, "Vínculos por compañía")}<p class="help">Un vínculo de varias compañías cuenta en cada una.</p></div>
@@ -943,13 +946,14 @@ function vAdmin(tab) {
 const asis = { vid: null, tab: "reunion", chat: [], pensando: false, texto: "", fuente: "Transcripción pegada", propuesta: null, cargando: false, extra: [], base: PREGUNTAS_BASE.map(() => true), error: "" };
 let reco = null;
 function abrirAsistente(vid, tab) {
+  window._fabFoco = document.activeElement; setTimeout(() => { const x = $("#drawerX"); if (x) x.focus(); }, 80);
   if (tab === "chat") { asis.tab = "chat"; asis.vid = vid || null; $("#drawer").classList.add("show"); $("#drawerBg").classList.add("show"); renderAsistente(); return; }
   if (vid) asis.vid = vid; if (tab) asis.tab = tab;
   if (!asis.vid || !vinculo(asis.vid) || !puedeEditar(vinculo(asis.vid))) { const m = misVinculos().filter(puedeEditar); asis.vid = m.length ? m[0].id : null; }
   if (asis.vid !== asis._ultimo) { asis.propuesta = null; asis.extra = []; asis.error = ""; asis.creado = null; asis._ultimo = asis.vid; }
   $("#drawer").classList.add("show"); $("#drawerBg").classList.add("show"); renderAsistente();
 }
-function cerrarAsistente() { const d = $("#drawer"); if (!d) return; asis.creado = null; d.classList.remove("show"); $("#drawerBg").classList.remove("show"); if (reco) { try { reco.stop(); } catch (e) {} } }
+function cerrarAsistente() { const d = $("#drawer"); if (!d) return; if (window._fabFoco && window._fabFoco.focus && document.contains(window._fabFoco)) window._fabFoco.focus(); asis.creado = null; d.classList.remove("show"); $("#drawerBg").classList.remove("show"); if (reco) { try { reco.stop(); } catch (e) {} } }
 const urlResponder = (v, q) => location.href.split("#")[0] + "#/responder/" + v.id + "." + q.id;
 function textoCuestionario(v, preguntas, q) {
   const link = q ? urlResponder(v, q) : "[el link se genera al abrir Outlook]";
@@ -1042,11 +1046,13 @@ function renderAsistente() {
 async function leerArchivo(f) {
   const n = f.name.toLowerCase();
   if (n.endsWith(".docx")) {
+    await cargarZip();
     const z = await JSZip.loadAsync(await f.arrayBuffer());
     const xml = await z.file("word/document.xml").async("string");
     return xml.replace(/<w:tab\/>/g, " ").replace(/<\/w:p>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/\n{2,}/g, "\n").trim();
   }
   if (n.endsWith(".pdf")) {
+    await cargarPdfJs();
     pdfjsLib.GlobalWorkerOptions.workerSrc = "js/vendor/pdf.worker.min.js";
     const doc = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
     let out = "";
@@ -1118,7 +1124,7 @@ function wireAsistente(v) {
     const crear = () => { const ps = preguntas(); if (!ps.length) return null; const q = { id: Date.now(), fecha: hoy(), estado: "preparado", preguntas: ps, respuestas: [] }; v.cuestionarios.push(q); guardar(); asis.creado = { v: v.id, q: q.id }; asis.extra = []; return q; };
     const outlookDe = q => { const to = (v.contacto.correo || "").trim(); if (!to) { toast("Agrega el correo del contacto en la ficha para abrir Outlook."); return false; } abrirOutlookWeb(to, "Cómo va " + v.nombre + " · Antofagasta Minerals", textoCuestionario(v, q.preguntas, q)); return true; };
     $("#asEnviar").onclick = () => { const q = crear(); if (!q) return; try { navigator.clipboard.writeText(urlResponder(v, q)); } catch (e) {} const ok = outlookDe(q); renderAsistente(); if (ok) toast("Se abrió Outlook. El link queda aquí abajo por si lo quieres mandar por otro medio."); };
-    $("#asLink").onclick = async () => { const q = crear(); if (!q) { toast("Elige al menos una pregunta."); return; } const url = urlResponder(v, q); let ok = true; try { await navigator.clipboard.writeText(url); } catch (e) { ok = false; } renderAsistente(); toast(ok ? "Link creado y copiado. Pégalo donde quieras enviarlo." : "Link creado. Cópialo desde el cuadro de abajo."); };
+    $("#asLink").onclick = async () => { const q = crear(); if (!q) { toast("Elige al menos una pregunta."); return; } const url = urlResponder(v, q); let ok = true; try { await navigator.clipboard.writeText(url); } catch (e) { ok = false; } renderAsistente(); toast(ok ? "Link creado y copiado. Pégalo donde quieras enviarlo." : "Link creado. Cópialo desde el cuadro de arriba."); };
   }
   const lc = $("#asLinkCopiar");
   if (lc) {
@@ -1168,14 +1174,17 @@ function render() {
   const SECCION = { mis: ME.admin ? "Vínculos" : ME.rol === "jefatura" ? "Vínculos de mi gerencia" : "Mis vínculos", areas: "Áreas", contrapartes: "Instituciones", dashboard: "Estadísticas", calendario: "Calendario", admin: "Configuración", metas: "Metas", nuevo: "Añadir vínculo", "nueva-convocatoria": "Nueva convocatoria", estudiantes: "Estudiantes", ayuda: "Ayuda" };
   const CON_VOLVER = { ficha: "#/mis", nuevo: "#/mis", editar: "#/mis", area: "#/areas", contraparte: "#/contrapartes", convocatoria: "#/mis", "nueva-convocatoria": "#/mis", "editar-convocatoria": "#/mis", "correo-aceptados": "#/estudiantes" };
   if (CON_VOLVER[ruta]) body = `<div class="volver-bar"><button type="button" class="btn-back" onclick="volver('${CON_VOLVER[ruta]}')"><span aria-hidden="true">←</span> Volver</button></div>` + body;
-  app.innerHTML = shell(activo) + `<main class="${body.includes('class="hero') ? "has-hero" : ""}">${body}</main>${pie()}
+  const tit = ruta === "ficha" && vinculo(+p) ? vinculo(+p).nombre : SECCION[ruta];
+  document.title = (tit ? tit + " · " : "") + "SIVA · Sistema de Vínculos AMSA";
+  app.innerHTML = `<a class="skip" href="#contenido" id="skip">Saltar al contenido</a>` + shell(activo) + `<main id="contenido" tabindex="-1" class="${body.includes('class="hero') ? "has-hero" : ""}">${body}</main>${pie()}
     <button class="fab-guia" id="fabGuia" title="Ver la guía de inicio" aria-label="Ver la guía de inicio">?</button>
-    <button class="fab" id="fab" aria-label="Asistente SIVA"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente SIVA</span></button>
+    ${ME && ME.admin ? "" : `<button class="fab" id="fab" aria-label="Asistente SIVA"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.5 3.4 6L4.5 21l4.3-2.2c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8S17.5 3 12 3Zm-4 9.3a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg><span>Asistente SIVA</span></button>`}
     <div class="drawer-bg" id="drawerBg"></div>
-    <aside class="drawer" id="drawer" aria-label="Asistente"><div class="drawer-h"><div><b id="drawerTit">Asistente SIVA</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>
+    <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTit"><div class="drawer-h"><div><b id="drawerTit">Asistente SIVA</b><span class="ai-tag" id="aiModo"></span></div><button class="x" id="drawerX" aria-label="Cerrar">×</button></div><div class="drawer-b" id="drawerBody"></div></aside>
 `;
   wireShell(); wireVista(ruta, p); sivaDespues(ruta);
-  $("#fab").onclick = () => abrirAsistente(ruta === "ficha" ? +p : null, "chat");
+  const sk = $("#skip"); if (sk) sk.onclick = e => { e.preventDefault(); const m = $("#contenido"); if (m) m.focus(); };
+  const fabB = $("#fab"); if (fabB) fabB.onclick = () => abrirAsistente(ruta === "ficha" ? +p : null, "chat");
   $("#drawerX").onclick = cerrarAsistente; $("#drawerBg").onclick = cerrarAsistente;
   window.scrollTo(0, _mismo ? _y : 0);
   if (irConv) { irConv = false; setTimeout(() => { const t = $("#tablaConv") || $("#convTira"); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60); }
@@ -1231,6 +1240,9 @@ function wireVista(ruta, p) {
       toast(`${k}: ${b.dataset.rate} de 5. Calificación del vínculo: ${num1(v.calif)}`, () => { v.criterios = JSON.parse(antes); v.calif = califAntes; guardar(); render(); });
     });
     const gsN = $("#gsNo"); if (gsN) gsN.onclick = () => { gestionAbierta = null; render(); };
+    const nb = $("#notaBtn"), na = $("#notaAbrir"); [nb, na].forEach(b => { if (b) b.onclick = () => { notaAbierta = v.id; render(); setTimeout(() => { const e = $("#notaTxt"); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } }, 0); }; });
+    const nN = $("#notaNo"); if (nN) nN.onclick = () => { notaAbierta = null; render(); };
+    const nO = $("#notaOk"); if (nO) nO.onclick = () => { const t = $("#notaTxt").value.trim(); if (!t) { $("#notaTxt").focus(); toast("Escribe la nota antes de guardar"); return; } v.reuniones.push({ fecha: hoy(), fuente: "Nota de " + ME.nombre, resumen: t }); nuevaVersion(v, ME.nombre, `${ME.nombre} agregó una nota.`); notaAbierta = -v.id; guardar(); render(); toast("Nota guardada en la ficha"); };
     const gsO = $("#gsOk"); if (gsO) gsO.onclick = () => { const para = $("#gsPara").value; v.gestor = para; nuevaVersion(v, ME.nombre, `${ME.nombre} le asignó la gestión del vínculo a ${para}.`); gestionAbierta = null; guardar(); render(); toast(`${para} ya puede gestionar este vínculo`); };
     const gsQ = $("#gsQuitar"); if (gsQ) gsQ.onclick = () => { const de = v.gestor; delete v.gestor; nuevaVersion(v, ME.nombre, `${ME.nombre} quitó la gestión de ${de}.`); gestionAbierta = null; guardar(); render(); toast("Asignación quitada"); };
     const tpA = $("#tpAbrir"); if (tpA) tpA.onclick = () => { traspasoAbierto = v.id; render(); setTimeout(() => $("#tpPara").focus(), 0); };
@@ -1240,7 +1252,7 @@ function wireVista(ruta, p) {
       const para = tpP.value === "__otra" ? $("#tpOtra").value.trim() : tpP.value;
       if (!para) { $("#tpOtra").focus(); return; }
       v.traspaso = armarTraspaso(v, para, $("#tpProm").value.trim()); const de = v.traspaso.de;
-      v.responsable = para; nuevaVersion(v, ME.nombre, `Traspaso: ${de} le dejó el vínculo a ${para}. Se generó la hoja de traspaso.`);
+      v.responsable = para; delete v.gestor; nuevaVersion(v, ME.nombre, `Traspaso: ${de} le dejó el vínculo a ${para}. Se generó la hoja de traspaso.`);
       traspasoAbierto = null; guardar(); render(); toast(`Listo. ${para} verá la hoja de traspaso al entrar.`);
     };
     const tpL = $("#tpLeido"); if (tpL) tpL.onclick = () => {
@@ -1373,6 +1385,8 @@ function wireVista(ruta, p) {
       const d = leerForm(base); let ok = true;
       [["fNombre", d.nombre], ["fTipo", d.tipo], ["fArea", d.area], ["fCp", d.contraparte === "__nueva" ? $("#fCpNom").value.trim() : d.contraparte]].forEach(([id, val]) => { if (!val) { $("#" + id).classList.add("bad"); $("#e" + id.slice(1)).classList.add("show"); ok = false; } });
       if (!ok) { const b = $(".input.bad"); b && b.focus(); return; }
+      if (d.inicio && d.termino && d.termino < d.inicio) { $("#fTer").classList.add("bad"); $("#fTer").focus(); toast("La fecha de término no puede ser anterior a la de inicio"); return; }
+      if ($("#guardar").dataset.busy) return; $("#guardar").dataset.busy = "1";
       if (d.contraparte === "__nueva") {
         const nom = $("#fCpNom").value.trim(), id = "c" + Date.now().toString(36);
         S.contrapartes.push({ id, nombre: nom, corto: nom.length > 24 ? nom.slice(0, 22) + "…" : nom, tipoOrg: $("#fCpTipo").value, locacion: d.sede, zona: "", contactos: [] });
@@ -1441,7 +1455,7 @@ document.addEventListener("ai-listo", () => { const m = $("#aiModo"); if (m) m.t
 /* ============================ Traspaso de vínculo ============================
    Cuando cambia el encargado/a, SIVA arma una hoja con lo que hay que saber.
    El nuevo encargado/a la lee y confirma con "Leí y asumo". */
-let traspasoAbierto = null, gestionAbierta = null;
+let traspasoAbierto = null, gestionAbierta = null, notaAbierta = null;
 function abrirGestion(id) { gestionAbierta = id; render(); setTimeout(() => { const e = $("#gsPara"); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } }, 0); }
 const candidatosGestion = () => Object.values(CONFIG.usuarios).filter(u => u.delegadoDe && u.nombre !== (ME && ME.nombre));
 function gestionFormHTML(v) {
@@ -1460,7 +1474,7 @@ function traspasoFormHTML(v) {
   const cs = candidatosTraspaso(v);
   return `<div class="tp-form"><label class="f" for="tpPara">Nuevo encargado/a</label>
     <select class="input" id="tpPara">${cs.map(u => `<option>${esc(u.nombre)}</option>`).join("")}<option value="__otra">Otra persona…</option></select>
-    <input class="input" id="tpOtra" placeholder="Nombre" hidden style="margin-top:6px">
+    <input class="input" id="tpOtra" placeholder="Nombre de la persona" ${cs.length ? "hidden" : ""} style="margin-top:6px">
     <label class="f" for="tpProm">Qué se le prometió a la institución</label><textarea class="input" id="tpProm" rows="3" placeholder="Compromisos que siguen abiertos">${esc(v.comentarios || "")}</textarea>
     <p class="help">Con esto y los datos de la ficha se arma la hoja de traspaso.</p>
     <div class="form-actions"><button class="btn-accent" id="tpOk">Traspasar</button><button class="btn-outline" id="tpNo">Cancelar</button></div></div>`;

@@ -1,3 +1,4 @@
+const fechaLocal = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 /* Configuración inicial: áreas, tipos de vínculo, tipos de organización y etapas.
    En la página, solo un administrador puede agregar o eliminar áreas y tipos
    (pantalla Administración). Estos son los valores con los que parte. */
@@ -106,7 +107,7 @@ const CONFIG = {
     // Los perfiles se nombran por lo que hacen en la plataforma, no por su cargo en la empresa.
     gestor: { nombre: "Responsable de vínculos", desc: "Registra y actualiza los vínculos de su área y crea convocatorias para estudiantes." },
     jefatura: { nombre: "Dirección (estadísticas)", desc: "Mira las estadísticas de su gerencia. No registra ni edita vínculos." },
-    admin: { nombre: "Configuración", desc: "Configura compañías, áreas, tipos de vínculo y metas. Ve todos los vínculos." }
+    admin: { nombre: "Configuración", desc: "Configura compañías, áreas, tipos de vínculo y metas. No ve los vínculos." }
   },
 
   // Quién financia el vínculo. "Presupuesto del área" pide además de qué partida sale.

@@ -459,3 +459,39 @@ button.pag-b:hover{background:var(--bg-soft,#EEF6F7);border-color:var(--brand-2)
 .res-row.k-cuest .res-tag{background:#e3f3f5;color:#00606f}
 .res-mas{margin:8px 2px 0}
 @media(max-width:600px){.res-row{flex-wrap:wrap}.res-tag{order:-1}}
+
+/* Portal público */
+.pub-acts{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+.pub-contacto{margin-top:18px}
+.pub-contacto p{margin:4px 0}
+.input.bad{border-color:#D22630;box-shadow:0 0 0 2px rgba(210,38,48,.15)}
+/* Textos largos sin espacios no deben desbordar */
+main,.card,.res-t,.ficha,dd,td,h1,h2,h3{overflow-wrap:anywhere}
+
+.salud-d{display:block;color:var(--muted,#5b6b70);font-size:.78rem;margin-top:2px}
+@media (max-width:760px){.salud-d{display:none}}
+
+/* Accesibilidad */
+.skip{position:fixed;left:12px;top:-60px;z-index:200;background:#fff;color:#00778B;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;box-shadow:0 2px 10px rgba(0,0,0,.3);transition:top .15s}
+.skip:focus{top:10px;outline:3px solid #EAAA00}
+main:focus{outline:none}
+.top a:focus-visible,.top button:focus-visible,.top select:focus-visible,.top input:focus-visible{outline:3px solid #fff;outline-offset:2px;box-shadow:0 0 0 6px rgba(0,0,0,.45);border-radius:8px}
+.s-amarillo{color:#6B5000}
+.crumbs,.crumbs a{color:#4A4545}
+.foot{background:#0F6270}
+.calif-big span{color:#4A4545}
+/* Celular: cabecera de una sola fila con menú que se desliza, y botones tocables */
+@media (max-width:760px){
+  .top{position:relative}
+  .top-inner{flex-wrap:wrap;gap:4px 8px}
+  .nav{flex-wrap:nowrap;overflow-x:auto;height:48px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .nav::-webkit-scrollbar{display:none}
+  .nav-item,.nav-btn{flex:none}
+  .nav-btn{min-height:44px;padding:0 12px}
+  .link-btn{min-height:44px;display:inline-flex;align-items:center;padding:0 8px}
+  .btn-outline,.btn-accent,.btn-accent.sm{min-height:44px}
+  .user{min-width:44px;min-height:44px}
+  .tabs .tab{min-height:44px;display:inline-flex;align-items:center}
+  .fab{width:52px;height:52px}
+  main{padding-bottom:96px}
+}
