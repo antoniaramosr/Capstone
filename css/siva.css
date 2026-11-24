@@ -528,3 +528,22 @@ main:focus{outline:none}
   .card,.tabla-wrap{max-width:100%}
   select,input,textarea{font-size:16px}
 }
+
+/* ---------- Márgenes y centrado ---------- */
+.cuentas-prueba:not([open]){padding-bottom:4px}
+.cuentas-prueba summary{display:flex;align-items:center;min-height:44px}
+@media (max-width:760px){
+  /* Resumen del mes: etiqueta arriba, logo y texto debajo (el texto ya no se aplasta) */
+  .res-row{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:6px;align-items:start}
+  .res-tag{grid-column:1 / -1;order:0;justify-self:start}
+  .res-row > .logo-i{grid-row:2}
+  .res-t{grid-row:2;grid-column:2}
+  /* Filas de tablas convertidas en tarjetas: aire a los lados, igual que el resto de la página */
+  table tr{padding:12px 14px;border-radius:12px}
+  table tr + tr{margin-top:6px}
+}
+/* Las tarjetas de cuenta no deben salirse de su recuadro */
+.login-opt{box-sizing:border-box;max-width:100%}
+.login-opt > *{min-width:0}
+.login-opt > span:last-child,.login-opt > div{flex:1;min-width:0}
+*,*::before,*::after{box-sizing:border-box}
